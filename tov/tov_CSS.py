@@ -6,12 +6,13 @@ from astropy.constants import M_sun
 from scipy.constants import m_n
 
 N_x0=500
-x0=-np.log(np.linspace(0.1,10,N_x0))
+x0=np.linspace(np.log(0.1),np.log(10),N_x0)
 N_cs2=10
 cs2=np.linspace(3,12,N_cs2)/12
 Preset_rtol=1e-5
 N=100
-dx=-np.log(Preset_rtol)/N
+Preset_Pressure_final=1e-7
+dx=-np.log(Preset_Pressure_final)/N
 
 def f_CSS(x, y, cs2):
     p=np.exp(-x)
@@ -49,16 +50,13 @@ def MassRadius_CSS(pressure_center,MRorMRBIT,eos):
         if(cs2_index==cs2_index_f):
             y=x0_weight*result[cs2_index][x0_index][-1]\
             +(1-x0_weight)*result[cs2_index][x0_index+1][-1]
-            print 'xxxxxxxxxxx'
-            print result[cs2_index][x0_index][-1]
-            print result[cs2_index][x0_index+1][-1]
         else:
             y=x0_weight*cs2_weight*result[cs2_index][x0_index][-1]\
             +(1-x0_weight)*cs2_weight*result[cs2_index][x0_index+1][-1]\
             +x0_weight*(1-cs2_weight)*result[cs2_index+1][x0_index][-1]\
             +(1-x0_weight)*(1-cs2_weight)*result[cs2_index+1][x0_index+1][-1]
     else:
-        print 'use canaonical way'
+        print('use canaonical way')
     y=y[1:6]
     M=y[0]*eos.unit_mass/M_sun.value
     R=y[1]**0.5*eos.unit_radius

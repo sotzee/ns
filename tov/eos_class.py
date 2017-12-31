@@ -132,7 +132,7 @@ class EOS_CSS(object):
             self.baryon_density_s=0.16
             self.pressure_s=-self.B
             self.density_s=-self.B
-            print 'Warning!!! ESS equation get negative Bag constant!!!'
+            print('Warning!!! ESS equation get negative Bag constant!!!')
             print('args=%s'%(args))
             print('B=%f MeVfm-3'%(self.B))
         self.unit_mass=c**4/(G**3*self.density_s*1e51*e)**0.5

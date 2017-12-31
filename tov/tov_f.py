@@ -109,7 +109,11 @@ def MassRadius(pressure_center,Preset_Pressure_final,Preset_rtol,MRorMRBIT,eos):
 #print MassRadius(300,1e-7,1e-2,'MRBIT',a)
 from eos_class import EOS_CSS
 abb=EOS_CSS([100,0,0.16,1.0])
-print MassRadius(300,1e-5,1e-5,'MRBIT',abb)
-
+print('xxxxxxxxxxxxx')
+for i in range(100):
+    abc=MassRadius(300,1e-7,1e-5,'MRBIT',abb)
+print(abc)
 from tov_CSS import MassRadius_CSS
-print MassRadius_CSS(300,'MRBIT',abb)
+for i in range(100000):
+    abc=MassRadius_CSS(300,'MRBIT',abb)
+print(abc)
