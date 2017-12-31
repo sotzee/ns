@@ -55,7 +55,7 @@ class EOS_PiecewisePoly(object):
         self.density_s=self.eosDensity(self.pressure_s)
         self.unit_mass=c**4/(G**3*self.density_s*1e51*e)**0.5
         self.unit_radius=c**2/(G*self.density_s*1e51*e)**0.5
-        self.unit_N=self.unit_radius**3*self.baryon_density_s*1e-45
+        self.unit_N=self.unit_radius**3*self.baryon_density_s*1e45
     def eosDensity(self,pressure):
         if(pressure<self.pressure1):
             density = ((self.density0-self.pressure0/(self.gamma1-1))\
@@ -124,9 +124,20 @@ class EOS_CSS(object):
     def __init__(self,args):
         self.density0,self.pressure0,self.baryondensity_trans,self.cs2 = args
         self.B=(self.density0-self.pressure0/self.cs2)/(1.0+1.0/self.cs2)
-        self.baryon_density_s=0.16
-        self.pressure_s=self.B
-        self.density_s=self.B
+        if(self.B>0):
+            self.baryon_density_s=self.baryondensity_trans/(self.pressure0/self.B+1)**(1/(self.cs2+1))
+            self.pressure_s=self.B
+            self.density_s=self.B
+        else:
+            self.baryon_density_s=0.16
+            self.pressure_s=-self.B
+            self.density_s=-self.B
+            print 'Warning!!! ESS equation get negative Bag constant!!!'
+            print('args=%s'%(args))
+            print('B=%f MeVfm-3'%(self.B))
+        self.unit_mass=c**4/(G**3*self.density_s*1e51*e)**0.5
+        self.unit_radius=c**2/(G*self.density_s*1e51*e)**0.5
+        self.unit_N=self.unit_radius**3*self.baryon_density_s*1e45
     def eosDensity(self,pressure):
         return np.max((pressure-self.pressure0)/self.cs2+self.density0,0)
     def eosBaryonDensity(self,pressure):

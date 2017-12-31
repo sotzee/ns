@@ -48,19 +48,21 @@ def f_complete(x, y, eos):
 
 
 
-from eos_class import EOS_BPSwithPolyCSS
-baryon_density0=0.16/2.7
-baryon_density1=1.85*0.16
-baryon_density2=3.74*0.16
-baryon_density3=7.4*0.16
-pressure1=10.0
-pressure2=150.
-pressure3=1000.
-pressure_trans=1000
-det_density=100
-cs2=1.0/3.0
-args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans,det_density,cs2]
-a=EOS_BPSwithPolyCSS(args)
+# =============================================================================
+# from eos_class import EOS_BPSwithPolyCSS
+# baryon_density0=0.16/2.7
+# baryon_density1=1.85*0.16
+# baryon_density2=3.74*0.16
+# baryon_density3=7.4*0.16
+# pressure1=10.0
+# pressure2=250.
+# pressure3=1000.
+# pressure_trans=250
+# det_density=100
+# cs2=1.0/3.0
+# args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans,det_density,cs2]
+# a=EOS_BPSwithPolyCSS(args)
+# =============================================================================
 
 # =============================================================================
 # from rk4 import rk4
@@ -79,34 +81,35 @@ a=EOS_BPSwithPolyCSS(args)
 # print [vy[value][0]*a.unit_mass,np.sqrt(vy[value][1])*a.unit_radius,vy[value][2],vy[value][3],vy[value][4]]
 # =============================================================================
 def MassRadius(pressure_center,Preset_Pressure_final,Preset_rtol,MRorMRBIT,eos):
-    pressure_center=300.
-    Preset_Pressure_final=1e-7
     x0 = -np.log(pressure_center)
     xf = x0-np.log(Preset_Pressure_final)    
     if(MRorMRBIT=='MR'):
         r = ode(f).set_integrator('lsoda',rtol=Preset_rtol)
-        r.set_initial_value([0,0], x0).set_f_params(a)
+        r.set_initial_value([0,0], x0).set_f_params(eos)
         r.integrate(xf)
-        M=r.y[0]*a.unit_mass/M_sun.value
-        R=r.y[1]**0.5*a.unit_radius
+        M=r.y[0]*eos.unit_mass/M_sun.value
+        R=r.y[1]**0.5*eos.unit_radius
         return [M,R]
     elif(MRorMRBIT=='MRBIT'):
         r = ode(f_complete).set_integrator('lsoda',rtol=Preset_rtol)
-        r.set_initial_value([0,0,0,0,2], x0).set_f_params(a)
+        r.set_initial_value([0,0,0,0,2], x0).set_f_params(eos)
         r.integrate(xf)
-        M=r.y[0]*a.unit_mass/M_sun.value
-        R=r.y[1]**0.5*a.unit_radius
-        N=r.y[1]*a.unit_N
-        M_binding=N*m_n
-        beta=r.y[0]/R*a.unit_radius
+        M=r.y[0]*eos.unit_mass/M_sun.value
+        R=r.y[1]**0.5*eos.unit_radius
+        beta=r.y[0]/R*eos.unit_radius
+        N=r.y[2]*eos.unit_N
+        M_binding=N*m_n/M_sun.value
         momentofinertia=r.y[3]/(6.0+2.0*r.y[3])/beta**3
         yR=r.y[4]
         tidal_R=6*beta*(2-yR+beta*(5*yR-8))+4*beta**3*(13-11*yR+beta*(3*yR-2)+2*beta**2*(1+yR))+3*(1-2*beta)**2*(2-yR+2*beta*(yR-1))*np.log(1-2*beta)
         k2=8.0/5.0*beta**5*(1-2*beta)**2*(2-yR+2*beta*(yR-1))/tidal_R
         tidal=2.0/3.0*(k2/beta**5)
         return [M,R,beta,M_binding,momentofinertia,yR,tidal]
-# =============================================================================
-#     while r.successful() and r.t < xf:
-#         r.integrate(r.t+1)
-#         print("%s %s" % (r.t, r.y))
-# =============================================================================
+    
+#print MassRadius(300,1e-7,1e-2,'MRBIT',a)
+from eos_class import EOS_CSS
+abb=EOS_CSS([100,0,0.16,1.0])
+print MassRadius(300,1e-5,1e-5,'MRBIT',abb)
+
+from tov_CSS import MassRadius_CSS
+print MassRadius_CSS(300,'MRBIT',abb)
