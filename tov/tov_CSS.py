@@ -6,18 +6,19 @@ from astropy.constants import M_sun
 from scipy.constants import m_n
 
 N_x0=500
-x0=np.linspace(np.log(0.1),np.log(10),N_x0)
+x0=-np.linspace(np.log(100),np.log(0.1),N_x0)
 N_cs2=10
 cs2=np.linspace(3,12,N_cs2)/12
 Preset_rtol=1e-5
-N=100
+N=500
 Preset_Pressure_final=1e-7
-dx=-np.log(Preset_Pressure_final)/N
+dp=np.exp(-x0)/N
+#dx=-np.log(Preset_Pressure_final)/N
 
 def f_CSS(x, y, cs2):
     p=np.exp(-x)
     eps=(p+cs2+1)/cs2
-    baryondensity=(p+1)**(1/(cs2**2+1))
+    baryondensity=(p+1)**(1/(cs2+1))
     if(y[1]==0):
         den=p/((eps+p)*(eps/3.0+p))
         Q=4*pi*((5-y[4])*eps+(9+y[4])*p+(eps+p)/cs2)-(8*pi*np.sqrt(y[1])*(eps/3.0+p))**2
@@ -38,12 +39,12 @@ def f_CSS(x, y, cs2):
     return np.array([dmdx,dr2dx,dNdx,dzdx,dydx])
 
 def MassRadius_CSS(pressure_center,MRorMRBIT,eos):
-    x0_=-np.log(pressure_center/eos.B)
+    x0_=-np.log(pressure_center/eos.density_s)
     cs2_=eos.cs2
     x0_index_f=(N_x0-1)*(x0_-x0[0])/(x0[-1]-x0[0])
     x0_index=int(x0_index_f)
     x0_weight=1+x0_index-x0_index_f
-    cs2_index_f=(N_cs2-1)*(cs2_-cs2[0])/(cs2[-1]-cs2[0])
+    cs2_index_f=(N_cs2-1)*(12*cs2_-12*cs2[0])/(12*cs2[-1]-12*cs2[0])
     cs2_index=int(cs2_index_f)
     cs2_weight=1+cs2_index-cs2_index_f
     if(x0_index<N_x0):
@@ -61,6 +62,7 @@ def MassRadius_CSS(pressure_center,MRorMRBIT,eos):
     M=y[0]*eos.unit_mass/M_sun.value
     R=y[1]**0.5*eos.unit_radius
     beta=y[0]/R*eos.unit_radius
+    
     N=y[2]*eos.unit_N
     M_binding=N*m_n/M_sun.value
     momentofinertia=y[3]/(6.0+2.0*y[3])/beta**3
@@ -69,6 +71,58 @@ def MassRadius_CSS(pressure_center,MRorMRBIT,eos):
     k2=8.0/5.0*beta**5*(1-2*beta)**2*(2-yR+2*beta*(yR-1))/tidal_R
     tidal=2.0/3.0*(k2/beta**5)
     return [M,R,beta,M_binding,momentofinertia,yR,tidal]
+
+def Integration_CSS(x0_,xf_,eos):
+    cs2_=eos.cs2
+    x0_index_f=(N_x0-1)*(x0_-x0[0])/(x0[-1]-x0[0])
+    x0_index=int(x0_index_f)
+    x0_weight=1+x0_index-x0_index_f
+    cs2_index_f=(N_cs2-1)*(12*cs2_-12*cs2[0])/(12*cs2[-1]-12*cs2[0])
+    cs2_index=int(cs2_index_f)
+    #cs2_weight=1+cs2_index-cs2_index_f
+    if(0<x0_index<N_x0 and cs2_index==cs2_index_f):
+        xf_index_f=(np.exp(-result[cs2_index][x0_index][0][0])-np.exp(-xf_))/dp[x0_index]
+        xf_index=int(xf_index_f)
+        if(xf_index<N-1):
+            xf_weight=(result[cs2_index][x0_index][xf_index+1][0]-xf_)/(result[cs2_index][x0_index][xf_index+1][0]-result[cs2_index][x0_index][xf_index][0])
+            xf1_index_f=(np.exp(-result[cs2_index][x0_index+1][0][0])-np.exp(-xf_))/dp[x0_index+1]
+            xf1_index=int(xf1_index_f)
+            xf1_weight=(result[cs2_index][x0_index+1][xf1_index+1][0]-xf_)/(result[cs2_index][x0_index+1][xf1_index+1][0]-result[cs2_index][x0_index+1][xf1_index][0])
+            y=x0_weight*xf_weight*result[cs2_index][x0_index][xf_index]\
+            +x0_weight*(1-xf_weight)*result[cs2_index][x0_index][xf_index+1]\
+            +(1-x0_weight)*xf1_weight*result[cs2_index][x0_index+1][xf1_index]\
+            +(1-x0_weight)*(1-xf1_weight)*result[cs2_index][x0_index+1][xf1_index+1]
+# =============================================================================
+#             xf2_index_f=(np.exp(-result[cs2_index+1][x0_index][0][0])-np.exp(-xf_))/dp[x0_index]
+#             xf2_index=int(xf2_index_f)
+#             xf2_weight=1+xf_index-xf_index_f
+#             xf2_weight=(result[cs2_index+1][x0_index][xf_index+1][0]-xf_)/(result[cs2_index+1][x0_index][xf_index+1][0]-result[cs2_index+1][x0_index][xf_index][0])
+#             xf12_index_f=(np.exp(-result[cs2_index+1][x0_index+1][0][0])-np.exp(-xf_))/dp[x0_index+1]
+#             xf12_index=int(xf12_index_f)
+#             xf12_weight=1+xf_index-xf1_index_f
+#             xf12_weight=(result[cs2_index+1][x0_index+1][xf1_index+1][0]-xf_)/(result[cs2_index+1][x0_index+1][xf1_index+1][0]-result[cs2_index+1][x0_index+1][xf1_index][0])
+#             y=x0_weight*cs2_weight*xf_weight*result[cs2_index][x0_index][xf_index]\
+#             +x0_weight*cs2_weight*(1-xf_weight)*result[cs2_index][x0_index][xf_index+1]\
+#             +(1-x0_weight)*cs2_weight*xf1_weight*result[cs2_index][x0_index+1][xf1_index]\
+#             +(1-x0_weight)*cs2_weight*(1-xf1_weight)*result[cs2_index][x0_index+1][xf1_index+1]\
+#             +x0_weight*(1-cs2_weight)*xf2_weight*result[cs2_index+1][x0_index][xf2_index]\
+#             +x0_weight*(1-cs2_weight)*(1-xf2_weight)*result[cs2_index+1][x0_index][xf2_index+1]\
+#             +(1-x0_weight)*(1-cs2_weight)*xf12_weight*result[cs2_index+1][x0_index+1][xf12_index]\
+#             +(1-x0_weight)*(1-cs2_weight)*(1-xf12_weight)*result[cs2_index+1][x0_index+1][xf12_index+1]
+# =============================================================================
+        else:
+            print('Warning!!! tov_CSS intepolation solver failed, use ordinary integration which decreases performance.')
+            r = ode(f_CSS).set_integrator('lsoda',rtol=Preset_rtol)
+            r.set_initial_value([0,0,0,0,2], x0_).set_f_params(cs2_)
+            r.integrate(xf_)
+            y=[r.t,r.y[0],r.y[1],r.y[2],r.y[3],r.y[4]]
+    else:
+        print('Warning!!! tov_CSS intepolation solver failed, use ordinary integration which decreases performance.')
+        r = ode(f_CSS).set_integrator('lsoda',rtol=Preset_rtol)
+        r.set_initial_value([0,0,0,0,2], x0_).set_f_params(cs2_)
+        r.integrate(xf_)
+        y=[r.t,r.y[0],r.y[1],r.y[2],r.y[3],r.y[4]]
+    return y
 
 # =============================================================================
 # def MassRadius(pressure_center,Preset_Pressure_final,Preset_rtol,MRorMRBIT,eos):
@@ -106,9 +160,13 @@ if __name__ == '__main__':
             print('%.2f /100'%(100.*(i*N_x0+j)/(N_x0*N_cs2)))
             r.set_initial_value([0,0,0,0,2], x0[j]).set_f_params(cs2[i])
             result[i][j][0]=[x0[j],0,0,0,0,2]
-            for k in range(N):
-                r.integrate(r.t+dx)
+            for k in range(N-1):
+                #r.integrate(r.t+dx)
+                r.integrate(-np.log(np.exp(-r.t)-dp[j]))
                 result[i][j][k+1]=[r.t,r.y[0],r.y[1],r.y[2],r.y[3],r.y[4]]
+            #print x0[j],Preset_Pressure_final
+            r.integrate(x0[j]-np.log(Preset_Pressure_final))
+            result[i][j][N]=[r.t,r.y[0],r.y[1],r.y[2],r.y[3],r.y[4]]
     f1=open('./tov_CSS_result.dat','wb')
     pickle.dump(result,f1)
     f1.close()
