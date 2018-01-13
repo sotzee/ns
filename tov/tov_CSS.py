@@ -5,12 +5,12 @@ import pickle
 from astropy.constants import M_sun
 from scipy.constants import m_n
 
-N_x0=500
-x0=-np.linspace(np.log(100),np.log(0.1),N_x0)
+N_x0=1000
+x0=-np.linspace(np.log(100),np.log(0.01),N_x0)
 N_cs2=10
 cs2=np.linspace(3,12,N_cs2)/12
 Preset_rtol=1e-5
-N=500
+N=1000
 Preset_Pressure_final=1e-7
 dp=np.exp(-x0)/N
 #dx=-np.log(Preset_Pressure_final)/N
@@ -47,7 +47,7 @@ def MassRadius_CSS(pressure_center,MRorMRBIT,eos):
     cs2_index_f=(N_cs2-1)*(12*cs2_-12*cs2[0])/(12*cs2[-1]-12*cs2[0])
     cs2_index=int(cs2_index_f)
     cs2_weight=1+cs2_index-cs2_index_f
-    if(x0_index<N_x0):
+    if(x0_index<N_x0-1):
         if(cs2_index==cs2_index_f):
             y=x0_weight*result[cs2_index][x0_index][-1]\
             +(1-x0_weight)*result[cs2_index][x0_index+1][-1]
@@ -62,7 +62,6 @@ def MassRadius_CSS(pressure_center,MRorMRBIT,eos):
     M=y[0]*eos.unit_mass/M_sun.value
     R=y[1]**0.5*eos.unit_radius
     beta=y[0]/R*eos.unit_radius
-    
     N=y[2]*eos.unit_N
     M_binding=N*m_n/M_sun.value
     momentofinertia=y[3]/(6.0+2.0*y[3])/beta**3
@@ -80,7 +79,7 @@ def Integration_CSS(x0_,xf_,eos):
     cs2_index_f=(N_cs2-1)*(12*cs2_-12*cs2[0])/(12*cs2[-1]-12*cs2[0])
     cs2_index=int(cs2_index_f)
     #cs2_weight=1+cs2_index-cs2_index_f
-    if(0<x0_index<N_x0 and cs2_index==cs2_index_f):
+    if(0<x0_index<N_x0-1 and cs2_index==cs2_index_f):
         xf_index_f=(np.exp(-result[cs2_index][x0_index][0][0])-np.exp(-xf_))/dp[x0_index]
         xf_index=int(xf_index_f)
         if(xf_index<N-1):
@@ -112,12 +111,14 @@ def Integration_CSS(x0_,xf_,eos):
 # =============================================================================
         else:
             print('Warning!!! tov_CSS intepolation solver failed, use ordinary integration which decreases performance.')
+            print('transition at too skin!!!')
             r = ode(f_CSS).set_integrator('lsoda',rtol=Preset_rtol)
             r.set_initial_value([0,0,0,0,2], x0_).set_f_params(cs2_)
             r.integrate(xf_)
             y=[r.t,r.y[0],r.y[1],r.y[2],r.y[3],r.y[4]]
     else:
         print('Warning!!! tov_CSS intepolation solver failed, use ordinary integration which decreases performance.')
+        print('x0_=%f  is out side range [%f,%f]'%(x0_,x0[0],x0[-1]))
         r = ode(f_CSS).set_integrator('lsoda',rtol=Preset_rtol)
         r.set_initial_value([0,0,0,0,2], x0_).set_f_params(cs2_)
         r.integrate(xf_)

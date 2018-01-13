@@ -155,6 +155,7 @@ class EOS_BPSwithPolyCSS(EOS_BPSwithPoly,EOS_CSS):
         ,self.pressure2,self.baryon_density2,self.pressure3\
         ,self.baryon_density3,self.pressure_trans,self.det_density\
         ,self.cs2=args
+        self.args=args
         self.eosBPSwithPoly=EOS_BPSwithPoly(args[0:7])
         self.baryon_density_s=self.eosBPSwithPoly.baryon_density_s
         self.pressure_s=self.eosBPSwithPoly.pressure_s

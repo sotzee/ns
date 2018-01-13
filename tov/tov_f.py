@@ -15,10 +15,6 @@ def f(x, y, eos):
     else:
         den=p/((y[0]+4*pi*y[1]**1.5*p)*(eps+p))
         rel=1-2*y[0]/y[1]**0.5
-# =============================================================================
-#         print p,y,rel,den
-#         print [4*pi*eps*y[1]**2*rel*den,2*y[1]**1.5*rel*den]
-# =============================================================================
         return np.array([4*pi*eps*y[1]**2*rel*den,2*y[1]**1.5*rel*den])
     
 def f_complete(x, y, eos):
@@ -47,54 +43,31 @@ def f_complete(x, y, eos):
     return np.array([dmdx,dr2dx,dNdx,dzdx,dydx])
 
 
-
-# =============================================================================
-# from eos_class import EOS_BPSwithPolyCSS
-# baryon_density0=0.16/2.7
-# baryon_density1=1.85*0.16
-# baryon_density2=3.74*0.16
-# baryon_density3=7.4*0.16
-# pressure1=10.0
-# pressure2=250.
-# pressure3=1000.
-# pressure_trans=250
-# det_density=100
-# cs2=1.0/3.0
-# args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans,det_density,cs2]
-# a=EOS_BPSwithPolyCSS(args)
-# 
-# from rk4 import rk4
-# print 'xxxxxxxxxxxxxx'
-# pressure_center=300.
-# Preset_Pressure_final=1e-7
-# value=500
-# x0 = -np.log(pressure_center/a.density_s)
-# xf = x0-np.log(Preset_Pressure_final)
-# y0 = [0,0]
-# vx, vy = rk4(f, x0, y0, xf, value, a.eosBPSwithPoly)
-# print [vy[value][0]*a.eosBPSwithPoly.unit_mass,np.sqrt(vy[value][1])*a.eosBPSwithPoly.unit_radius]
-# 
-# y0 = [0,0,0,0,2]
-# vx, vy = rk4(f_complete, x0, y0, xf, value, a.eosBPSwithPoly)
-# print [vy[value][0]*a.eosBPSwithPoly.unit_mass,np.sqrt(vy[value][1])*a.eosBPSwithPoly.unit_radius,vy[value][2],vy[value][3],vy[value][4]]
-# 
-# =============================================================================
-
+def lsoda_ode(function,Preset_rtol,y0,x0,xf,para):
+    r = ode(function).set_integrator('lsoda',rtol=Preset_rtol,nsteps=1000)
+    r.set_initial_value(y0, x0).set_f_params(para)
+    r.integrate(xf)
+    i=0
+    while(i<5 and not r.successful()):
+        r.set_initial_value(r.y, r.t).set_f_params(para)
+        r.integrate(xf)
+        i+=1
+    return r
 
 def MassRadius(pressure_center,Preset_Pressure_final,Preset_rtol,MRorMRBIT,eos):
     x0 = -np.log(pressure_center/eos.density_s)
-    xf = x0-np.log(Preset_Pressure_final)    
-    if(MRorMRBIT=='MR'):
-        r = ode(f).set_integrator('lsoda',rtol=Preset_rtol)
-        r.set_initial_value([0,0], x0).set_f_params(eos)
-        r.integrate(xf)
+    xf = x0-np.log(Preset_Pressure_final)
+    if(MRorMRBIT=='M'):
+        r = lsoda_ode(f,Preset_rtol,[0.,0.],x0,xf,eos)
+        M=r.y[0]*eos.unit_mass/M_sun.value
+        return M
+    elif(MRorMRBIT=='MR'):
+        r = lsoda_ode(f,Preset_rtol,[0.,0.],x0,xf,eos)
         M=r.y[0]*eos.unit_mass/M_sun.value
         R=r.y[1]**0.5*eos.unit_radius
         return [M,R]
     elif(MRorMRBIT=='MRBIT'):
-        r = ode(f_complete).set_integrator('lsoda',rtol=Preset_rtol)
-        r.set_initial_value([0,0,0,0,2], x0).set_f_params(eos)
-        r.integrate(xf)
+        r = lsoda_ode(f_complete,Preset_rtol,[0.,0.,0.,0.,2.],x0,xf,eos)
         M=r.y[0]*eos.unit_mass/M_sun.value
         R=r.y[1]**0.5*eos.unit_radius
         beta=r.y[0]/R*eos.unit_radius
@@ -112,9 +85,7 @@ def Mass_formax(pressure_center,Preset_Pressure_final,Preset_rtol,eos):#(this fu
         return 0
     x0 = -np.log(pressure_center/eos.density_s)
     xf = x0-np.log(Preset_Pressure_final)
-    r = ode(f).set_integrator('lsoda',rtol=Preset_rtol)
-    r.set_initial_value([0,0], x0).set_f_params(eos)
-    r.integrate(xf)
+    r = lsoda_ode(f,Preset_rtol,[0.,0.],x0,xf,eos)
     return -r.y[0]*eos.unit_mass/M_sun.value
 
 from tov_CSS import Integration_CSS
@@ -126,20 +97,24 @@ def MassRadius_transition(pressure_center,Preset_Pressure_final,Preset_rtol,MRor
         xt = -np.log(eos.pressure_trans/eos.density_s)
         #xf = xt-np.log(Preset_Pressure_final)
         xf = x0-np.log(Preset_Pressure_final)
-        if(MRorMRBIT=='MR'):
+        if(MRorMRBIT=='M'):
             yt=Integration_CSS(-np.log(pressure_center/eos.eosCSS.density_s),-np.log(eos.pressure_trans/eos.eosCSS.density_s),eos.eosCSS)[1:3]
-            r = ode(f).set_integrator('lsoda',rtol=Preset_rtol)
-            r.set_initial_value(yt, xt).set_f_params(eos)
-            r.integrate(xf)
+            yt[0:2]=[yt[0]*eos.eosCSS.unit_mass/eos.unit_mass,yt[1]*(eos.eosCSS.unit_radius/eos.unit_radius)**2]
+            r = lsoda_ode(f,Preset_rtol,yt,xt,xf,eos)
+            M=r.y[0]*eos.unit_mass/M_sun.value
+            return M
+        elif(MRorMRBIT=='MR'):
+            yt=Integration_CSS(-np.log(pressure_center/eos.eosCSS.density_s),-np.log(eos.pressure_trans/eos.eosCSS.density_s),eos.eosCSS)[1:3]
+            yt[0:2]=[yt[0]*eos.eosCSS.unit_mass/eos.unit_mass,yt[1]*(eos.eosCSS.unit_radius/eos.unit_radius)**2]
+            r = lsoda_ode(f,Preset_rtol,yt,xt,xf,eos)
             M=r.y[0]*eos.unit_mass/M_sun.value
             R=r.y[1]**0.5*eos.unit_radius
             return [M,R]
         elif(MRorMRBIT=='MRBIT'):
             yt=Integration_CSS(-np.log(pressure_center/eos.eosCSS.density_s),-np.log(eos.pressure_trans/eos.eosCSS.density_s),eos.eosCSS)[1:6]
+            yt[0:3]=[yt[0]*eos.eosCSS.unit_mass/eos.unit_mass,yt[1]*(eos.eosCSS.unit_radius/eos.unit_radius)**2,yt[2]*eos.eosCSS.unit_N/eos.unit_N]
             yt[4]-=eos.det_density/eos.density_s/yt[0]*4*np.pi*yt[1]**1.5
-            r = ode(f_complete).set_integrator('lsoda',rtol=Preset_rtol)
-            r.set_initial_value(yt, xt).set_f_params(eos)
-            r.integrate(xf)
+            r = lsoda_ode(f_complete,Preset_rtol,yt,xt,xf,eos)
             M=r.y[0]*eos.unit_mass/M_sun.value
             R=r.y[1]**0.5*eos.unit_radius
             beta=r.y[0]/R*eos.unit_radius
@@ -155,24 +130,19 @@ def MassRadius_transition(pressure_center,Preset_Pressure_final,Preset_rtol,MRor
 def Mass_transition_formax(pressure_center,Preset_Pressure_final,Preset_rtol,eos):
     if(pressure_center[0]<=0):
         return 0
-    print pressure_center[0],eos.density_s
-    x0 = -np.log(pressure_center/eos.density_s)
+    x0 = -np.log(pressure_center[0]/eos.density_s)
     xf = x0-np.log(Preset_Pressure_final)
-    if(pressure_center<=eos.pressure_trans):
-        r = ode(f).set_integrator('lsoda',rtol=Preset_rtol)
-        r.set_initial_value([0,0], x0).set_f_params(eos)
-        r.integrate(xf)
-        print r.y[0]*eos.unit_mass/M_sun.value
+    if(pressure_center[0]<=eos.pressure_trans):
+        r = lsoda_ode(f,Preset_rtol,[0.,0.],x0,xf,eos)
         return -r.y[0]*eos.unit_mass/M_sun.value
     else:
         xt = -np.log(eos.pressure_trans/eos.density_s)
-        #xf = xt-np.log(Preset_Pressure_final)
-        yt=Integration_CSS(-np.log(pressure_center/eos.eosCSS.density_s),-np.log(eos.pressure_trans/eos.eosCSS.density_s),eos.eosCSS)[1:3]
-        r = ode(f).set_integrator('lsoda',rtol=Preset_rtol)
-        r.set_initial_value(yt, xt).set_f_params(eos)
-        r.integrate(xf)
-        print r.y[0]*eos.unit_mass/M_sun.value
+        yt=Integration_CSS(-np.log(pressure_center[0]/eos.eosCSS.density_s),-np.log(eos.pressure_trans/eos.eosCSS.density_s),eos.eosCSS)[1:3]
+        yt[0:2]=[yt[0]*eos.eosCSS.unit_mass/eos.unit_mass,yt[1]*(eos.eosCSS.unit_radius/eos.unit_radius)**2]
+        r = lsoda_ode(f,Preset_rtol,yt,xt,xf,eos)
         return -r.y[0]*eos.unit_mass/M_sun.value
+
+
 
 # =============================================================================
 # from eos_class import EOS_BPSwithPolyCSS
@@ -180,23 +150,26 @@ def Mass_transition_formax(pressure_center,Preset_Pressure_final,Preset_rtol,eos
 # baryon_density1=1.85*0.16
 # baryon_density2=3.74*0.16
 # baryon_density3=7.4*0.16
-# pressure1=20.0
-# pressure2=600.
+# pressure1=10.0
+# pressure2=1380.0636487185834 # 970.6198744112277 #682.6518048474277
 # pressure3=1000.
-# pressure_trans=40.
-# det_density=200.
-# cs2=3./12
+# pressure_trans=30.7306534369376
+# det_density=0.
+# cs2=1.0/3.0
 # args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans,det_density,cs2]
 # a=EOS_BPSwithPolyCSS(args)
-# #print MassRadius_transition(800,1e-7,1e-5,'MRBIT',a)
-# print Mass_transition_formax([800],1e-7,1e-5,a)
+# 
+# r=lsoda_ode(f_complete,1e-05,[ 0.00958278,0.00940618,0.0098774,0.3004633,1.78656011],1.6048791890424137,19.259162512385217,a)
 # =============================================================================
+
+#print MassRadius(61.37455071231708,1e-7,1e-5,'MRBIT',a)
+#print MassRadius(61.37455071231708,1e-7,1e-5,'MR',a)
 
 
 # =============================================================================
 # #print MassRadius(300,1e-7,1e-2,'MRBIT',a)150
 # from eos_class import EOS_CSS
-# abb=EOS_CSS([150,0,0.16,12./12])
+# abb=EOS_CSS([150,0,0.16,4./12])
 # from tov_CSS import MassRadius_CSS
 # pc=3.034*150
 # print('xxxxxxxxxxxxx')
@@ -206,8 +179,10 @@ def Mass_transition_formax(pressure_center,Preset_Pressure_final,Preset_rtol,eos
 # abc=MassRadius_CSS(pc,'MRBIT',abb)
 # print(abc)
 # print('xxxxxxxxxxxxx')
-# #print(Integration_CSS(-np.log(pc/abb.density_s),np.log(2)-np.log(pc/abb.density_s),abb))
-# 
+# print(Integration_CSS(-np.log(pc/abb.density_s),np.log(2)-np.log(pc/abb.density_s),abb))
+# =============================================================================
+
+# =============================================================================
 # from rk4 import rk4
 # Preset_Pressure_final=1e-7
 # value=200
