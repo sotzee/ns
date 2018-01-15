@@ -23,6 +23,7 @@ baryon_density2 = 3.74*0.16
 baryon_density3 = 7.4*0.16
 
 #EoS parameter for Hybrid star
+Calculation_mode='hybrid'
 from fractions import Fraction
 pressure1=20.0 #Mevfm-3
 Preset_gamma2 = [121,2.0,10.0] #[num,low,high]polytropic index between pressure1 and pressure_trans.

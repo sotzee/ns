@@ -16,6 +16,7 @@ baryon_density2 = 3.74*0.16
 baryon_density3 = 7.4*0.16
 
 #EoS parameter for Hadronic star
+Calculation_mode='hadronic'
 Preset_pressure1=[13*5+1,7.,20.] ##[num,lower_bound,up_bound] 
 Preset_pressure2=[50,100.] #[num,lower_bound] 
 Preset_pressure3=[70,150.] #[num,lower_bound]

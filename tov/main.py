@@ -101,13 +101,13 @@ def main(processInput):
 
 if __name__ == '__main__':
     import sys
-    print "Running Program: " , str(sys.argv[0])
-    print "Configuration file: " , str(sys.argv[1])
-    print "Calculation_mode: " , str(sys.argv[2])
-    print "Hybrid_sampling: " , str(sys.argv[3])
+    print("Running Program: " + str(sys.argv[0]))
+    print("Configuration file: " + str(sys.argv[1]))
     config=__import__(sys.argv[1])
-    Calculation_mode=sys.argv[2]
-    Hybrid_sampling=sys.argv[3]
+    Calculation_mode=config.Calculation_mode
+    Hybrid_sampling=sys.argv[2]
+    print("Calculation_mode: " + Calculation_mode)
+    print("Hybrid_sampling: " + Hybrid_sampling)
     sampling = Calculation_mode+'_'+Hybrid_sampling
     name_dat_para='parameter_'+sampling+'.dat'
     name_dat_main='parameter_'+sampling+'_main.dat'
@@ -147,7 +147,7 @@ if __name__ == '__main__':
         for i in range(np.size(parameter)/np.size(parameter[0])):
             parameter[i]=EOS_item([config.baryon_density0,parameter[i][0],config.baryon_density1,parameter[i][1],config.baryon_density2,parameter[i][3],config.baryon_density3])
     else:
-        print 'Calculation_mode not found!'
+        print('Calculation_mode not found!')
     main(processInput)
 #################################################
 #setParameter(xxx) returns parameter[x][x]
