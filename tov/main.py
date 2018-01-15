@@ -10,10 +10,11 @@ from joblib import Parallel, delayed
 from multiprocessing import cpu_count
 from time import time
 import pickle
-from tov_f import MassRadius_transition,MassRadius
-from FindMaxmass import Maxmass_transiton,Maxmass
 from Find_OfMass import Properity_ofmass
 import warnings
+
+Preset_rtol = 1e-4
+
 #################################################
 #setParameter(xxx) returns parameter[x][x]
 #parameter[x][0] = pressure1
@@ -28,37 +29,19 @@ import warnings
 #################################################
 #hardronic parameter
 #parameter.append([pressure1,pressure2,gamma2,pressure3,gamma3,0.0,0.0,0.0,0.0])
-from eos_class import EOS_BPSwithPolyCSS,EOS_BPSwithPoly,EOS_item
-def processInput_hybrid(x):
-    eos=EOS_BPSwithPolyCSS(parameter[x].args)
-    warnings.filterwarnings('error')
-    try:
-        print parameter[x].args
-        processOutput_maxmass = Maxmass_transiton(config.Preset_Pressure_final,Preset_rtol,eos)
-    except RuntimeWarning:
-        print 'Runtimewarning happens at:'
-        print parameter[x].args
-        processOutput_maxmass=[0,0,0]
-    [MaximumMass_pressure_center,MaximumMass,transition_type]=processOutput_maxmass
-    if(config.TurnOn_radius_onepointfour & (MaximumMass>1.4)):
-        processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,MaximumMass_pressure_center,MassRadius_transition,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
-    else:
-        processOutput_onepointfour=[0,0,0,0,0,0,0]
-    processOutput=processOutput_maxmass+processOutput_onepointfour
-    return processOutput
-
-def processInput_hadronic(x):
-    eos=EOS_BPSwithPoly(parameter[x].args)
+from eos_class import EOS_item
+def processInput(x):
+    eos=config.eos_config(parameter[x].args)
     warnings.filterwarnings('error')
     try:    
-        processOutput_maxmass = Maxmass(config.Preset_Pressure_final,config.value,eos)
+        processOutput_maxmass = config.eos_Maxmass(config.Preset_Pressure_final,Preset_rtol,eos)
     except RuntimeWarning:
         print 'Runtimewarning happens at:'
         print parameter[x].args
         processOutput_maxmass=[0,0,0]
     [MaximumMass_pressure_center,MaximumMass,transition_type]=processOutput_maxmass
     if(config.TurnOn_radius_onepointfour & (MaximumMass>1.4)):
-        processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,MaximumMass_pressure_center,MassRadius,config.Preset_Pressure_final,config.value,config.Preset_Pressure_final_index,eos)
+        processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,MaximumMass_pressure_center,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
     else:
         processOutput_onepointfour=[0,0,0,0,0,0,0]
     processOutput=processOutput_maxmass+processOutput_onepointfour
@@ -83,11 +66,11 @@ def main(processInput):
     f_log=open('./'+dir_name+'/'+name_log,'wb')
     if(Calculation_mode=='hybrid'):
         if(Hybrid_sampling=='low_trans_complete'):
-            f_log.write('Preset_pressure1=%s    Preset_cs2=%s\n'% (config.Preset_pressure1,config.Preset_cs2))
+            f_log.write('Preset_rtol=%s\n Preset_pressure1=%s    Preset_cs2=%s\n'% (Preset_rtol,config.Preset_pressure1,config.Preset_cs2))
         else:
-            f_log.write('pressure1=%f    cs2=%f\n'% (config.pressure1,config.cs2))
+            f_log.write('Preset_rtol=%s\n pressure1=%f    cs2=%f\n'% (Preset_rtol,config.pressure1,config.cs2))
     elif(Calculation_mode=='hadronic'):
-        f_log.write('value=%s\n Preset_pressure1=%s\n Preset_pressure2=%s \n Preset_pressure3=%s \n'% (config.value,config.Preset_pressure1,config.Preset_pressure2,config.Preset_pressure3))
+        f_log.write('Preset_rtol=%s\n Preset_pressure1=%s\n Preset_pressure2=%s \n Preset_pressure3=%s \n'% (Preset_rtol,config.Preset_pressure1,config.Preset_pressure2,config.Preset_pressure3))
     f_log.write('%d cores are being used.\n'% num_cores)
     for ii in range(int(config.start_from*complete_set),complete_set):
         Output=Parallel(n_jobs=num_cores)(delayed(processInput)(i+num_cores*ii) for i in range(num_cores))
@@ -132,7 +115,6 @@ if __name__ == '__main__':
     from OStools import ensure_dir
     if(Calculation_mode=='hybrid'):
         from setParameter import setParameter,setParameter_low_trans_complete
-        Preset_rtol = 1e-4
         if(Hybrid_sampling=='normal_trans'):
             Preset_gamma2 = config.Preset_gamma2 #[num,low,high]polytropic index between pressure1 and pressure_trans.
         elif(Hybrid_sampling=='hardest_before_trans'):
@@ -157,7 +139,6 @@ if __name__ == '__main__':
             parameter=setParameter(config.baryon_density0,config.pressure1,config.baryon_density1,config.baryon_density2,Preset_gamma2,config.Preset_num_pressure_trans,config.Preset_det_density,config.cs2,Hybrid_sampling)
         for i in range(np.size(parameter)/np.size(parameter[0])):
             parameter[i]=EOS_item([config.baryon_density0,parameter[i][0],config.baryon_density1,parameter[i][1],config.baryon_density2,config.pressure3,config.baryon_density3,parameter[i][3],parameter[i][6],parameter[i][8]])
-        main(processInput_hybrid)
     elif(Calculation_mode=='hadronic'):
         from setParameter import setParameter_hadronic
         dir_name='data_hadronic'
@@ -165,9 +146,9 @@ if __name__ == '__main__':
         parameter=setParameter_hadronic(config.baryon_density0,config.Preset_pressure1,config.baryon_density1,config.Preset_pressure2,config.baryon_density2,config.Preset_pressure3,config.baryon_density3)
         for i in range(np.size(parameter)/np.size(parameter[0])):
             parameter[i]=EOS_item([config.baryon_density0,parameter[i][0],config.baryon_density1,parameter[i][1],config.baryon_density2,parameter[i][3],config.baryon_density3])
-        main(processInput_hadronic)
     else:
         print 'Calculation_mode not found!'
+    main(processInput)
 #################################################
 #setParameter(xxx) returns parameter[x][x]
 #parameter[x][0] = pressure1

@@ -16,7 +16,7 @@ from tov_f import Mass_transition_formax,Mass_formax
 # 3 ~ absent two peaks
 # 4 ~ continuous two peaks
 
-def Maxmass_transiton(Preset_Pressure_final,Preset_rtol,eos):
+def Maxmass_transition(Preset_Pressure_final,Preset_rtol,eos):
     result1=opt.minimize(Mass_transition_formax,800.0,tol=0.001,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
     result2=opt.minimize(Mass_transition_formax,eos.pressure_trans+1.,tol=0.001,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
     #print result1.x[0],result1.fun
@@ -42,7 +42,7 @@ def Maxmass_transiton(Preset_Pressure_final,Preset_rtol,eos):
                 return [result2.x[0],-result2.fun,4]
 
 def Maxmass(Preset_Pressure_final,Preset_rtol,eos):
-    result=opt.mimize(Mass_formax,100.0,tol=0.001,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
+    result=opt.minimize(Mass_formax,100.0,tol=0.001,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
     return [result.x[0],-result.fun,0]
 
 

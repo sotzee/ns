@@ -31,8 +31,9 @@ Preset_num_pressure_trans=100 #Mevfm-4
 Preset_det_density = [61,0.0,1.0]  #{det_density/density_trans}[num,low,high]reduced density change at density_trans.
 cs2=Fraction('3/3') #sound speed square
 
-
-#EoS parameter for Hadronic star
-Preset_pressure1=[13*5+1,7.,20.] ##[num,lower_bound,up_bound] 
-Preset_pressure2=[50,100.] #[num,lower_bound] 
-Preset_pressure3=[70,150.] #[num,lower_bound] 
+from eos_class import EOS_BPSwithPolyCSS
+eos_config=EOS_BPSwithPolyCSS
+from FindMaxmass import Maxmass_transition
+eos_Maxmass=Maxmass_transition
+from tov_f import MassRadius_transition
+eos_MassRadius=MassRadius_transition
