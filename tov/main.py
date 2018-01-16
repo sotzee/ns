@@ -85,7 +85,7 @@ def main(processInput):
         Output=Parallel(n_jobs=leftover_num)(delayed(processInput)(i+num_cores*complete_set) for i in range(leftover_num))
         for i in range(leftover_num):
             if(Output[i][1]>1.4):
-                n=i+num_cores*ii
+                n=i+num_cores*complete_set
                 parameter[n].set_properity(Output[i])
                 parameter_main.append(parameter[n])
                 f_log.write(str(parameter[n].args)+str(parameter[n].properity)+'\n')
@@ -101,8 +101,8 @@ def main(processInput):
 
 if __name__ == '__main__':
     import sys
-    print("Running Program: " + str(sys.argv[0]))
-    print("Configuration file: " + str(sys.argv[1]))
+    print("Running Program: " + sys.argv[0])
+    print("Configuration file: " + sys.argv[1])
     config=__import__(sys.argv[1])
     Calculation_mode=config.Calculation_mode
     Hybrid_sampling=sys.argv[2]
