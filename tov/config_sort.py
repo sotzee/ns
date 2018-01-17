@@ -6,8 +6,6 @@ Created on Mon Jan 15 15:31:45 2018
 @author: sotzee
 """
 
-start_from=0
-
 
 name_satisfied='_2.0-'
 name_unsatisfied='_1.4-2.0'
