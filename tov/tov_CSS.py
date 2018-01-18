@@ -88,7 +88,7 @@ def Integration_CSS(x0_,xf_,eos):
             xf1_index=int(xf1_index_f)
             xf1_weight=(result[cs2_index][x0_index+1][xf1_index+1][0]-xf_)/(result[cs2_index][x0_index+1][xf1_index+1][0]-result[cs2_index][x0_index+1][xf1_index][0])
             if(xf1_weight>1):
-                xf1_weight==1.
+                xf1_weight=1.
             y=x0_weight*xf_weight*result[cs2_index][x0_index][xf_index]\
             +x0_weight*(1-xf_weight)*result[cs2_index][x0_index][xf_index+1]\
             +(1-x0_weight)*xf1_weight*result[cs2_index][x0_index+1][xf1_index]\
