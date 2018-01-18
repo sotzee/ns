@@ -8,7 +8,7 @@ Created on Thu Aug 10 10:32:52 2017
 #tov integral over log-p is used to calculate mass, momentum of initial and tidal
 Preset_Pressure_final = 1e-8
 Preset_Pressure_final_MR = 1e-8
-start_from = 0.754 #start_from=0 for calcuate all the parameter space
+start_from = 0 #start_from=0 for calcuate all the parameter space
 
 #tov integral over r is used to calculate radius only, since it uses build in RK45 method which cost time
 TurnOn_radius_onepointfour = True
