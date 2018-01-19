@@ -16,22 +16,7 @@ import warnings
 
 Preset_rtol = 1e-4
 
-#################################################
-#setParameter(xxx) returns parameter[x][x]
-#parameter[x][0] = pressure1
-#parameter[x][1] = pressure2
-#parameter[x][2] = gamma2
-#parameter[x][3] = pressure_trans
-#parameter[x][4] = density_trans
-#parameter[x][5] = pressure_trans/density_trans
-#parameter[x][6] = det_density_reduced*density_trans
-#parameter[x][7] = det_density_reduced
-#parameter[x][8] = cs2
-#################################################
-#hardronic parameter
-#parameter.append([pressure1,pressure2,gamma2,pressure3,gamma3,0.0,0.0,0.0,0.0])
-
-def processInput(x):
+def Calculation(x):
     eos=config.eos_config(parameter[x].args)
     warnings.filterwarnings('error')
     MaximumMass_pressure_center=parameter[x].properity[0]
@@ -41,6 +26,18 @@ def processInput(x):
         except RuntimeWarning:
             print('Runtimewarning happens at OfMass: '+str(ofmass_array[i]))
             print(parameter[x].args)
+    return parameter[x]
+
+def processInput(i,num_cores,complete_set):
+    timenow=time()
+    timebegin=timenow
+    timeprev=timenow
+    result=list()
+    for ii in range(complete_set):
+        result.append(Calculation(i+num_cores*ii))
+        timeprev=remainingTime(timebegin,timeprev,ii,config.start_from,complete_set)
+    return result
+
 
 def remainingTime(timebegin,timeprev,ii,start_from,complete_set):
     timenow=time()
@@ -54,26 +51,29 @@ def main(processInput):
     total_num = np.size(parameter)
     complete_set=np.int(total_num/num_cores)
     leftover_num=total_num-complete_set*num_cores
-    timenow=time()
-    timeprev=timenow
-    timebegin=timenow
+    timebegin=time()
+
     f_log=open('./'+dir_name+'/'+name_log,'wb')
     f_log.write("Calculation_mode: " + Calculation_mode)
     f_log.write('%d cores are being used.\n'% num_cores)
     f_log.write("OfMass array: " + sys.argv[3])
     f_log.write(ofmass_array)
     f_log.close()
-    for ii in range(int(config.start_from*complete_set),complete_set):
-        Parallel(n_jobs=num_cores)(delayed(processInput)(i+num_cores*ii) for i in range(num_cores))
-        timeprev=remainingTime(timebegin,timeprev,ii,config.start_from,complete_set)
-    if(leftover_num>0):
-        Parallel(n_jobs=leftover_num)(delayed(processInput)(i+num_cores*complete_set) for i in range(leftover_num))
-    timenow=time()
+
+    Output=Parallel(n_jobs=num_cores)(delayed(processInput)(i,num_cores,complete_set) for i in range(num_cores))
+    Output_leftover=Parallel(n_jobs=num_cores)(delayed(Calculation)(i+complete_set*num_cores) for i in range(leftover_num))
+    result=list()
+    for i in range(complete_set):
+        for ii in range(num_cores):
+            result.append(Output[ii][i])
+    for i in range(leftover_num):
+            result.append(Output_leftover[i])
+
     print('Completeness: 100%%#################################')
-    print('Total time cost: %.2f hours'%((timenow-timebegin)/3600))
+    print('Total time cost: %.2f hours'%((time()-timebegin)/3600))
 
     f1=open('./'+dir_name+'/'+name_dat_main+'_try','wb')
-    pickle.dump(parameter,f1)
+    pickle.dump(result,f1)
     f1.close()
     print('Congratulation! %s successfully saved!!!!!!!!!!!!!'%name_dat_main)
 
