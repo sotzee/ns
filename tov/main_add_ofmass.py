@@ -89,7 +89,7 @@ if __name__ == '__main__':
     print("OfMass array: " + sys.argv[3])
     sampling = Calculation_mode+'_'+Hybrid_sampling
     name_dat_para='parameter_'+sampling+'.dat'
-    name_dat_main='parameter_'+sampling+'_2.0-2.4.dat'
+    name_dat_main='sorted_'+sampling+'_2.0-2.4.dat'
     name_log='main_'+sampling+'_add_ofmass.log'
     if(Calculation_mode=='hybrid'):
         if(Hybrid_sampling=='low_trans_complete'):
