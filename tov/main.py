@@ -15,22 +15,8 @@ import warnings
 
 Preset_rtol = 1e-4
 
-#################################################
-#setParameter(xxx) returns parameter[x][x]
-#parameter[x][0] = pressure1
-#parameter[x][1] = pressure2
-#parameter[x][2] = gamma2
-#parameter[x][3] = pressure_trans
-#parameter[x][4] = density_trans
-#parameter[x][5] = pressure_trans/density_trans
-#parameter[x][6] = det_density_reduced*density_trans
-#parameter[x][7] = det_density_reduced
-#parameter[x][8] = cs2
-#################################################
-#hardronic parameter
-#parameter.append([pressure1,pressure2,gamma2,pressure3,gamma3,0.0,0.0,0.0,0.0])
 from eos_class import EOS_item
-def processInput(x):
+def Calculation(x):
     eos=config.eos_config(parameter[x].args)
     warnings.filterwarnings('error')
     try:    
@@ -47,6 +33,16 @@ def processInput(x):
     processOutput=processOutput_maxmass+processOutput_onepointfour
     return processOutput
 
+def processInput(i,num_cores,complete_set):
+    timenow=time()
+    timebegin=timenow
+    timeprev=timenow
+    result=list()
+    for ii in range(complete_set):
+        result.append(Calculation(i+num_cores*ii))
+        timeprev=remainingTime(timebegin,timeprev,ii,config.start_from,complete_set)
+    return result
+
 def remainingTime(timebegin,timeprev,ii,start_from,complete_set):
     timenow=time()
     print('Completeness: %.2f%%#################################'%(100.0*(1.0*ii/complete_set)))
@@ -59,10 +55,7 @@ def main(processInput):
     total_num = np.size(parameter)
     complete_set=np.int(total_num/num_cores)
     leftover_num=total_num-complete_set*num_cores
-    parameter_main=list()
-    timenow=time()
-    timeprev=timenow
-    timebegin=timenow
+    timebegin=time()
     f_log=open('./'+dir_name+'/'+name_log,'wb')
     if(Calculation_mode=='hybrid'):
         if(Hybrid_sampling=='low_trans_complete'):
@@ -72,27 +65,25 @@ def main(processInput):
     elif(Calculation_mode=='hadronic'):
         f_log.write('Preset_rtol=%s\n Preset_pressure1=%s\n Preset_pressure2=%s \n Preset_pressure3=%s \n'% (Preset_rtol,config.Preset_pressure1,config.Preset_pressure2,config.Preset_pressure3))
     f_log.write('%d cores are being used.\n'% num_cores)
-    for ii in range(int(config.start_from*complete_set),complete_set):
-        Output=Parallel(n_jobs=num_cores)(delayed(processInput)(i+num_cores*ii) for i in range(num_cores))
-        timeprev=remainingTime(timebegin,timeprev,ii,config.start_from,complete_set)
-        for i in range(num_cores):
-            if(Output[i][1]>1.4):
-                n=i+num_cores*ii
-                parameter[n].set_properity(Output[i])
-                parameter_main.append(parameter[n])
-                f_log.write(str(parameter[n].args)+str(parameter[n].properity)+'\n')
-    if(leftover_num>0):
-        Output=Parallel(n_jobs=leftover_num)(delayed(processInput)(i+num_cores*complete_set) for i in range(leftover_num))
-        for i in range(leftover_num):
-            if(Output[i][1]>1.4):
-                n=i+num_cores*complete_set
-                parameter[n].set_properity(Output[i])
-                parameter_main.append(parameter[n])
-                f_log.write(str(parameter[n].args)+str(parameter[n].properity)+'\n')
     f_log.close()
-    timenow=time()
+
+    Output=Parallel(n_jobs=num_cores)(delayed(processInput)(i,num_cores,complete_set) for i in range(num_cores))
+    Output_leftover=Parallel(n_jobs=num_cores)(delayed(Calculation)(i+complete_set*num_cores) for i in range(leftover_num))
+    parameter_main=list()
+    for i in range(complete_set):
+        for ii in range(num_cores):
+            if(Output[ii][i][1]>1.4):
+                n=ii+i*num_cores
+                parameter[n].set_properity(Output[ii][i])
+                parameter_main.append(parameter[n])
+    for i in range(leftover_num):
+        if(Output_leftover[i][1]>1.4):
+            n=i+complete_set*num_cores
+            parameter[n].set_properity(Output_leftover[i])
+            parameter_main.append(parameter[n])
+
     print('Completeness: 100%%#################################')
-    print('Total time cost: %.2f hours'%((timenow-timebegin)/3600))
+    print('Total time cost: %.2f hours'%((time()-timebegin)/3600))
 
     f1=open('./'+dir_name+'/'+name_dat_main,'wb')
     pickle.dump(parameter_main,f1)
