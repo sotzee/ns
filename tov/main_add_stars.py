@@ -11,8 +11,8 @@ from joblib import Parallel, delayed
 from multiprocessing import cpu_count
 from time import time
 import pickle
-from tov_f import Mass_transition_formax
-import scipy.optimize as opt
+#from tov_f import Mass_transition_formax
+#import scipy.optimize as opt
 from distribution_centerdensity import centerdensity
 import warnings
 
@@ -21,16 +21,22 @@ Preset_rtol = 1e-4
 def Calculation(x):
     eos=config.eos_config(parameter[x].args)
     warnings.filterwarnings('error')
-    if(parameter[x].properity[2]>2):
-        result1=opt.minimize(Mass_transition_formax,800.0,tol=0.001,args=(config.Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
-        properity_new=parameter[x].properity[0:3]+[result1.x[0]]+parameter[x].properity[3:]
-        parameter[x].set_properity(properity_new)
-        Maximum_pressure_center=result1.x[0]
-    else:
-        Maximum_pressure_center=parameter[x].properity[0]
-        properity_new=parameter[x].properity[0:3]+[Maximum_pressure_center]+parameter[x].properity[3:]
-        parameter[x].set_properity(properity_new)
-    ofpc_array=centerdensity(10,parameter[x].properity[3],Maximum_pressure_center,config.concentration,config.number_per_parameter)
+
+# =============================================================================
+#     if(parameter[x].properity[2]>2):
+#         result1=opt.minimize(Mass_transition_formax,800.0,tol=0.001,args=(config.Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
+#         properity_new=parameter[x].properity[0:3]+[result1.x[0]]+parameter[x].properity[3:]
+#         parameter[x].set_properity(properity_new)
+#         Maximum_pressure_center=result1.x[0]
+#     else:
+#         Maximum_pressure_center=parameter[x].properity[0]
+#         properity_new=parameter[x].properity[0:3]+[Maximum_pressure_center]+parameter[x].properity[3:]
+#         parameter[x].set_properity(properity_new)
+#     ofpc_array=centerdensity(10,parameter[x].properity[3],Maximum_pressure_center,config.concentration,config.number_per_parameter)
+# =============================================================================
+
+    ofpc_array=centerdensity(10,parameter[x].properity[4],parameter[x].properity[3],config.concentration,config.number_per_parameter)
+ 
     for i in range(np.size(ofpc_array)):
         try:
             parameter[x].add_star([ofpc_array[i]]+config.eos_MassRadius(ofpc_array[0],config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos))

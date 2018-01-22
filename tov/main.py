@@ -24,8 +24,8 @@ def Calculation(x):
     except RuntimeWarning:
         print 'Runtimewarning happens at:'
         print parameter[x].args
-        processOutput_maxmass=[0,0,0]
-    [MaximumMass_pressure_center,MaximumMass,transition_type]=processOutput_maxmass
+        processOutput_maxmass=[0,0,0,0]
+    [MaximumMass_pressure_center,MaximumMass,transition_type,Maximum_pressure_center]=processOutput_maxmass
     if(config.TurnOn_radius_onepointfour & (MaximumMass>1.4)):
         processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,MaximumMass_pressure_center,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
     else:
