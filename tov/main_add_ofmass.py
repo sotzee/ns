@@ -72,7 +72,7 @@ def main(processInput):
     print('Completeness: 100%%#################################')
     print('Total time cost: %.2f hours'%((time()-timebegin)/3600))
 
-    f1=open('./'+dir_name+'/'+name_dat_main+'_try','wb')
+    f1=open('./'+dir_name+'/'+name_dat_main+'_addofmass','wb')
     pickle.dump(result,f1)
     f1.close()
     print('Congratulation! %s successfully saved!!!!!!!!!!!!!'%name_dat_main)
