@@ -5,12 +5,12 @@ import pickle
 from astropy.constants import M_sun
 from scipy.constants import m_n
 
-N_x0=1000
-x0=-np.linspace(np.log(100),np.log(0.01),N_x0)
+N_x0=2000
+x0=-np.linspace(np.log(200),np.log(0.01),N_x0)
 N_cs2=10
 cs2=np.linspace(3,12,N_cs2)/12
 Preset_rtol=1e-5
-N=1000
+N=2000
 Preset_Pressure_final=1e-7
 dp=np.exp(-x0)/N
 #dx=-np.log(Preset_Pressure_final)/N
@@ -87,8 +87,9 @@ def Integration_CSS(x0_,xf_,eos):
             xf1_index_f=(np.exp(-result[cs2_index][x0_index+1][0][0])-np.exp(-xf_))/dp[x0_index+1]
             xf1_index=int(xf1_index_f)
             xf1_weight=(result[cs2_index][x0_index+1][xf1_index+1][0]-xf_)/(result[cs2_index][x0_index+1][xf1_index+1][0]-result[cs2_index][x0_index+1][xf1_index][0])
-            if(xf1_weight>1):
+            if(xf1_weight>1 or xf1_index<0):
                 xf1_weight=1.
+                xf1_index=0
             y=x0_weight*xf_weight*result[cs2_index][x0_index][xf_index]\
             +x0_weight*(1-xf_weight)*result[cs2_index][x0_index][xf_index+1]\
             +(1-x0_weight)*xf1_weight*result[cs2_index][x0_index+1][xf1_index]\
