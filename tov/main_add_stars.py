@@ -17,6 +17,7 @@ from distribution_centerdensity import centerdensity
 import warnings
 
 Preset_rtol = 1e-4
+number_per_parameter=10
 
 def Calculation(x):
     eos=config.eos_config(parameter[x].args)
@@ -32,10 +33,10 @@ def Calculation(x):
 #         Maximum_pressure_center=parameter[x].properity[0]
 #         properity_new=parameter[x].properity[0:3]+[Maximum_pressure_center]+parameter[x].properity[3:]
 #         parameter[x].set_properity(properity_new)
-#     ofpc_array=centerdensity(10,parameter[x].properity[3],Maximum_pressure_center,config.concentration,config.number_per_parameter)
+#     ofpc_array=centerdensity(10,parameter[x].properity[3],Maximum_pressure_center,config.concentration,number_per_parameter)
 # =============================================================================
 
-    ofpc_array=centerdensity(10,parameter[x].properity[4],parameter[x].properity[3],config.concentration,config.number_per_parameter)
+    ofpc_array=centerdensity(10,parameter[x].properity[4],parameter[x].properity[3],config.concentration,number_per_parameter)
  
     for i in range(np.size(ofpc_array)):
         try:

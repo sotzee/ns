@@ -5,12 +5,12 @@ import pickle
 from astropy.constants import M_sun
 from scipy.constants import m_n
 
-N_x0=2000
+N_x0=1000
 x0=-np.linspace(np.log(200),np.log(0.01),N_x0)
 N_cs2=10
 cs2=np.linspace(3,12,N_cs2)/12
 Preset_rtol=1e-5
-N=2000
+N=1000
 Preset_Pressure_final=1e-7
 dp=np.exp(-x0)/N
 #dx=-np.log(Preset_Pressure_final)/N

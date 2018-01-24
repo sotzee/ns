@@ -14,7 +14,6 @@ start_from = 0 #start_from=0 for calcuate all the parameter space
 TurnOn_radius_onepointfour = True
 Preset_pressure_center_low = 1.0         # this parameter is only for setting boundary for searching 1.4 solar mass stars
 Preset_Pressure_final_index = 1          # equal 2 means Preset_Pressure_final for solving radius is Preset_Pressure_final**2, which include more low density area
-number_per_parameter = 5
 concentration = 2
 
 baryon_density0 = 0.16/2.7
