@@ -25,9 +25,17 @@ def Calculation(x):
         print 'Runtimewarning happens at:'
         print parameter[x].args
         processOutput_maxmass=[0,0,0,0]
-    [MaximumMass_pressure_center,MaximumMass,transition_type,Maximum_pressure_center]=processOutput_maxmass
-    if(config.TurnOn_radius_onepointfour & (MaximumMass>1.4)):
-        processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,MaximumMass_pressure_center,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
+    [MaximumMass_pressure_center,MaximumMass,transition_type,Maximum_pressure_center,Mass_transition]=processOutput_maxmass
+    
+    if(config.TurnOn_radius_onepointfour):
+        if(Mass_transition==0): #hadronic eos with no transition
+            processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,MaximumMass_pressure_center,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
+        if(Mass_transition>1.4):
+            processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,eos.pressure_trans,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
+        elif(MaximumMass>1.4):
+            processOutput_onepointfour = Properity_ofmass(1.4,eos.pressure_trans,MaximumMass_pressure_center,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
+        else:
+            [0,0,0,0,0,0,0]
     else:
         processOutput_onepointfour=[0,0,0,0,0,0,0]
     processOutput=processOutput_maxmass+processOutput_onepointfour

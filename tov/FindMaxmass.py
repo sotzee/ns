@@ -26,24 +26,24 @@ def Maxmass_transition(Preset_Pressure_final,Preset_rtol,eos):
         result2.x[0]=eos.pressure_trans
         result2.fun=Mass_trans
         if(np.abs(result2.x[0]-result1.x[0])<0.01*(result1.x[0]+result2.x[0]) and np.abs(result2.fun-result1.fun)<-0.0001*(result1.fun+result2.fun)):
-            return [eos.pressure_trans,-Mass_trans,2,result1.x[0]]
+            return [eos.pressure_trans,-Mass_trans,2,result1.x[0],Mass_trans]
         else:
             if(result1.fun<result2.fun):
-                return [result1.x[0],-result1.fun,3,result1.x[0]]
+                return [result1.x[0],-result1.fun,3,result1.x[0],Mass_trans]
             else:
-                return [result2.x[0],-result2.fun,3,result1.x[0]]
+                return [result2.x[0],-result2.fun,3,result1.x[0],Mass_trans]
     else:
         if(np.abs(result2.x[0]-result1.x[0])<0.01*(result1.x[0]+result2.x[0]) and np.abs(result2.fun-result1.fun)<-0.0001*(result1.fun+result2.fun)):
             return [result2.x[0],-result2.fun,1,result1.x[0]]
         else:
             if(result1.fun<result2.fun):
-                return [result1.x[0],-result1.fun,4,result1.x[0]]
+                return [result1.x[0],-result1.fun,4,result1.x[0],Mass_trans]
             else:
-                return [result2.x[0],-result2.fun,4,result1.x[0]]
+                return [result2.x[0],-result2.fun,4,result1.x[0],Mass_trans]
 
 def Maxmass(Preset_Pressure_final,Preset_rtol,eos):
     result=opt.minimize(Mass_formax,100.0,tol=0.001,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
-    return [result.x[0],-result.fun,0]
+    return [result.x[0],-result.fun,0,result.x[0],0]
 
 
 # =============================================================================
