@@ -126,7 +126,7 @@ def MassRadius_transition(pressure_center,Preset_Pressure_final,Preset_rtol,MRor
             M=r.y[0]*eos.unit_mass/M_sun.value
             return M
         if(MRorMRBIT=='B'):
-            yt=Integration_CSS(-np.log(pressure_center/eos.eosCSS.density_s),-np.log(eos.pressure_trans/eos.eosCSS.density_s),eos.eosCSS)[1:3]
+            yt=Integration_CSS(-np.log(pressure_center/eos.eosCSS.density_s),-np.log(eos.pressure_trans/eos.eosCSS.density_s),eos.eosCSS)[1:4]
             yt[0:3]=[yt[0]*eos.eosCSS.unit_mass/eos.unit_mass,yt[1]*(eos.eosCSS.unit_radius/eos.unit_radius)**2,yt[2]*eos.eosCSS.unit_N/eos.unit_N]
             r = lsoda_ode(f_baryon_number,Preset_rtol,yt,xt,xf,eos)
             M_binding=r.y[2]*eos.unit_N*m_n/M_sun.value
@@ -169,13 +169,11 @@ def Mass_transition_formax(pressure_center,Preset_Pressure_final,Preset_rtol,eos
         r = lsoda_ode(f,Preset_rtol,yt,xt,xf,eos)
     return -r.y[0]*eos.unit_mass/M_sun.value
 
-# =============================================================================
-# from eos_class import EOS_BPSwithPolyCSS
-# #args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans,det_density,cs2]
-# from fractions import Fraction
-# a=EOS_BPSwithPolyCSS([0.059259259259259255, 16.0, 0.29600000000000004, 267.2510854860387, 0.5984, 5000.0, 1.1840000000000002, 51.02970970539573, 410.826065399642474, Fraction(1, 1)])
-# print MassRadius_transition(52.02970970539573,1e-8,1e-4,'MRBIT',a)
-# =============================================================================
+from eos_class import EOS_BPSwithPolyCSS
+#args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans,det_density,cs2]
+from fractions import Fraction
+a=EOS_BPSwithPolyCSS([0.059259259259259255, 16.0, 0.29600000000000004, 267.2510854860387, 0.5984, 5000.0, 1.1840000000000002, 51.02970970539573, 410.826065399642474, Fraction(1, 1)])
+print MassRadius_transition(52.02970970539573,1e-8,1e-4,'MRBIT',a)
 
 #print MassRadius(61.37455071231708,1e-7,1e-5,'MRBIT',a)
 #print MassRadius(61.37455071231708,1e-7,1e-5,'MR',a)
