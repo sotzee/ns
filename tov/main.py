@@ -27,7 +27,8 @@ def Calculation(x):
         if(processOutput_maxmass_star_right[3]<processOutput_maxmass_star_left[3]):
             processOutput_star_after_peak=Properity_ofbindingmass(processOutput_maxmass_star_right[3],MaximumMass_pressure_center+1,processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
         else:#become black hole after first peak
-            processOutput_star_after_peak[0,0,0,0,0,0,0,0]
+            print processOutput_maxmass_star_right[3],processOutput_maxmass_star_left[3]
+            processOutput_star_after_peak=[0,0,0,0,0,0,0,0]
     elif(transition_type>0):#transition type 1,2 only have one peak
         #processOutput_maxmass_star=[MaximumMass_pressure_center]+config.eos_MassRadius(MaximumMass_pressure_center,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
         processOutput_maxmass_star_left=[0,0,0,0,0,0,0,0]
@@ -53,7 +54,7 @@ def Calculation(x):
         processOutput_onepointfour=[0,0,0,0,0,0,0,0]
         processOutput_onepointfour_quark=[0,0,0,0,0,0,0,0]
     if(transition_type>0):
-        processOutput=processOutput_maxmass[0:3]+processOutput_onepointfour+processOutput_onepointfour_quark+processOutput_maxmass_star_left+processOutput_maxmass_star_right
+        processOutput=processOutput_maxmass[0:3]+processOutput_onepointfour+processOutput_onepointfour_quark+processOutput_maxmass_star_left+processOutput_maxmass_star_right+processOutput_star_after_peak
     else:
         processOutput=processOutput_maxmass[0:3]+processOutput_onepointfour
     return processOutput
