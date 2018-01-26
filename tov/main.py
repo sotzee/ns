@@ -74,7 +74,7 @@ def processInput(i,num_cores,complete_set):
     timebegin=timenow
     timeprev=timenow
     result=list()
-    for ii in range(complete_set):
+    for ii in range(int(config.start_from*complete_set),complete_set):
         result.append(Calculation(i+num_cores*ii))
         timeprev=remainingTime(timebegin,timeprev,ii,config.start_from,complete_set)
     return result
@@ -106,7 +106,7 @@ def main(processInput):
     Output=Parallel(n_jobs=num_cores)(delayed(processInput)(i,num_cores,complete_set) for i in range(num_cores))
     Output_leftover=Parallel(n_jobs=num_cores)(delayed(Calculation)(i+complete_set*num_cores) for i in range(leftover_num))
     parameter_main=list()
-    for i in range(complete_set):
+    for i in range(np.size(Output[0])/np.size(Output[0][0])):
         for ii in range(num_cores):
             if(Output[ii][i][1]>1.4):
                 n=ii+i*num_cores
