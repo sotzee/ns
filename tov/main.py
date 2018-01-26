@@ -12,22 +12,26 @@ from time import time
 import pickle
 from Find_OfMass import Properity_ofmass
 from Find_Ofbindingmass import Properity_ofbindingmass
+
 Preset_rtol = 1e-4
 
 from eos_class import EOS_item
 def Calculation(x):
+    t1=time()
     eos=config.eos_config(parameter[x].args)
     processOutput_maxmass = config.eos_Maxmass(config.Preset_Pressure_final,Preset_rtol,eos)
     [transition_type,MaximumMass_pressure_center,MaximumMass,Left_pressure_center,Left_Mass,Right_pressure_center,Right_Mass]=processOutput_maxmass
+    t2=time()
     if(transition_type>2):#transition type 3,4 have two peaks
         #processOutput_maxmass_star=[MaximumMass_pressure_center]+config.eos_MassRadius(MaximumMass_pressure_center,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
         processOutput_maxmass_star_left=[Left_pressure_center]+config.eos_MassRadius(Left_pressure_center,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
         processOutput_maxmass_star_right=[Right_pressure_center]+config.eos_MassRadius(Right_pressure_center,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
         #processOutput_star_trans=[eos.pressure_trans]+config.eos_MassRadius(eos.pressure_trans,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
-        if(processOutput_maxmass_star_right[4]<processOutput_maxmass_star_left[4]):
-            print eos.args
-            print processOutput_maxmass_star_left,processOutput_maxmass_star_right
-            processOutput_star_after_peak=Properity_ofbindingmass(processOutput_maxmass_star_right[4],processOutput_maxmass_star_right[0]+1,processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
+        if(processOutput_maxmass_star_left[4]>processOutput_maxmass_star_right[4]):
+            for det_pc in [1.,2.,5.,10.,20.,50.]:
+                if(config.eos_MassRadius(Right_pressure_center+det_pc,config.Preset_Pressure_final,Preset_rtol,'B',eos)<processOutput_maxmass_star_right[4]):
+                    processOutput_star_after_peak=Properity_ofbindingmass(processOutput_maxmass_star_right[4],processOutput_maxmass_star_right[0]+det_pc,processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
+
         else:#become black hole after first peak
             #print processOutput_maxmass_star_right[3],processOutput_maxmass_star_left[3]
             processOutput_star_after_peak=[0,0,0,0,0,0,0,0]
@@ -39,6 +43,7 @@ def Calculation(x):
         #processOutput_star_trans=[eos.pressure_trans]+config.eos_MassRadius(eos.pressure_trans,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
     else:#transition type 0 have no transition
         pass
+    t3=time()
     if(config.TurnOn_radius_onepointfour and MaximumMass>1.4):
         if(transition_type<3):
             processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,MaximumMass_pressure_center,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
@@ -55,10 +60,13 @@ def Calculation(x):
     else:
         processOutput_onepointfour=[0,0,0,0,0,0,0,0]
         processOutput_onepointfour_quark=[0,0,0,0,0,0,0,0]
+    t4=time()
     if(transition_type>0):
         processOutput=processOutput_maxmass[0:3]+processOutput_onepointfour+processOutput_onepointfour_quark+processOutput_maxmass_star_left+processOutput_maxmass_star_right+processOutput_star_after_peak
     else:
         processOutput=processOutput_maxmass[0:3]+processOutput_onepointfour
+    t5=time()
+    print 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',t2-t1,t3-t2,t4-t3,t5-t4
     return processOutput
 
 def processInput(i,num_cores,complete_set):
