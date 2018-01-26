@@ -169,11 +169,13 @@ def Mass_transition_formax(pressure_center,Preset_Pressure_final,Preset_rtol,eos
         r = lsoda_ode(f,Preset_rtol,yt,xt,xf,eos)
     return -r.y[0]*eos.unit_mass/M_sun.value
 
-from eos_class import EOS_BPSwithPolyCSS
-#args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans,det_density,cs2]
-from fractions import Fraction
-a=EOS_BPSwithPolyCSS([0.059259259259259255, 16.0, 0.29600000000000004, 267.2510854860387, 0.5984, 5000.0, 1.1840000000000002, 51.02970970539573, 410.826065399642474, Fraction(1, 1)])
-print MassRadius_transition(52.02970970539573,1e-8,1e-4,'MRBIT',a)
+# =============================================================================
+# from eos_class import EOS_BPSwithPolyCSS
+# #args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans,det_density,cs2]
+# from fractions import Fraction
+# a=EOS_BPSwithPolyCSS([0.059259259259259255, 16.0, 0.29600000000000004, 267.2510854860387, 0.5984, 5000.0, 1.1840000000000002, 51.02970970539573, 410.826065399642474, Fraction(1, 1)])
+# print MassRadius_transition(52.02970970539573,1e-8,1e-4,'MRBIT',a)
+# =============================================================================
 
 #print MassRadius(61.37455071231708,1e-7,1e-5,'MRBIT',a)
 #print MassRadius(61.37455071231708,1e-7,1e-5,'MR',a)
