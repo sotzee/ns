@@ -11,11 +11,12 @@ def f(x, y, eos):
     eps=eos.eosDensity(p_dimentionful)/eos.density_s
     if(y[1]==0):
         den=p/((eps+p)*(eps/3.0+p))
-        return np.array([np.sqrt(y[1])*eps*den,0.5/pi*den])
+        return np.array([0,0.5/pi*den])
     else:
-        den=p/((y[0]+4*pi*y[1]**1.5*p)*(eps+p))
-        rel=1-2*y[0]/y[1]**0.5
-        return np.array([4*pi*eps*y[1]**2*rel*den,2*y[1]**1.5*rel*den])
+        r=y[1]**0.5
+        den=p/((y[0]+4*pi*y[1]*r*p)*(eps+p))
+        rel=1-2*y[0]/r
+        return np.array([4*pi*eps*y[1]**2*rel*den,2*y[1]*r*rel*den])
 
 def f_baryon_number(x, y, eos):
     p=np.exp(-x)
@@ -24,15 +25,17 @@ def f_baryon_number(x, y, eos):
     baryondensity=eos.eosBaryonDensity(p_dimentionful)/eos.baryon_density_s
     if(y[1]==0):
         den=p/((eps+p)*(eps/3.0+p))
-        dmdx=np.sqrt(y[1])*eps*den
+        dmdx=0
         dr2dx=0.5/pi*den
-        dNdx=np.sqrt(y[1])*baryondensity*den
+        dNdx=0
     else:
-        den=p/((y[0]+4*pi*y[1]**1.5*p)*(eps+p))
-        rel=1-2*y[0]/y[1]**0.5
-        dmdx=4*pi*eps*y[1]**2*rel*den
-        dr2dx=2*y[1]**1.5*rel*den
-        dNdx=4*pi*y[1]**2*baryondensity*np.sqrt(rel)*den
+        r=y[1]**0.5
+        r4=y[1]**2
+        den=p/((y[0]+4*pi*y[1]*r*p)*(eps+p))
+        rel=1-2*y[0]/r
+        dmdx=4*pi*eps*r4*rel*den
+        dr2dx=2*y[1]*r*rel*den
+        dNdx=4*pi*r4*baryondensity*np.sqrt(rel)*den
     return np.array([dmdx,dr2dx,dNdx])
 
 def f_complete(x, y, eos):
@@ -43,23 +46,24 @@ def f_complete(x, y, eos):
     cs2=eos.eosCs2(p_dimentionful)
     if(y[1]==0):
         den=p/((eps+p)*(eps/3.0+p))
-        Q=4*pi*((5-y[4])*eps+(9+y[4])*p+(eps+p)/cs2)-(8*pi*np.sqrt(y[1])*(eps/3.0+p))**2
-        dmdx=np.sqrt(y[1])*eps*den
+        Q=4*pi*((5-y[4])*eps+(9+y[4])*p+(eps+p)/cs2)#-(8*pi*np.sqrt(y[1])*(eps/3.0+p))**2
+        dmdx=0#np.sqrt(y[1])*eps*den
         dr2dx=0.5/pi*den
-        dNdx=np.sqrt(y[1])*baryondensity*den
+        dNdx=0#np.sqrt(y[1])*baryondensity*den
         dzdx=(4+y[3])/(eps/p/3.0+1)
         dydx=-Q*den/(4*pi)
     else:
-        den=p/((y[0]+4*pi*y[1]**1.5*p)*(eps+p))
-        rel=1-2*y[0]/y[1]**0.5
+        r=y[1]**0.5
+        r4=y[1]**2
+        den=p/((y[0]+4*pi*y[1]*r*p)*(eps+p))
+        rel=1-2*y[0]/r
         Q=4*pi*((5-y[4])*eps+(9+y[4])*p+(eps+p)/cs2)/rel-(2*p/(den*(eps+p)*y[1]*rel))**2
-        dmdx=4*pi*eps*y[1]**2*rel*den
-        dr2dx=2*y[1]**1.5*rel*den
-        dNdx=4*pi*y[1]**2*baryondensity*np.sqrt(rel)*den
-        dzdx=((4+y[3])*4*pi*(eps+p)*y[1]-rel*y[3]*(3+y[3]))*np.sqrt(y[1])*den
-        dydx=-(y[4]**2+(y[4]-6)/rel+y[1]*Q)*np.sqrt(y[1])*rel*den
+        dmdx=4*pi*eps*r4*rel*den
+        dr2dx=2*y[1]*r*rel*den
+        dNdx=4*pi*r4*baryondensity*np.sqrt(rel)*den
+        dzdx=((4+y[3])*4*pi*(eps+p)*y[1]-rel*y[3]*(3+y[3]))*r*den
+        dydx=-(y[4]**2+(y[4]-6)/rel+y[1]*Q)*r*rel*den
     return np.array([dmdx,dr2dx,dNdx,dzdx,dydx])
-
 
 def lsoda_ode(function,Preset_rtol,y0,x0,xf,para):
     r = ode(function).set_integrator('lsoda',rtol=Preset_rtol,nsteps=1000)
