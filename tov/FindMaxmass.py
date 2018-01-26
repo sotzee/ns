@@ -26,9 +26,9 @@ def Maxmass_transition(Preset_Pressure_final,Preset_rtol,eos):
             return [2,eos.pressure_trans,-Mass_trans,eos.pressure_trans,-Mass_trans,eos.pressure_trans,-Mass_trans]
         else:
             if(result1.fun<Mass_trans):
-                return [3,result1.x[0],-result1.fun,result1.x[0],-result1.fun,result1.x[0],-result1.fun]
+                return [3,result1.x[0],-result1.fun,result1.x[0],-result1.fun,eos.pressure_trans,-Mass_trans]
             else:
-                return [3,eos.pressure_trans,-Mass_trans,eos.pressure_trans,-Mass_trans,eos.pressure_trans,-Mass_trans]
+                return [3,eos.pressure_trans,-Mass_trans,result1.x[0],-result1.fun,eos.pressure_trans,-Mass_trans]
     else:
         result1=opt.minimize(Mass_transition_formax,800.0,tol=rtol_opt,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
         result2=opt.minimize(Mass_transition_formax,eos.pressure_trans+1.,tol=0.001,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
