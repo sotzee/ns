@@ -128,7 +128,7 @@ def MassRadius_transition(pressure_center,Preset_Pressure_final,Preset_rtol,MRor
         if(MRorMRBIT=='B'):
             yt=Integration_CSS(-np.log(pressure_center/eos.eosCSS.density_s),-np.log(eos.pressure_trans/eos.eosCSS.density_s),eos.eosCSS)[1:3]
             yt[0:3]=[yt[0]*eos.eosCSS.unit_mass/eos.unit_mass,yt[1]*(eos.eosCSS.unit_radius/eos.unit_radius)**2,yt[2]*eos.eosCSS.unit_N/eos.unit_N]
-            r = lsoda_ode(f_complete,Preset_rtol,yt,xt,xf,eos)
+            r = lsoda_ode(f_baryon_number,Preset_rtol,yt,xt,xf,eos)
             M_binding=r.y[2]*eos.unit_N*m_n/M_sun.value
             return M_binding
         elif(MRorMRBIT=='MR'):
