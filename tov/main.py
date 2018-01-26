@@ -11,34 +11,51 @@ from multiprocessing import cpu_count
 from time import time
 import pickle
 from Find_OfMass import Properity_ofmass
-import warnings
-
+from Find_Ofbindingmass import Properity_ofbindingmass
 Preset_rtol = 1e-4
 
 from eos_class import EOS_item
 def Calculation(x):
     eos=config.eos_config(parameter[x].args)
-    warnings.filterwarnings('error')
-    try:    
-        processOutput_maxmass = config.eos_Maxmass(config.Preset_Pressure_final,Preset_rtol,eos)
-    except RuntimeWarning:
-        print 'Runtimewarning happens at:'
-        print parameter[x].args
-        processOutput_maxmass=[0,0,0,0]
-    [MaximumMass_pressure_center,MaximumMass,transition_type,Maximum_pressure_center,Mass_transition]=processOutput_maxmass
-    
-    if(config.TurnOn_radius_onepointfour):
-        if(Mass_transition==0): #hadronic eos with no transition
+    processOutput_maxmass = config.eos_Maxmass(config.Preset_Pressure_final,Preset_rtol,eos)
+    [transition_type,MaximumMass_pressure_center,MaximumMass,Left_pressure_center,Left_Mass,Right_pressure_center,Right_Mass]=processOutput_maxmass
+    if(transition_type>2):#transition type 3,4 have two peaks
+        #processOutput_maxmass_star=[MaximumMass_pressure_center]+config.eos_MassRadius(MaximumMass_pressure_center,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
+        processOutput_maxmass_star_left=[Left_pressure_center]+config.eos_MassRadius(Left_pressure_center,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
+        processOutput_maxmass_star_right=[Right_pressure_center]+config.eos_MassRadius(Right_pressure_center,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
+        #processOutput_star_trans=[eos.pressure_trans]+config.eos_MassRadius(eos.pressure_trans,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
+        if(processOutput_maxmass_star_right[3]<processOutput_maxmass_star_left[3]):
+            processOutput_star_after_peak=Properity_ofbindingmass(processOutput_maxmass_star_right[3],MaximumMass_pressure_center+1,processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
+        else:#become black hole after first peak
+            processOutput_star_after_peak[0,0,0,0,0,0,0,0]
+    elif(transition_type>0):#transition type 1,2 only have one peak
+        #processOutput_maxmass_star=[MaximumMass_pressure_center]+config.eos_MassRadius(MaximumMass_pressure_center,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
+        processOutput_maxmass_star_left=[0,0,0,0,0,0,0,0]
+        processOutput_maxmass_star_right=[0,0,0,0,0,0,0,0]
+        processOutput_star_after_peak=[0,0,0,0,0,0,0,0]
+        #processOutput_star_trans=[eos.pressure_trans]+config.eos_MassRadius(eos.pressure_trans,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
+    else:#transition type 0 have no transition
+        pass
+    if(config.TurnOn_radius_onepointfour and MaximumMass>1.4):
+        if(transition_type<3):
             processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,MaximumMass_pressure_center,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
-        if(Mass_transition>1.4):
-            processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,eos.pressure_trans,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
-        elif(MaximumMass>1.4):
-            processOutput_onepointfour = Properity_ofmass(1.4,eos.pressure_trans,MaximumMass_pressure_center,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
         else:
-            [0,0,0,0,0,0,0]
+            if(processOutput_star_after_peak[1]>1.4):
+                processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,processOutput_maxmass_star_right[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
+                processOutput_onepointfour_quark=[0,0,0,0,0,0,0,0]
+            elif(processOutput_maxmass_star_right[1]>1.4):
+                processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,processOutput_maxmass_star_right[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
+                processOutput_onepointfour_quark = Properity_ofmass(1.4,processOutput_star_after_peak[0],processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
+            else:
+                processOutput_onepointfour=[0,0,0,0,0,0,0,0]
+                processOutput_onepointfour_quark = Properity_ofmass(1.4,processOutput_star_after_peak[0],processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
     else:
-        processOutput_onepointfour=[0,0,0,0,0,0,0]
-    processOutput=processOutput_maxmass+processOutput_onepointfour
+        processOutput_onepointfour=[0,0,0,0,0,0,0,0]
+        processOutput_onepointfour_quark=[0,0,0,0,0,0,0,0]
+    if(transition_type>0):
+        processOutput=processOutput_maxmass[0:3]+processOutput_onepointfour+processOutput_onepointfour_quark+processOutput_maxmass_star_left+processOutput_maxmass_star_right
+    else:
+        processOutput=processOutput_maxmass[0:3]+processOutput_onepointfour
     return processOutput
 
 def processInput(i,num_cores,complete_set):

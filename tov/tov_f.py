@@ -16,7 +16,25 @@ def f(x, y, eos):
         den=p/((y[0]+4*pi*y[1]**1.5*p)*(eps+p))
         rel=1-2*y[0]/y[1]**0.5
         return np.array([4*pi*eps*y[1]**2*rel*den,2*y[1]**1.5*rel*den])
-    
+
+def f_baryon_number(x, y, eos):
+    p=np.exp(-x)
+    p_dimentionful=p*eos.density_s
+    eps=eos.eosDensity(p_dimentionful)/eos.density_s
+    baryondensity=eos.eosBaryonDensity(p_dimentionful)/eos.baryon_density_s
+    if(y[1]==0):
+        den=p/((eps+p)*(eps/3.0+p))
+        dmdx=np.sqrt(y[1])*eps*den
+        dr2dx=0.5/pi*den
+        dNdx=np.sqrt(y[1])*baryondensity*den
+    else:
+        den=p/((y[0]+4*pi*y[1]**1.5*p)*(eps+p))
+        rel=1-2*y[0]/y[1]**0.5
+        dmdx=4*pi*eps*y[1]**2*rel*den
+        dr2dx=2*y[1]**1.5*rel*den
+        dNdx=4*pi*y[1]**2*baryondensity*np.sqrt(rel)*den
+    return np.array([dmdx,dr2dx,dNdx])
+
 def f_complete(x, y, eos):
     p=np.exp(-x)
     p_dimentionful=p*eos.density_s
@@ -61,6 +79,10 @@ def MassRadius(pressure_center,Preset_Pressure_final,Preset_rtol,MRorMRBIT,eos):
         r = lsoda_ode(f,Preset_rtol,[0.,0.],x0,xf,eos)
         M=r.y[0]*eos.unit_mass/M_sun.value
         return M
+    if(MRorMRBIT=='B'):
+        r = lsoda_ode(f_baryon_number,Preset_rtol,[0.,0.,0,],x0,xf,eos)
+        M_binding=r.y[2]*eos.unit_N*m_n/M_sun.value
+        return M_binding
     elif(MRorMRBIT=='MR'):
         r = lsoda_ode(f,Preset_rtol,[0.,0.],x0,xf,eos)
         M=r.y[0]*eos.unit_mass/M_sun.value
@@ -103,6 +125,12 @@ def MassRadius_transition(pressure_center,Preset_Pressure_final,Preset_rtol,MRor
             r = lsoda_ode(f,Preset_rtol,yt,xt,xf,eos)
             M=r.y[0]*eos.unit_mass/M_sun.value
             return M
+        if(MRorMRBIT=='B'):
+            yt=Integration_CSS(-np.log(pressure_center[0]/eos.eosCSS.density_s),-np.log(eos.pressure_trans/eos.eosCSS.density_s),eos.eosCSS)[1:3]
+            yt[0:3]=[yt[0]*eos.eosCSS.unit_mass/eos.unit_mass,yt[1]*(eos.eosCSS.unit_radius/eos.unit_radius)**2,yt[2]*eos.eosCSS.unit_N/eos.unit_N]
+            r = lsoda_ode(f,Preset_rtol,yt[0:3],xt,xf,eos)
+            M_binding=r.y[2]*eos.unit_N*m_n/M_sun.value
+            return M_binding
         elif(MRorMRBIT=='MR'):
             yt=Integration_CSS(-np.log(pressure_center/eos.eosCSS.density_s),-np.log(eos.pressure_trans/eos.eosCSS.density_s),eos.eosCSS)[1:3]
             yt[0:2]=[yt[0]*eos.eosCSS.unit_mass/eos.unit_mass,yt[1]*(eos.eosCSS.unit_radius/eos.unit_radius)**2]
@@ -134,32 +162,19 @@ def Mass_transition_formax(pressure_center,Preset_Pressure_final,Preset_rtol,eos
     xf = x0-np.log(Preset_Pressure_final)
     if(pressure_center[0]<=eos.pressure_trans):
         r = lsoda_ode(f,Preset_rtol,[0.,0.],x0,xf,eos)
-        return -r.y[0]*eos.unit_mass/M_sun.value
     else:
         xt = -np.log(eos.pressure_trans/eos.density_s)
         yt=Integration_CSS(-np.log(pressure_center[0]/eos.eosCSS.density_s),-np.log(eos.pressure_trans/eos.eosCSS.density_s),eos.eosCSS)[1:3]
         yt[0:2]=[yt[0]*eos.eosCSS.unit_mass/eos.unit_mass,yt[1]*(eos.eosCSS.unit_radius/eos.unit_radius)**2]
         r = lsoda_ode(f,Preset_rtol,yt,xt,xf,eos)
-        return -r.y[0]*eos.unit_mass/M_sun.value
-
-
+    return -r.y[0]*eos.unit_mass/M_sun.value
 
 # =============================================================================
 # from eos_class import EOS_BPSwithPolyCSS
-# baryon_density0=0.16/2.7
-# baryon_density1=1.85*0.16
-# baryon_density2=3.74*0.16
-# baryon_density3=7.4*0.16
-# pressure1=10.0
-# pressure2=1380.0636487185834 # 970.6198744112277 #682.6518048474277
-# pressure3=1000.
-# pressure_trans=30.7306534369376
-# det_density=0.
-# cs2=1.0/3.0
-# args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans,det_density,cs2]
-# a=EOS_BPSwithPolyCSS(args)
-# 
-# r=lsoda_ode(f_complete,1e-05,[ 0.00958278,0.00940618,0.0098774,0.3004633,1.78656011],1.6048791890424137,19.259162512385217,a)
+# #args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans,det_density,cs2]
+# from fractions import Fraction
+# a=EOS_BPSwithPolyCSS([0.059259259259259255, 16.0, 0.29600000000000004, 267.2510854860387, 0.5984, 5000.0, 1.1840000000000002, 51.02970970539573, 410.826065399642474, Fraction(1, 1)])
+# print MassRadius_transition(52.02970970539573,1e-8,1e-4,'MRBIT',a)
 # =============================================================================
 
 #print MassRadius(61.37455071231708,1e-7,1e-5,'MRBIT',a)

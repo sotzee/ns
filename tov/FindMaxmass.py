@@ -17,35 +17,44 @@ from tov_f import Mass_transition_formax,Mass_formax
 # 4 ~ continuous two peaks
 
 def Maxmass_transition(Preset_Pressure_final,Preset_rtol,eos):
-    result1=opt.minimize(Mass_transition_formax,800.0,tol=0.001,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
-    result2=opt.minimize(Mass_transition_formax,eos.pressure_trans+1.,tol=0.001,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
-    #print result1.x[0],result1.fun
-    #print result2.x[0],result2.fun
-    Mass_trans=Mass_transition_formax([eos.pressure_trans],Preset_Pressure_final,Preset_rtol,eos)
-    if(np.abs(result2.x[0]-eos.pressure_trans)<0.001*(eos.pressure_trans+result2.x[0])):
-        result2.x[0]=eos.pressure_trans
-        result2.fun=Mass_trans
-        if(np.abs(result2.x[0]-result1.x[0])<0.01*(result1.x[0]+result2.x[0]) and np.abs(result2.fun-result1.fun)<-0.0001*(result1.fun+result2.fun)):
-            return [eos.pressure_trans,-Mass_trans,2,result1.x[0],Mass_trans]
+    Preset_rtol=Preset_rtol*0.01
+    rtol_opt=Preset_rtol*10
+    if(2*eos.det_density>eos.density_trans+3*eos.pressure_trans):
+        Mass_trans=Mass_transition_formax([eos.pressure_trans],Preset_Pressure_final,Preset_rtol,eos)
+        result1=opt.minimize(Mass_transition_formax,800.0,tol=rtol_opt,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
+        if(np.abs(result1.x[0]-eos.pressure_trans)<0.01*(eos.pressure_trans+result1.x[0])):
+            return [2,eos.pressure_trans,-Mass_trans,eos.pressure_trans,-Mass_trans,eos.pressure_trans,-Mass_trans]
         else:
-            if(result1.fun<result2.fun):
-                return [result1.x[0],-result1.fun,3,result1.x[0],Mass_trans]
+            if(result1.fun<Mass_trans):
+                return [3,result1.x[0],-result1.fun,result1.x[0],-result1.fun,result1.x[0],-result1.fun]
             else:
-                return [result2.x[0],-result2.fun,3,result1.x[0],Mass_trans]
+                return [3,eos.pressure_trans,-Mass_trans,eos.pressure_trans,-Mass_trans,eos.pressure_trans,-Mass_trans]
     else:
-        if(np.abs(result2.x[0]-result1.x[0])<0.01*(result1.x[0]+result2.x[0]) and np.abs(result2.fun-result1.fun)<-0.0001*(result1.fun+result2.fun)):
-            return [result2.x[0],-result2.fun,1,result1.x[0]]
+        result1=opt.minimize(Mass_transition_formax,800.0,tol=rtol_opt,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
+        result2=opt.minimize(Mass_transition_formax,eos.pressure_trans+1.,tol=0.001,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
+        #print result1.x[0],-result1.fun
+        #print result2.x[0],-result2.fun
+        if(np.abs(result1.x[0]-result2.x[0])<0.05*(result2.x[0]+result1.x[0])):
+            if(result1.fun<result2.fun):
+                return [1,result1.x[0],-result1.fun,result1.x[0],-result1.fun,result1.x[0],-result1.fun]
+            else:
+                return [1,result2.x[0],-result2.fun,result2.x[0],-result2.fun,result2.x[0],-result2.fun]
         else:
             if(result1.fun<result2.fun):
-                return [result1.x[0],-result1.fun,4,result1.x[0],Mass_trans]
+                return [4,result1.x[0],-result1.fun,result1.x[0],-result1.fun,result2.x[0],-result2.fun]
             else:
-                return [result2.x[0],-result2.fun,4,result1.x[0],Mass_trans]
+                return [4,result2.x[0],-result2.fun,result1.x[0],-result1.fun,result2.x[0],-result2.fun]
 
 def Maxmass(Preset_Pressure_final,Preset_rtol,eos):
     result=opt.minimize(Mass_formax,100.0,tol=0.001,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
     return [result.x[0],-result.fun,0,result.x[0],0]
 
-
+# =============================================================================
+# from eos_class import EOS_BPSwithPolyCSS
+# from fractions import Fraction
+# a=EOS_BPSwithPolyCSS([0.059259259259259255, 16.0, 0.29600000000000004, 267.2510854860387, 0.5984, 5000.0, 1.1840000000000002, 16.0, 164.19229649823089, Fraction(1, 1)])
+# print Maxmass_transition(1e-8,1e-4,a)
+# =============================================================================
 # =============================================================================
 # baryon_density0=0.16/2.7
 # baryon_density1=1.85*0.16
