@@ -47,6 +47,7 @@ def Calculation(x):
     if(config.TurnOn_radius_onepointfour and MaximumMass>1.4):
         if(transition_type<3):
             processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,MaximumMass_pressure_center,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
+            processOutput_onepointfour_quark=[0,0,0,0,0,0,0,0]
         else:
             if(processOutput_star_after_peak[1]>1.4):
                 processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,processOutput_maxmass_star_right[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
