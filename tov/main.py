@@ -25,6 +25,7 @@ def Calculation(x):
     except RuntimeWarning:
         print 'Runtimewarning happens at calculating max mass:'
         print parameter[x].args
+        print processOutput_maxmass
 
     [transition_type,MaximumMass_pressure_center,MaximumMass,Left_pressure_center,Left_Mass,Right_pressure_center,Right_Mass]=processOutput_maxmass
     t2=time()
@@ -42,6 +43,7 @@ def Calculation(x):
                     except RuntimeWarning:
                         print 'Runtimewarning happens at calculating Properity_ofbindingmass:'
                         print parameter[x].args
+                        print processOutput_maxmass
         else:#become black hole after first peak
             #print processOutput_maxmass_star_right[3],processOutput_maxmass_star_left[3]
             processOutput_star_after_peak=[0,0,0,0,0,0,0,0]
@@ -72,6 +74,7 @@ def Calculation(x):
         except RuntimeWarning:
             print 'Runtimewarning happens at calculating Properity_ofmass:'
             print parameter[x].args
+            print processOutput_maxmass
     else:
         processOutput_onepointfour=[0,0,0,0,0,0,0,0]
         processOutput_onepointfour_quark=[0,0,0,0,0,0,0,0]
