@@ -74,15 +74,17 @@ def Maxmass(Preset_Pressure_final,Preset_rtol,eos):
 # print Maxmass(Preset_Pressure_final,value,args)
 # =============================================================================
 
-N=100
-from tov_f import MassRadius_transition
-pressure_center=np.linspace(95.,200.,N)
-mass=np.linspace(20.,500.,N)
-radius=np.linspace(20.,500.,N)
-M_binding=np.linspace(20.,500.,N)
-for i in range(N):
-    mass[i],radius[i]=MassRadius_transition(pressure_center[i],1e-7,1e-5,'MR',a)
-    M_binding[i]=MassRadius_transition(pressure_center[i],1e-7,1e-5,'B',a)
-import matplotlib.pyplot as plt
-#plt.plot(radius,mass)
-plt.plot(pressure_center,M_binding)
+# =============================================================================
+# N=100
+# from tov_f import MassRadius_transition
+# pressure_center=np.linspace(95.,200.,N)
+# mass=np.linspace(20.,500.,N)
+# radius=np.linspace(20.,500.,N)
+# M_binding=np.linspace(20.,500.,N)
+# for i in range(N):
+#     mass[i],radius[i]=MassRadius_transition(pressure_center[i],1e-7,1e-5,'MR',a)
+#     M_binding[i]=MassRadius_transition(pressure_center[i],1e-7,1e-5,'B',a)
+# import matplotlib.pyplot as plt
+# #plt.plot(radius,mass)
+# plt.plot(pressure_center,M_binding)
+# =============================================================================
