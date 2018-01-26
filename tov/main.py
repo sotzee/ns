@@ -12,6 +12,7 @@ from time import time
 import pickle
 from Find_OfMass import Properity_ofmass
 from Find_Ofbindingmass import Properity_ofbindingmass
+import warnings
 
 Preset_rtol = 1e-4
 
@@ -76,8 +77,14 @@ def processInput(i,num_cores,complete_set):
     timebegin=timenow
     timeprev=timenow
     result=list()
+    warnings.filterwarnings('error')
     for ii in range(int(config.start_from*complete_set),complete_set):
-        result.append(Calculation(i+num_cores*ii))
+        try:    
+            result.append(Calculation(i+num_cores*ii))
+        except RuntimeWarning:
+            print 'Runtimewarning happens at:'
+            print parameter[i+num_cores*ii].args
+
         timeprev=remainingTime(timebegin,timeprev,ii,config.start_from,complete_set)
     return result
 
