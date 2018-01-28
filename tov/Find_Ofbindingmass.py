@@ -19,13 +19,10 @@ def Properity_ofbindingmass(ofbindingmass,Preset_pressure_center_low,MaximumMass
     return [pressure_center,M,R,beta,M_binding,momentofinertia,yR,tidal]
 
 def pressure_center_ofbindingmass(ofbindingmass,Preset_pressure_center_low,Preset_pressure_center_high,MassRadius_function,Preset_Pressure_final,Preset_rtol,eos):
-    #print Ofbindingmass(Preset_pressure_center_low,ofbindingmass,MassRadius_function,Preset_Pressure_final,Preset_rtol,eos)
-    #print Ofbindingmass(Preset_pressure_center_high,ofbindingmass,MassRadius_function,Preset_Pressure_final,Preset_rtol,eos)
     result=opt.brenth(Ofbindingmass,Preset_pressure_center_low,Preset_pressure_center_high,args=(ofbindingmass,MassRadius_function,Preset_Pressure_final,Preset_rtol,eos))
     return result
 
 def Ofbindingmass(pressure_center,ofbindingmass,MassRadius_function,Preset_Pressure_final,Preset_rtol,eos):
-    print pressure_center,MassRadius_function(pressure_center,Preset_Pressure_final,Preset_rtol,'B',eos)
     return -ofbindingmass+MassRadius_function(pressure_center,Preset_Pressure_final,Preset_rtol,'B',eos)
 
 # =============================================================================
