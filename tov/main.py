@@ -75,6 +75,9 @@ def Calculation(x):
             print 'Runtimewarning happens at calculating Properity_ofmass:'
             print parameter[x].args
             print processOutput_maxmass
+            print processOutput_maxmass_star_left
+            print processOutput_maxmass_star_right
+            print processOutput_star_after_peak
     else:
         processOutput_onepointfour=[0,0,0,0,0,0,0,0]
         processOutput_onepointfour_quark=[0,0,0,0,0,0,0,0]
