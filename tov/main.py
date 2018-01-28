@@ -40,6 +40,10 @@ def Calculation(x):
                 if(config.eos_MassRadius(Right_pressure_center+det_pc,config.Preset_Pressure_final,Preset_rtol,'B',eos)<processOutput_maxmass_star_right[4]):
                     flag=False
                     try:
+                        print det_pc
+                        print processOutput_maxmass_star_left
+                        print processOutput_maxmass_star_right
+                        print config.eos_MassRadius(Right_pressure_center+det_pc,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
                         processOutput_star_after_peak=Properity_ofbindingmass(processOutput_maxmass_star_right[4],processOutput_maxmass_star_right[0]+det_pc,processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
                     except RuntimeWarning:
                         print 'Runtimewarning happens at calculating Properity_ofbindingmass:'
