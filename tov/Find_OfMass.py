@@ -25,7 +25,8 @@ def pressure_center_ofmass(ofmass,Preset_pressure_center_low,Preset_pressure_cen
 def Ofmass(pressure_center,ofmass,MassRadius_function,Preset_Pressure_final,Preset_rtol,eos):
     return -ofmass+MassRadius_function(pressure_center,Preset_Pressure_final,Preset_rtol,'M',eos)
 
-
+import warnings
+warnings.filterwarnings('error')
 from eos_class import EOS_BPSwithPolyCSS
 from fractions import Fraction
 #args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans,det_density,cs2]
@@ -35,7 +36,11 @@ from tov_f import MassRadius_transition
 print 'x'
 [transition_type,MaximumMass_pressure_center,MaximumMass,Left_pressure_center,Left_Mass,Right_pressure_center,Right_Mass]=Maxmass_transition(1e-8,1e-4,a)
 print [transition_type,MaximumMass_pressure_center,MaximumMass,Left_pressure_center,Left_Mass,Right_pressure_center,Right_Mass]
-print Properity_ofmass(1.4,1.,MaximumMass_pressure_center,MassRadius_transition,1e-8,1e-4,1,a)
+
+try:
+    print Properity_ofmass(1.4,1.,MaximumMass_pressure_center,MassRadius_transition,1e-8,1e-4,1,a)
+except RuntimeWarning:
+    print 'error?!'
 
 #test:
     
