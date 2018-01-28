@@ -37,11 +37,6 @@ def Calculation(x):
         if(processOutput_maxmass_star_left[4]>processOutput_maxmass_star_right[4]):
             flag=True
             for det_pc in [1.,2.,5.,10.,20.,50.]:
-                print det_pc
-                print parameter[x].args
-                print processOutput_maxmass
-                print processOutput_maxmass_star_left
-                print processOutput_maxmass_star_right
                 if(config.eos_MassRadius(Right_pressure_center+det_pc,config.Preset_Pressure_final,Preset_rtol,'B',eos)<processOutput_maxmass_star_right[4]):
                     flag=False
                     try:
