@@ -55,6 +55,7 @@ def Maxmass(Preset_Pressure_final,Preset_rtol,eos):
 # a=EOS_BPSwithPolyCSS([0.059259259259259255, 16.0, 0.29600000000000004, 267.2510854860387, 0.5984, 5000.0, 1.1840000000000002, 192.09507105726632, 286.83819801870789, Fraction(1, 1)])
 # print Maxmass_transition(1e-8,1e-4,a)
 # =============================================================================
+
 # =============================================================================
 # baryon_density0=0.16/2.7
 # baryon_density1=1.85*0.16
@@ -77,7 +78,7 @@ def Maxmass(Preset_Pressure_final,Preset_rtol,eos):
 # =============================================================================
 # N=100
 # from tov_f import MassRadius_transition
-# pressure_center=np.linspace(95.,200.,N)
+# pressure_center=np.linspace(150.,500.,N)
 # mass=np.linspace(20.,500.,N)
 # radius=np.linspace(20.,500.,N)
 # M_binding=np.linspace(20.,500.,N)
@@ -85,6 +86,6 @@ def Maxmass(Preset_Pressure_final,Preset_rtol,eos):
 #     mass[i],radius[i]=MassRadius_transition(pressure_center[i],1e-7,1e-5,'MR',a)
 #     M_binding[i]=MassRadius_transition(pressure_center[i],1e-7,1e-5,'B',a)
 # import matplotlib.pyplot as plt
-# #plt.plot(radius,mass)
-# plt.plot(pressure_center,M_binding)
+# plt.plot(radius,mass)
+# #plt.plot(pressure_center,M_binding)
 # =============================================================================

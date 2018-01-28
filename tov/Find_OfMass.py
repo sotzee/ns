@@ -25,27 +25,17 @@ def pressure_center_ofmass(ofmass,Preset_pressure_center_low,Preset_pressure_cen
 def Ofmass(pressure_center,ofmass,MassRadius_function,Preset_Pressure_final,Preset_rtol,eos):
     return -ofmass+MassRadius_function(pressure_center,Preset_Pressure_final,Preset_rtol,'M',eos)
 
-# =============================================================================
-# from eos_class import EOS_BPSwithPolyCSS
-# baryon_density0=0.16/2.7
-# baryon_density1=1.85*0.16
-# baryon_density2=3.74*0.16
-# baryon_density3=7.4*0.16
-# pressure1=10.0
-# pressure2=337.67535801276506
-# pressure3=500.
-# pressure_trans=72.19196031081279
-# det_density=0.0
-# from fractions import Fraction
-# cs2=Fraction(1, 3)
-# args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans,det_density,cs2]
-# a=EOS_BPSwithPolyCSS(args)
-# from FindMaxmass import Maxmass_transiton
-# from tov_f import MassRadius_transition
-# print 'x'
-# [MaximumMass_pressure_center,MaximumMass,transition_type]=Maxmass_transiton(1e-8,1e-4,a)
-# print Properity_ofmass(1.4,1.,MaximumMass_pressure_center,MassRadius_transition,1e-8,1e-4,1,a)
-# =============================================================================
+
+from eos_class import EOS_BPSwithPolyCSS
+from fractions import Fraction
+#args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans,det_density,cs2]
+a=EOS_BPSwithPolyCSS([0.059259259259259255, 16.0, 0.29600000000000004, 267.2510854860387, 0.5984, 5000.0, 1.1840000000000002, 192.09507105726632, 286.83819801870789, Fraction(1, 1)])
+from FindMaxmass import Maxmass_transition
+from tov_f import MassRadius_transition
+print 'x'
+[transition_type,MaximumMass_pressure_center,MaximumMass,Left_pressure_center,Left_Mass,Right_pressure_center,Right_Mass]=Maxmass_transition(1e-8,1e-4,a)
+print [transition_type,MaximumMass_pressure_center,MaximumMass,Left_pressure_center,Left_Mass,Right_pressure_center,Right_Mass]
+print Properity_ofmass(1.4,1.,MaximumMass_pressure_center,MassRadius_transition,1e-8,1e-4,1,a)
 
 #test:
     
