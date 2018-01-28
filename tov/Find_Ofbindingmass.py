@@ -25,10 +25,16 @@ def pressure_center_ofbindingmass(ofbindingmass,Preset_pressure_center_low,Prese
 def Ofbindingmass(pressure_center,ofbindingmass,MassRadius_function,Preset_Pressure_final,Preset_rtol,eos):
     return -ofbindingmass+MassRadius_function(pressure_center,Preset_Pressure_final,Preset_rtol,'B',eos)
 
-# =============================================================================
-# from eos_class import EOS_BPSwithPolyCSS
-# from fractions import Fraction
-# from FindMaxmass import Maxmass_transition
-# a=EOS_BPSwithPolyCSS([0.059259259259259255, 16.0, 0.29600000000000004, 269.13890217871915, 0.5984, 5000.0, 1.1840000000000002, 196.49744783369798, 278.56127496744625, Fraction(1, 1)])
-# print Maxmass_transition(1e-8,1e-4,a)
-# =============================================================================
+from eos_class import EOS_BPSwithPolyCSS
+from fractions import Fraction
+from FindMaxmass import Maxmass_transition
+from tov_f import  MassRadius_transition
+a=EOS_BPSwithPolyCSS([0.059259259259259255, 16.0, 0.29600000000000004, 267.2510854860387, 0.5984, 5000.0, 1.1840000000000002, 143.66892651651807, 369.15873030599749, Fraction(1, 1)])
+print Maxmass_transition(1e-8,1e-4,a)
+print MassRadius_transition(850.07713317871094,1e-8,1e-4,'MRBIT',a)
+print MassRadius_transition(148.4966840632045,1e-8,1e-4,'MRBIT',a)
+print MassRadius_transition(150.4966840632045,1e-8,1e-4,'MRBIT',a)
+print MassRadius_transition(850.07713317871094,1e-8,1e-4,'B',a)
+print MassRadius_transition(148.4966840632045,1e-8,1e-4,'B',a)
+print MassRadius_transition(150.4966840632045,1e-8,1e-4,'B',a)
+Properity_ofbindingmass(MassRadius_transition(148.4966840632045,1e-8,1e-4,'MRBIT',a)[3],150.4966840632045,850.07713317871094,MassRadius_transition,1e-8,1e-4,1,a)

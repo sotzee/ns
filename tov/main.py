@@ -34,16 +34,15 @@ def Calculation(x):
         processOutput_maxmass_star_left=[Left_pressure_center]+config.eos_MassRadius(Left_pressure_center,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
         processOutput_maxmass_star_right=[Right_pressure_center]+config.eos_MassRadius(Right_pressure_center,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
         #processOutput_star_trans=[eos.pressure_trans]+config.eos_MassRadius(eos.pressure_trans,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
-        if(processOutput_maxmass_star_left[4]>processOutput_maxmass_star_right[4]):
+        baryon_maxmass_star_left=config.eos_MassRadius(Left_pressure_center,config.Preset_Pressure_final,Preset_rtol,'B',eos)
+        baryon_maxmass_star_right=config.eos_MassRadius(Right_pressure_center,config.Preset_Pressure_final,Preset_rtol,'B',eos)
+
+        if(baryon_maxmass_star_left>baryon_maxmass_star_right):
             flag=True
             for det_pc in [1.,2.,5.,10.,20.,50.]:
-                if(config.eos_MassRadius(Right_pressure_center+det_pc,config.Preset_Pressure_final,Preset_rtol,'B',eos)<processOutput_maxmass_star_right[4]):
+                if(config.eos_MassRadius(Right_pressure_center+det_pc,config.Preset_Pressure_final,Preset_rtol,'B',eos)<baryon_maxmass_star_right):
                     flag=False
                     try:
-                        print det_pc
-                        print processOutput_maxmass_star_left
-                        print processOutput_maxmass_star_right
-                        print config.eos_MassRadius(Right_pressure_center+det_pc,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
                         processOutput_star_after_peak=Properity_ofbindingmass(processOutput_maxmass_star_right[4],processOutput_maxmass_star_right[0]+det_pc,processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
                     except RuntimeWarning:
                         print 'Runtimewarning happens at calculating Properity_ofbindingmass:'
@@ -105,7 +104,8 @@ def processInput(i,num_cores,complete_set):
     result=list()
     warnings.filterwarnings('error')
     for ii in range(int(config.start_from*complete_set),complete_set):
-        try:    
+        try:
+            print parameter[5+23*311].args
             result.append(Calculation(i+num_cores*ii))
         except RuntimeWarning:
             print 'Runtimewarning happens at:'
