@@ -17,7 +17,7 @@ from tov_f import Mass_transition_formax,Mass_formax
 # 4 ~ continuous two peaks
 
 def Maxmass_transition(Preset_Pressure_final,Preset_rtol,eos):
-    Preset_rtol=Preset_rtol*0.1
+    Preset_rtol=Preset_rtol*0.01
     rtol_opt=Preset_rtol*10
     if(2*eos.det_density>eos.density_trans+3*eos.pressure_trans):
         Mass_trans=Mass_transition_formax([eos.pressure_trans],Preset_Pressure_final,Preset_rtol,eos)
@@ -49,12 +49,10 @@ def Maxmass(Preset_Pressure_final,Preset_rtol,eos):
     result=opt.minimize(Mass_formax,100.0,tol=0.001,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
     return [result.x[0],-result.fun,0,result.x[0],0]
 
-# =============================================================================
-# from eos_class import EOS_BPSwithPolyCSS
-# from fractions import Fraction
-# a=EOS_BPSwithPolyCSS([0.059259259259259255, 16.0, 0.29600000000000004, 267.2510854860387, 0.5984, 5000.0, 1.1840000000000002, 192.09507105726632, 286.83819801870789, Fraction(1, 1)])
-# print Maxmass_transition(1e-8,1e-4,a)
-# =============================================================================
+from eos_class import EOS_BPSwithPolyCSS
+from fractions import Fraction
+a=EOS_BPSwithPolyCSS([0.059259259259259255, 16.0, 0.29600000000000004, 267.2510854860387, 0.5984, 5000.0, 1.1840000000000002, 64.42614454074824, 268.76814427200645, Fraction(1, 1)])
+print Maxmass_transition(1e-8,1e-4,a)
 
 # =============================================================================
 # baryon_density0=0.16/2.7
@@ -75,17 +73,15 @@ def Maxmass(Preset_Pressure_final,Preset_rtol,eos):
 # print Maxmass(Preset_Pressure_final,value,args)
 # =============================================================================
 
-# =============================================================================
-# N=100
-# from tov_f import MassRadius_transition
-# pressure_center=np.linspace(150.,500.,N)
-# mass=np.linspace(20.,500.,N)
-# radius=np.linspace(20.,500.,N)
-# M_binding=np.linspace(20.,500.,N)
-# for i in range(N):
-#     mass[i],radius[i]=MassRadius_transition(pressure_center[i],1e-7,1e-5,'MR',a)
-#     M_binding[i]=MassRadius_transition(pressure_center[i],1e-7,1e-5,'B',a)
-# import matplotlib.pyplot as plt
-# plt.plot(radius,mass)
-# #plt.plot(pressure_center,M_binding)
-# =============================================================================
+N=100
+from tov_f import MassRadius_transition
+pressure_center=np.linspace(50.,70.,N)
+mass=np.linspace(20.,500.,N)
+radius=np.linspace(20.,500.,N)
+M_binding=np.linspace(20.,500.,N)
+for i in range(N):
+    mass[i],radius[i]=MassRadius_transition(pressure_center[i],1e-7,1e-5,'MR',a)
+    M_binding[i]=MassRadius_transition(pressure_center[i],1e-7,1e-5,'B',a)
+import matplotlib.pyplot as plt
+plt.plot(radius,mass)
+#plt.plot(pressure_center,M_binding)

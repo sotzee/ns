@@ -35,6 +35,7 @@ def Calculation(x):
         processOutput_maxmass_star_right=[Right_pressure_center]+config.eos_MassRadius(Right_pressure_center,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
         #processOutput_star_trans=[eos.pressure_trans]+config.eos_MassRadius(eos.pressure_trans,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
         if(processOutput_maxmass_star_left[4]>processOutput_maxmass_star_right[4]):
+            flag=True
             for det_pc in [1.,2.,5.,10.,20.,50.]:
                 print det_pc
                 print parameter[x].args
@@ -42,12 +43,15 @@ def Calculation(x):
                 print processOutput_maxmass_star_left
                 print processOutput_maxmass_star_right
                 if(config.eos_MassRadius(Right_pressure_center+det_pc,config.Preset_Pressure_final,Preset_rtol,'B',eos)<processOutput_maxmass_star_right[4]):
+                    flag=False
                     try:
                         processOutput_star_after_peak=Properity_ofbindingmass(processOutput_maxmass_star_right[4],processOutput_maxmass_star_right[0]+det_pc,processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
                     except RuntimeWarning:
                         print 'Runtimewarning happens at calculating Properity_ofbindingmass:'
                         print parameter[x].args
                         print processOutput_maxmass
+                if(flag):
+                    processOutput_star_after_peak=processOutput_maxmass_star_right
         else:#become black hole after first peak
             #print processOutput_maxmass_star_right[3],processOutput_maxmass_star_left[3]
             processOutput_star_after_peak=[0,0,0,0,0,0,0,0]
