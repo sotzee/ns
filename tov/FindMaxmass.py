@@ -49,10 +49,12 @@ def Maxmass(Preset_Pressure_final,Preset_rtol,eos):
     result=opt.minimize(Mass_formax,100.0,tol=0.001,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
     return [result.x[0],-result.fun,0,result.x[0],0]
 
-from eos_class import EOS_BPSwithPolyCSS
-from fractions import Fraction
-a=EOS_BPSwithPolyCSS([0.059259259259259255, 16.0, 0.29600000000000004, 267.2510854860387, 0.5984, 5000.0, 1.1840000000000002, 143.66892651651807, 369.15873030599749, Fraction(1, 1)])
-print Maxmass_transition(1e-8,1e-4,a)
+# =============================================================================
+# from eos_class import EOS_BPSwithPolyCSS
+# from fractions import Fraction
+# a=EOS_BPSwithPolyCSS([0.059259259259259255, 16.0, 0.29600000000000004, 267.2510854860387, 0.5984, 5000.0, 1.1840000000000002, 143.66892651651807, 369.15873030599749, Fraction(1, 1)])
+# print Maxmass_transition(1e-8,1e-4,a)
+# =============================================================================
 
 # =============================================================================
 # baryon_density0=0.16/2.7
