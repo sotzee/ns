@@ -36,6 +36,11 @@ def Calculation(x):
         #processOutput_star_trans=[eos.pressure_trans]+config.eos_MassRadius(eos.pressure_trans,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
         if(processOutput_maxmass_star_left[4]>processOutput_maxmass_star_right[4]):
             for det_pc in [1.,2.,5.,10.,20.,50.]:
+                print det_pc
+                print parameter[x].args
+                print processOutput_maxmass
+                print processOutput_maxmass_star_left
+                print processOutput_maxmass_star_right
                 if(config.eos_MassRadius(Right_pressure_center+det_pc,config.Preset_Pressure_final,Preset_rtol,'B',eos)<processOutput_maxmass_star_right[4]):
                     try:
                         processOutput_star_after_peak=Properity_ofbindingmass(processOutput_maxmass_star_right[4],processOutput_maxmass_star_right[0]+det_pc,processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
