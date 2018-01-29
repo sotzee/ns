@@ -17,7 +17,7 @@ from tov_f import Mass_transition_formax,Mass_formax
 # 4 ~ continuous two peaks
 
 def Maxmass_transition(Preset_Pressure_final,Preset_rtol,eos):
-    Preset_rtol=Preset_rtol*0.1
+    Preset_rtol=Preset_rtol*0.01
     rtol_opt=Preset_rtol*10
     if(2*eos.det_density>eos.density_trans+3*eos.pressure_trans):
         Mass_trans=Mass_transition_formax([eos.pressure_trans],Preset_Pressure_final,Preset_rtol,eos)
