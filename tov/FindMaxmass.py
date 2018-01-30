@@ -52,8 +52,21 @@ def Maxmass(Preset_Pressure_final,Preset_rtol,eos):
 # =============================================================================
 # from eos_class import EOS_BPSwithPolyCSS
 # from fractions import Fraction
-# a=EOS_BPSwithPolyCSS([0.059259259259259255, 16.0, 0.29600000000000004, 267.2510854860387, 0.5984, 5000.0, 1.1840000000000002, 143.66892651651807, 369.15873030599749, Fraction(1, 1)])
+# a=EOS_BPSwithPolyCSS([0.059259259259259255, 10.0, 0.29600000000000004, 11402.464740904907, 0.5984, 5000.0, 1.1840000000000002, 13.769209715806836, 222.69674722897258, Fraction(1, 3)])
 # print Maxmass_transition(1e-8,1e-4,a)
+# N=100
+# from tov_f import MassRadius_transition
+# pressure_center=np.linspace(10.,25.,N)
+# mass=np.linspace(20.,500.,N)
+# radius=np.linspace(20.,500.,N)
+# M_binding=np.linspace(20.,500.,N)
+# for i in range(N):
+#     mass[i],radius[i]=MassRadius_transition(pressure_center[i],1e-7,1e-5,'MR',a)
+#     M_binding[i]=MassRadius_transition(pressure_center[i],1e-7,1e-5,'B',a)
+# import matplotlib.pyplot as plt
+# #plt.plot(radius,mass)
+# plt.plot(pressure_center,M_binding)
+# plt.plot(pressure_center,mass)]
 # =============================================================================
 
 # =============================================================================
@@ -73,19 +86,4 @@ def Maxmass(Preset_Pressure_final,Preset_rtol,eos):
 # value=200
 # Preset_Pressure_final=1e-5
 # print Maxmass(Preset_Pressure_final,value,args)
-# =============================================================================
-
-# =============================================================================
-# N=100
-# from tov_f import MassRadius_transition
-# pressure_center=np.linspace(50.,70.,N)
-# mass=np.linspace(20.,500.,N)
-# radius=np.linspace(20.,500.,N)
-# M_binding=np.linspace(20.,500.,N)
-# for i in range(N):
-#     mass[i],radius[i]=MassRadius_transition(pressure_center[i],1e-7,1e-5,'MR',a)
-#     M_binding[i]=MassRadius_transition(pressure_center[i],1e-7,1e-5,'B',a)
-# import matplotlib.pyplot as plt
-# plt.plot(radius,mass)
-# #plt.plot(pressure_center,M_binding)
 # =============================================================================
