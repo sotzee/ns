@@ -44,6 +44,10 @@ def Calculation(x):
                     flag=False
                     try:
                         processOutput_star_after_peak=Properity_ofbindingmass(baryon_maxmass_star_right,processOutput_maxmass_star_right[0]+det_pc,processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
+                        print eos.args
+                        print baryon_maxmass_star_right,processOutput_maxmass_star_right[0]+det_pc,processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index
+                        print processOutput_star_after_peak
+                        print processOutput_maxmass_star_right
                     except RuntimeWarning:
                         print 'Runtimewarning happens at calculating Properity_ofbindingmass:'
                         print parameter[x].args
