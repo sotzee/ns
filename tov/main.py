@@ -18,7 +18,7 @@ Preset_rtol = 1e-4
 
 from eos_class import EOS_item
 def Calculation(x):
-    t1=time()
+    #t1=time()
     eos=config.eos_config(parameter[x].args)
     try:
         processOutput_maxmass = config.eos_Maxmass(config.Preset_Pressure_final,Preset_rtol,eos)
@@ -28,7 +28,7 @@ def Calculation(x):
         print processOutput_maxmass
 
     [transition_type,MaximumMass_pressure_center,MaximumMass,Left_pressure_center,Left_Mass,Right_pressure_center,Right_Mass]=processOutput_maxmass
-    t2=time()
+    #t2=time()
     if(transition_type>2):#transition type 3,4 have two peaks
         #processOutput_maxmass_star=[MaximumMass_pressure_center]+config.eos_MassRadius(MaximumMass_pressure_center,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
         processOutput_maxmass_star_left=[Left_pressure_center]+config.eos_MassRadius(Left_pressure_center,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
@@ -69,7 +69,7 @@ def Calculation(x):
         #processOutput_star_trans=[eos.pressure_trans]+config.eos_MassRadius(eos.pressure_trans,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
     else:#transition type 0 have no transition
         processOutput_star_after_peak=[0,0,0,0,0,0,0,0]
-    t3=time()
+    #t3=time()
     if(config.TurnOn_radius_onepointfour and processOutput_maxmass_star_left[1]>1.4):
         try:
             if(processOutput_star_after_peak[0]==0):
@@ -98,13 +98,13 @@ def Calculation(x):
         processOutput_onepointfour=[0,0,0,0,0,0,0,0]
         processOutput_onepointfour_quark=[0,0,0,0,0,0,0,0]
 
-    t4=time()
+    #t4=time()
     if(transition_type>0):
         processOutput=processOutput_maxmass[0:3]+processOutput_onepointfour+processOutput_onepointfour_quark+processOutput_maxmass_star_left+processOutput_maxmass_star_right+processOutput_star_after_peak
     else:
         processOutput=processOutput_maxmass[0:3]+processOutput_onepointfour
-    t5=time()
-    print 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',t2-t1,t3-t2,t4-t3,t5-t4
+    #t5=time()
+    #print 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',t2-t1,t3-t2,t4-t3,t5-t4
     return processOutput
 
 def processInput(i,num_cores,complete_set):
@@ -239,5 +239,3 @@ if __name__ == '__main__':
 #parameter[x][13]= radius_onepointfour
 #parameter[x][14]= mass_onepointfour
 #################################################
-
-
