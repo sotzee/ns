@@ -42,26 +42,34 @@ def Calculation(x):
             for det_pc in [1.,2.,5.,10.,20.,50.]:
                 if(config.eos_MassRadius(Right_pressure_center+det_pc,config.Preset_Pressure_final,Preset_rtol,'B',eos)<baryon_maxmass_star_right):
                     flag=False
-                    for accuracy in [1,0.1,0.01]:
-                        try:
-                            processOutput_star_after_peak=Properity_ofbindingmass(baryon_maxmass_star_right,processOutput_maxmass_star_right[0]+det_pc,processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol*accuracy,config.Preset_Pressure_final_index,eos)
-                        except RuntimeWarning:
-                            print 'Runtimewarning happens at calculating Properity_ofbindingmass:'
-                            print parameter[x].args
-                            print processOutput_maxmass
-                        mass_star_after_peak=config.eos_MassRadius(processOutput_star_after_peak[0],config.Preset_Pressure_final,Preset_rtol,'M',eos)
-                        mass_maxmass_star_right=config.eos_MassRadius(Right_pressure_center,config.Preset_Pressure_final,Preset_rtol,'M',eos)
-                        if(mass_star_after_peak<mass_maxmass_star_right):
-                            break
+# =============================================================================
+#                     for accuracy in [1,0.1,0.01]:
+#                         print accuracy
+#                         try:
+#                             processOutput_star_after_peak=Properity_ofbindingmass(baryon_maxmass_star_right,processOutput_maxmass_star_right[0]+det_pc,processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol*accuracy,config.Preset_Pressure_final_index,eos)
+#                         except RuntimeWarning:
+#                             print 'Runtimewarning happens at calculating Properity_ofbindingmass:'
+#                             print parameter[x].args
+#                             print processOutput_maxmass
+#                         mass_star_after_peak=config.eos_MassRadius(processOutput_star_after_peak[0],config.Preset_Pressure_final,Preset_rtol,'M',eos)
+#                         mass_maxmass_star_right=config.eos_MassRadius(Right_pressure_center,config.Preset_Pressure_final,Preset_rtol,'M',eos)
+#                         if(mass_star_after_peak<mass_maxmass_star_right):
+#                             break
+# =============================================================================
+                    processOutput_star_after_peak=Properity_ofbindingmass(baryon_maxmass_star_right,processOutput_maxmass_star_right[0]+det_pc,processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
+                    mass_star_after_peak=config.eos_MassRadius(processOutput_star_after_peak[0],config.Preset_Pressure_final,Preset_rtol,'M',eos)
+                    mass_maxmass_star_right=config.eos_MassRadius(Right_pressure_center,config.Preset_Pressure_final,Preset_rtol,'M',eos)
                 processOutput_star_after_peak=processOutput_maxmass_star_right
                 if(flag):
                     processOutput_star_after_peak=processOutput_maxmass_star_right
                 else:
                     break
-                print eos.args
-                print baryon_maxmass_star_right,processOutput_maxmass_star_right[0]+det_pc,processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index
-                print processOutput_star_after_peak
-                print processOutput_maxmass_star_right
+# =============================================================================
+#                 print eos.args
+#                 print baryon_maxmass_star_right,processOutput_maxmass_star_right[0]+det_pc,processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index
+#                 print processOutput_star_after_peak
+#                 print processOutput_maxmass_star_right
+# =============================================================================
         else:#become black hole after first peak
             #print processOutput_maxmass_star_right[3],processOutput_maxmass_star_left[3]
             processOutput_star_after_peak=[0,0,0,0,0,0,0,0]
@@ -80,8 +88,8 @@ def Calculation(x):
                 processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,MaximumMass_pressure_center,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
                 processOutput_onepointfour_quark=[0,0,0,0,0,0,0,0]
             else:
-                mass_star_after_peak=config.eos_MassRadius(processOutput_star_after_peak[0],config.Preset_Pressure_final,Preset_rtol,'M',eos)
-                mass_maxmass_star_right=config.eos_MassRadius(Right_pressure_center,config.Preset_Pressure_final,Preset_rtol,'M',eos)
+                #mass_star_after_peak=config.eos_MassRadius(processOutput_star_after_peak[0],config.Preset_Pressure_final,Preset_rtol,'M',eos)
+                #mass_maxmass_star_right=config.eos_MassRadius(Right_pressure_center,config.Preset_Pressure_final,Preset_rtol,'M',eos)
                 if(mass_star_after_peak>1.4):
                     processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,processOutput_maxmass_star_right[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
                     processOutput_onepointfour_quark=[0,0,0,0,0,0,0,0]

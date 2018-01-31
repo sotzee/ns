@@ -26,23 +26,25 @@ def pressure_center_ofbindingmass(ofbindingmass,Preset_pressure_center_low,Prese
 def Ofbindingmass(pressure_center,ofbindingmass,MassRadius_function,Preset_Pressure_final,Preset_rtol,eos):
     return -ofbindingmass+MassRadius_function(pressure_center,Preset_Pressure_final,Preset_rtol,'B',eos)
 
-from eos_class import EOS_BPSwithPolyCSS
-from fractions import Fraction
-from FindMaxmass import Maxmass_transition
-from tov_f import  MassRadius_transition
-a=EOS_BPSwithPolyCSS([0.059259259259259255, 10.0, 0.29600000000000004, 11402.464740904907, 0.5984, 5000.0, 1.1840000000000002, 13.769209715806836, 222.69674722897258, Fraction(1, 3)]
-)
-output_maxmass=Maxmass_transition(1e-8,1e-4,a)
-print output_maxmass
 # =============================================================================
-# print MassRadius_transition(1114.7628784179688,1e-8,1e-4,'MRBIT',a)
-# print MassRadius_transition(49.944557523691664,1e-8,1e-4,'MRBIT',a)
-# print MassRadius_transition(59.944557523691664,1e-8,1e-4,'MRBIT',a)
+# from eos_class import EOS_BPSwithPolyCSS
+# from fractions import Fraction
+# from FindMaxmass import Maxmass_transition
+# from tov_f import  MassRadius_transition
+# a=EOS_BPSwithPolyCSS([0.059259259259259255, 10.0, 0.29600000000000004, 11402.464740904907, 0.5984, 5000.0, 1.1840000000000002, 13.769209715806836, 222.69674722897258, Fraction(1, 3)]
+# )
+# output_maxmass=Maxmass_transition(1e-8,1e-4,a)
+# print output_maxmass
+# # =============================================================================
+# # print MassRadius_transition(1114.7628784179688,1e-8,1e-4,'MRBIT',a)
+# # print MassRadius_transition(49.944557523691664,1e-8,1e-4,'MRBIT',a)
+# # print MassRadius_transition(59.944557523691664,1e-8,1e-4,'MRBIT',a)
+# # =============================================================================
+# Baryon_right=MassRadius_transition(output_maxmass[5],1e-8,1e-4,'B',a)
+# output_right=[output_maxmass[5]]+MassRadius_transition(output_maxmass[5],1e-8,1e-4,'MRBIT',a)
+# output_after_peak=Properity_ofbindingmass(Baryon_right,output_maxmass[5]+1,output_maxmass[3],MassRadius_transition,1e-8,1e-4,1,a)
+# print output_after_peak[0],output_after_peak[1],output_after_peak[4]
+# print output_right[0],output_right[1],output_right[4]
 # =============================================================================
-Baryon_right=MassRadius_transition(output_maxmass[5],1e-8,1e-4,'B',a)
-output_right=[output_maxmass[5]]+MassRadius_transition(output_maxmass[5],1e-8,1e-4,'MRBIT',a)
-output_after_peak=Properity_ofbindingmass(Baryon_right,output_maxmass[5]+1,output_maxmass[3],MassRadius_transition,1e-8,1e-4,1,a)
-print output_after_peak[0],output_after_peak[1],output_after_peak[4]
-print output_right[0],output_right[1],output_right[4]
 
 
