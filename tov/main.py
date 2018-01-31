@@ -43,7 +43,6 @@ def Calculation(x):
                 if(config.eos_MassRadius(Right_pressure_center+det_pc,config.Preset_Pressure_final,Preset_rtol,'B',eos)<baryon_maxmass_star_right):
                     flag=False
                     processOutput_star_after_peak=Properity_ofbindingmass(baryon_maxmass_star_right,processOutput_maxmass_star_right[0]+det_pc,processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
-                processOutput_star_after_peak=processOutput_maxmass_star_right
                 if(flag):
                     processOutput_star_after_peak=processOutput_maxmass_star_right
                 else:
