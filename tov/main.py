@@ -42,23 +42,11 @@ def Calculation(x):
             for det_pc in [1.,2.,5.,10.,20.,50.]:
                 if(config.eos_MassRadius(Right_pressure_center+det_pc,config.Preset_Pressure_final,Preset_rtol,'B',eos)<baryon_maxmass_star_right):
                     flag=False
-# =============================================================================
-#                     for accuracy in [1,0.1,0.01]:
-#                         print accuracy
-#                         try:
-#                             processOutput_star_after_peak=Properity_ofbindingmass(baryon_maxmass_star_right,processOutput_maxmass_star_right[0]+det_pc,processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol*accuracy,config.Preset_Pressure_final_index,eos)
-#                         except RuntimeWarning:
-#                             print 'Runtimewarning happens at calculating Properity_ofbindingmass:'
-#                             print parameter[x].args
-#                             print processOutput_maxmass
-#                         mass_star_after_peak=config.eos_MassRadius(processOutput_star_after_peak[0],config.Preset_Pressure_final,Preset_rtol,'M',eos)
-#                         mass_maxmass_star_right=config.eos_MassRadius(Right_pressure_center,config.Preset_Pressure_final,Preset_rtol,'M',eos)
-#                         if(mass_star_after_peak<mass_maxmass_star_right):
-#                             break
-# =============================================================================
                     processOutput_star_after_peak=Properity_ofbindingmass(baryon_maxmass_star_right,processOutput_maxmass_star_right[0]+det_pc,processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
                     mass_star_after_peak=config.eos_MassRadius(processOutput_star_after_peak[0],config.Preset_Pressure_final,Preset_rtol,'M',eos)
                     mass_maxmass_star_right=config.eos_MassRadius(Right_pressure_center,config.Preset_Pressure_final,Preset_rtol,'M',eos)
+                    if(mass_star_after_peak>mass_maxmass_star_right):
+                        mass_star_after_peak=mass_maxmass_star_right
                 processOutput_star_after_peak=processOutput_maxmass_star_right
                 if(flag):
                     processOutput_star_after_peak=processOutput_maxmass_star_right
