@@ -202,8 +202,8 @@ if __name__ == '__main__':
     else:
         print('Calculation_mode not found!')
     f_log_name='./'+dir_name+'/'+name_log
-    #main(processInput)
-    main_test_a_single_eos_parameter(16+23*9519)
+    main(processInput)
+    #main_test_a_single_eos_parameter(16+23*9519)
 #################################################
 #setParameter(xxx) returns parameter[x][x]
 #parameter[x][0] = pressure1
