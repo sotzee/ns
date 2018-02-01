@@ -46,8 +46,8 @@ def Properity_ofmass_two_peak(ofmass,Preset_pressure_center_low,pressure_center_
         processOutput_onepointfour_quark = [mass_after_peak]+MassRadius_function(mass_after_peak,Preset_Pressure_final**Preset_Pressure_final_index,Preset_rtol,'MRBIT',eos)
 
     check_error_1=processOutput_onepointfour[0]+processOutput_onepointfour_quark[0]==0 and (mass_left>ofmass or mass_right>ofmass)
-    check_error_2=ofmass>processOutput_onepointfour_quark[1]>0 or processOutput_onepointfour_quark[1]>1.01*ofmass
-    check_error_3=ofmass>processOutput_onepointfour[1]>0 or processOutput_onepointfour[1]>1.01*ofmass
+    check_error_2=0.99*ofmass>processOutput_onepointfour_quark[1]>0 or processOutput_onepointfour_quark[1]>1.01*ofmass
+    check_error_3=0.99*ofmass>processOutput_onepointfour[1]>0 or processOutput_onepointfour[1]>1.01*ofmass
     if(check_error_1 or check_error_2 or check_error_3):
         f_log=open(f_log_name,'wb')
         f_log.write('Serious Error happends when running function Properity_ofmass_two_peak() at Find_OfMass \n')
