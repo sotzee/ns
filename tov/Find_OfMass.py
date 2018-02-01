@@ -41,7 +41,7 @@ def Properity_ofmass_two_peak(ofmass,Preset_pressure_center_low,pressure_center_
     else:
         processOutput_onepointfour_quark = [0,0,0,0,0,0,0,0]
     
-    if(mass_after_peak>ofmass>mass_left): #not physical, happend due to numerical error.
+    if(mass_after_peak>ofmass>mass_right): #not physical, happend due to numerical error.
         processOutput_onepointfour = [0,0,0,0,0,0,0,0]
         processOutput_onepointfour_quark = [mass_after_peak]+MassRadius_function(mass_after_peak,Preset_Pressure_final**Preset_Pressure_final_index,Preset_rtol,'MRBIT',eos)
 
