@@ -55,6 +55,8 @@ def Properity_ofmass_two_peak(ofmass,Preset_pressure_center_low,pressure_center_
         f_log.write(str(eos.args)+'\n')
         f_log.write(str([ofmass,Preset_pressure_center_low,pressure_center_left,pressure_center_after_peak,pressure_center_right,MassRadius_function,Preset_Pressure_final,Preset_rtol,Preset_Pressure_final_index])+'\n')
         f_log.write(str([mass_left,mass_after_peak,mass_right])+'\n')
+        f_log.write(str(processOutput_onepointfour)+'\n')
+        f_log.write(str(processOutput_onepointfour_quark)+'\n')
         f_log.close()
     else:
         return processOutput_onepointfour,processOutput_onepointfour_quark
