@@ -111,7 +111,7 @@ def processInput(i,num_cores,complete_set):
     warnings.filterwarnings('error')
     for ii in range(int(config.start_from*complete_set),complete_set):
         try:
-            #print parameter[0+23*83].args
+            print parameter[16+23*9519].args
             result.append(Calculation(i+num_cores*ii))
         except RuntimeWarning:
             print 'Runtimewarning happens at:'

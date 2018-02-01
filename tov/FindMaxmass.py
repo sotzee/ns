@@ -52,11 +52,11 @@ def Maxmass(Preset_Pressure_final,Preset_rtol,eos):
 # =============================================================================
 # from eos_class import EOS_BPSwithPolyCSS
 # from fractions import Fraction
-# a=EOS_BPSwithPolyCSS([0.059259259259259255, 10.0, 0.29600000000000004, 11402.464740904907, 0.5984, 5000.0, 1.1840000000000002, 13.769209715806836, 222.69674722897258, Fraction(1, 3)])
+# a=EOS_BPSwithPolyCSS([0.059259259259259255, 10.0, 0.29600000000000004, 175.05700209813543, 0.5984, 5000.0, 1.1840000000000002, 81.61498460032989, 360.08183812497651, Fraction(1, 1)])
 # print Maxmass_transition(1e-8,1e-4,a)
 # N=100
 # from tov_f import MassRadius_transition
-# pressure_center=np.linspace(10.,25.,N)
+# pressure_center=np.linspace(5.,150.,N)
 # mass=np.linspace(20.,500.,N)
 # radius=np.linspace(20.,500.,N)
 # M_binding=np.linspace(20.,500.,N)
@@ -66,7 +66,7 @@ def Maxmass(Preset_Pressure_final,Preset_rtol,eos):
 # import matplotlib.pyplot as plt
 # #plt.plot(radius,mass)
 # plt.plot(pressure_center,M_binding)
-# plt.plot(pressure_center,mass)]
+# plt.plot(pressure_center,mass)
 # =============================================================================
 
 # =============================================================================
