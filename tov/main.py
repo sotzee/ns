@@ -65,20 +65,19 @@ def Calculation(x):
     else:#transition type 0 have no transition
         processOutput_star_after_peak=[0,0,0,0,0,0,0,0]
     #t3=time()
-    if(config.TurnOn_radius_onepointfour and processOutput_maxmass_star_left[1]>1.4):
+    if(config.TurnOn_radius_onepointfour and MaximumMass>1.4):
         try:
             if(processOutput_star_after_peak[0]==0):
                 processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,MaximumMass_pressure_center,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
                 processOutput_onepointfour_quark=[0,0,0,0,0,0,0,0]
             else:
                 mass_star_after_peak=config.eos_MassRadius(processOutput_star_after_peak[0],config.Preset_Pressure_final,Preset_rtol,'M',eos)
-                mass_maxmass_star_right=config.eos_MassRadius(Right_pressure_center,config.Preset_Pressure_final,Preset_rtol,'M',eos)
-                if(mass_star_after_peak>mass_maxmass_star_right):
-                    mass_star_after_peak=mass_maxmass_star_right
+                if(mass_star_after_peak>Right_Mass):
+                    mass_star_after_peak=Right_Mass
                 if(mass_star_after_peak>1.4):
                     processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,processOutput_maxmass_star_right[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
                     processOutput_onepointfour_quark=[0,0,0,0,0,0,0,0]
-                elif(mass_maxmass_star_right>1.4):
+                elif(Right_Mass>1.4):
                     processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,processOutput_maxmass_star_right[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
                     processOutput_onepointfour_quark = Properity_ofmass(1.4,processOutput_star_after_peak[0],processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
                 else:
