@@ -25,6 +25,39 @@ def pressure_center_ofmass(ofmass,Preset_pressure_center_low,Preset_pressure_cen
 def Ofmass(pressure_center,ofmass,MassRadius_function,Preset_Pressure_final,Preset_rtol,eos):
     return -ofmass+MassRadius_function(pressure_center,Preset_Pressure_final,Preset_rtol,'M',eos)
 
+
+def Properity_ofmass_two_peak(ofmass,Preset_pressure_center_low,pressure_center_left,pressure_center_after_peak,pressure_center_right,MassRadius_function,Preset_Pressure_final,Preset_rtol,Preset_Pressure_final_index,eos,f_log_name):
+    mass_left = MassRadius_function(pressure_center_left,Preset_Pressure_final,Preset_rtol,'M',eos)
+    mass_after_peak = MassRadius_function(pressure_center_after_peak,Preset_Pressure_final,Preset_rtol,'M',eos)
+    mass_right = MassRadius_function(pressure_center_right,Preset_Pressure_final,Preset_rtol,'M',eos)
+    
+    if(mass_right>ofmass):
+        processOutput_onepointfour = Properity_ofmass(ofmass,Preset_pressure_center_low,pressure_center_right,MassRadius_function,Preset_Pressure_final,Preset_rtol,Preset_Pressure_final_index,eos)
+    else:
+        processOutput_onepointfour = [0,0,0,0,0,0,0,0]
+    
+    if(mass_left>ofmass>mass_after_peak):
+        processOutput_onepointfour_quark = Properity_ofmass(ofmass,pressure_center_after_peak,pressure_center_left,MassRadius_function,Preset_Pressure_final,Preset_rtol,Preset_Pressure_final_index,eos)
+    else:
+        processOutput_onepointfour_quark = [0,0,0,0,0,0,0,0]
+    
+    if(mass_after_peak>ofmass>mass_left): #not physical, happend due to numerical error.
+        processOutput_onepointfour = [0,0,0,0,0,0,0,0]
+        processOutput_onepointfour_quark = [mass_after_peak]+MassRadius_function(mass_after_peak,Preset_Pressure_final**Preset_Pressure_final_index,Preset_rtol,'MRBIT',eos)
+
+    check_error_1=processOutput_onepointfour[0]+processOutput_onepointfour_quark[0]==0 and (mass_left>ofmass or mass_right>ofmass)
+    check_error_2=ofmass>processOutput_onepointfour_quark[1]>0 or processOutput_onepointfour_quark[1]>1.01*ofmass
+    check_error_3=ofmass>processOutput_onepointfour[1]>0 or processOutput_onepointfour[1]>1.01*ofmass
+    if(check_error_1 or check_error_2 or check_error_3):
+        f_log=open(f_log_name,'wb')
+        f_log.write('Serious Error happends when running function Properity_ofmass_two_peak() at Find_OfMass')
+        f_log.write(eos.args)
+        f_log.write([ofmass,Preset_pressure_center_low,pressure_center_left,pressure_center_after_peak,pressure_center_right,MassRadius_function,Preset_Pressure_final,Preset_rtol,Preset_Pressure_final_index])
+        f_log.close()
+    else:
+        return processOutput_onepointfour,processOutput_onepointfour_quark
+
+
 # =============================================================================
 # import warnings
 # warnings.filterwarnings('error')

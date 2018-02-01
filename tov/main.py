@@ -10,7 +10,7 @@ from joblib import Parallel, delayed
 from multiprocessing import cpu_count
 from time import time
 import pickle
-from Find_OfMass import Properity_ofmass
+from Find_OfMass import Properity_ofmass,Properity_ofmass_two_peak
 from Find_Ofbindingmass import Properity_ofbindingmass
 import warnings
 
@@ -47,14 +47,7 @@ def Calculation(x):
                     processOutput_star_after_peak=processOutput_maxmass_star_right
                 else:
                     break
-# =============================================================================
-#                 print eos.args
-#                 print baryon_maxmass_star_right,processOutput_maxmass_star_right[0]+det_pc,processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index
-#                 print processOutput_star_after_peak
-#                 print processOutput_maxmass_star_right
-# =============================================================================
         else:#become black hole after first peak
-            #print processOutput_maxmass_star_right[3],processOutput_maxmass_star_left[3]
             processOutput_star_after_peak=[0,0,0,0,0,0,0,0]
     elif(transition_type>0):#transition type 1,2 only have one peak
         #processOutput_maxmass_star=[MaximumMass_pressure_center]+config.eos_MassRadius(MaximumMass_pressure_center,config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
@@ -71,19 +64,7 @@ def Calculation(x):
                 processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,MaximumMass_pressure_center,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
                 processOutput_onepointfour_quark=[0,0,0,0,0,0,0,0]
             else:
-                mass_star_after_peak=config.eos_MassRadius(processOutput_star_after_peak[0],config.Preset_Pressure_final,Preset_rtol,'M',eos)
-                mass_star_right_peak=config.eos_MassRadius(Right_pressure_center,config.Preset_Pressure_final,Preset_rtol,'M',eos)
-                if(mass_star_after_peak>mass_star_right_peak):
-                    mass_star_after_peak=mass_star_right_peak
-                if(mass_star_after_peak>1.4):
-                    processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,processOutput_maxmass_star_right[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
-                    processOutput_onepointfour_quark=[0,0,0,0,0,0,0,0]
-                elif(mass_star_right_peak>1.4):
-                    processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,processOutput_maxmass_star_right[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
-                    processOutput_onepointfour_quark = Properity_ofmass(1.4,processOutput_star_after_peak[0],processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
-                else:
-                    processOutput_onepointfour=[0,0,0,0,0,0,0,0]
-                    processOutput_onepointfour_quark = Properity_ofmass(1.4,processOutput_star_after_peak[0],processOutput_maxmass_star_left[0],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
+                processOutput_onepointfour,processOutput_onepointfour_quark = Properity_ofmass_two_peak(1.4,config.Preset_pressure_center_low,Left_pressure_center,processOutput_star_after_peak[0],Right_pressure_center,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos,f_log_name)
         except RuntimeWarning:
             print 'Runtimewarning happens at calculating Properity_ofmass:'
             print parameter[x].args
@@ -137,7 +118,7 @@ def main(processInput):
     complete_set=np.int(total_num/num_cores)
     leftover_num=total_num-complete_set*num_cores
     timebegin=time()
-    f_log=open('./'+dir_name+'/'+name_log,'wb')
+    f_log=open(f_log_name,'wb')
     if(Calculation_mode=='hybrid'):
         if(Hybrid_sampling=='low_trans_complete'):
             f_log.write('Preset_rtol=%s\n Preset_pressure1=%s    Preset_cs2=%s\n'% (Preset_rtol,config.Preset_pressure1,config.Preset_cs2))
@@ -220,6 +201,7 @@ if __name__ == '__main__':
             parameter[i]=EOS_item([config.baryon_density0,parameter[i][0],config.baryon_density1,parameter[i][1],config.baryon_density2,parameter[i][3],config.baryon_density3])
     else:
         print('Calculation_mode not found!')
+    f_log_name='./'+dir_name+'/'+name_log
     #main(processInput)
     main_test_a_single_eos_parameter(16+23*9519)
 #################################################
