@@ -111,7 +111,6 @@ def processInput(i,num_cores,complete_set):
     warnings.filterwarnings('error')
     for ii in range(int(config.start_from*complete_set),complete_set):
         try:
-            print parameter[16+23*9519].args
             result.append(Calculation(i+num_cores*ii))
         except RuntimeWarning:
             print 'Runtimewarning happens at:'
@@ -126,6 +125,10 @@ def remainingTime(timebegin,timeprev,ii,start_from,complete_set):
     print('Estimate time remaining: %.2f hours (overall)'%((timenow-timebegin)*(complete_set-ii)/(ii+1-start_from*complete_set)/3600))
     print('                         %.2f hours (instant)'%((timenow-timeprev)*(complete_set-ii)/3600))
     return timenow
+
+def main_test_a_single_eos_parameter(x):
+    print parameter[x].args
+    print Calculation(x)
 
 def main(processInput):
     num_cores = cpu_count()-1
@@ -216,7 +219,8 @@ if __name__ == '__main__':
             parameter[i]=EOS_item([config.baryon_density0,parameter[i][0],config.baryon_density1,parameter[i][1],config.baryon_density2,parameter[i][3],config.baryon_density3])
     else:
         print('Calculation_mode not found!')
-    main(processInput)
+    #main(processInput)
+    main_test_a_single_eos_parameter(16+23*9519)
 #################################################
 #setParameter(xxx) returns parameter[x][x]
 #parameter[x][0] = pressure1
