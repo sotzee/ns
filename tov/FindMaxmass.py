@@ -49,14 +49,15 @@ def Maxmass(Preset_Pressure_final,Preset_rtol,eos):
     result=opt.minimize(Mass_formax,100.0,tol=0.001,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
     return [result.x[0],-result.fun,0,result.x[0],0]
 
-from eos_class import EOS_BPSwithPolyCSS
-from fractions import Fraction
-a=EOS_BPSwithPolyCSS([0.059259259259259255, 10.0, 0.29600000000000004, 175.05700209813543, 0.5984, 5000.0, 1.1840000000000002, 81.61498460032989, 360.08183812497651, Fraction(1, 1)])
-print Maxmass_transition(1e-8,1e-4,a)
-N=100
-from tov_f import MassRadius_transition
-print MassRadius_transition(1354.1826057434082,1e-8,1e-4,'M',a)
 # =============================================================================
+# from eos_class import EOS_BPSwithPolyCSS
+# from fractions import Fraction
+# a=EOS_BPSwithPolyCSS([0.059259259259259255, 10.0, 0.29600000000000004, 175.05700209813543, 0.5984, 5000.0, 1.1840000000000002, 81.61498460032989, 360.08183812497651, Fraction(1, 1)])
+# print Maxmass_transition(1e-8,1e-4,a)
+# N=100
+# from tov_f import MassRadius_transition
+# print MassRadius_transition(1354.1826057434082,1e-8,1e-4,'M',a)
+# 
 # pressure_center=np.linspace(5.,150.,N)
 # mass=np.linspace(20.,500.,N)
 # radius=np.linspace(20.,500.,N)
