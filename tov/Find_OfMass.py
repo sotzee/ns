@@ -51,8 +51,9 @@ def Properity_ofmass_two_peak(ofmass,Preset_pressure_center_low,pressure_center_
     if(check_error_1 or check_error_2 or check_error_3):
         f_log=open(f_log_name,'wb')
         f_log.write('Serious Error happends when running function Properity_ofmass_two_peak() at Find_OfMass')
-        f_log.write(eos.args)
-        f_log.write([ofmass,Preset_pressure_center_low,pressure_center_left,pressure_center_after_peak,pressure_center_right,MassRadius_function,Preset_Pressure_final,Preset_rtol,Preset_Pressure_final_index])
+        f_log.write(str(eos.args))
+        f_log.write(str([ofmass,Preset_pressure_center_low,pressure_center_left,pressure_center_after_peak,pressure_center_right,MassRadius_function,Preset_Pressure_final,Preset_rtol,Preset_Pressure_final_index]))
+        f_log.write(str([mass_left,mass_after_peak,mass_right]))
         f_log.close()
     else:
         return processOutput_onepointfour,processOutput_onepointfour_quark
