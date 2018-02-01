@@ -43,7 +43,7 @@ def Properity_ofmass_two_peak(ofmass,Preset_pressure_center_low,pressure_center_
     
     if(mass_after_peak>ofmass>mass_right): #not physical, happend due to numerical error.
         processOutput_onepointfour = [0,0,0,0,0,0,0,0]
-        processOutput_onepointfour_quark = [mass_after_peak]+MassRadius_function(mass_after_peak,Preset_Pressure_final**Preset_Pressure_final_index,Preset_rtol,'MRBIT',eos)
+        processOutput_onepointfour_quark = [pressure_center_after_peak]+MassRadius_function(pressure_center_after_peak,Preset_Pressure_final**Preset_Pressure_final_index,Preset_rtol,'MRBIT',eos)
 
     check_error_1=processOutput_onepointfour[0]+processOutput_onepointfour_quark[0]==0 and (mass_left>ofmass or mass_right>ofmass)
     check_error_2=0.99*ofmass>processOutput_onepointfour_quark[1]>0 or processOutput_onepointfour_quark[1]>1.01*ofmass
