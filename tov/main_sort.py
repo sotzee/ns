@@ -15,7 +15,7 @@ def processInput(i0,i1):
     parameter_satisfied_core=list()
     parameter_unsatisfied_core=list()
     for i in range(i0,i1):
-        print i
+        #print i
         if(config.constrain(parameter[i])):
             parameter_satisfied_core.append(parameter[i])
         else:

@@ -19,7 +19,7 @@ def main(parameter,sortmass):
         parameter_sorted.append(list())
     for i in range(num):
         for ii in range(num_sort-1):        
-            if(sortmass[ii]<parameter[i].properity[1]<sortmass[ii+1]):
+            if(sortmass[ii]<parameter[i].properity[2]<sortmass[ii+1]):
                 parameter_sorted[ii].append(parameter[i])
                 break
     check_num=0

@@ -29,7 +29,7 @@ Preset_gamma2 = [121,2.0,10.0] #[num,low,high]polytropic index between pressure1
 pressure3=5000.
 Preset_num_pressure_trans=100 #Mevfm-4
 Preset_det_density = [61,0.0,1.0]  #{det_density/density_trans}[num,low,high]reduced density change at density_trans.
-cs2=Fraction('3/3') #sound speed square
+cs2=Fraction('1/3') #sound speed square
 
 from eos_class import EOS_BPSwithPolyCSS
 eos_config=EOS_BPSwithPolyCSS

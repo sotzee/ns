@@ -35,15 +35,33 @@ def Calculation(x):
 #         parameter[x].set_properity(properity_new)
 #     ofpc_array=centerdensity(10,parameter[x].properity[3],Maximum_pressure_center,config.concentration,number_per_parameter)
 # =============================================================================
-
-    ofpc_array=centerdensity(10,parameter[x].properity[4],parameter[x].properity[3],config.concentration,number_per_parameter)
- 
-    for i in range(np.size(ofpc_array)):
-        try:
-            parameter[x].add_star([ofpc_array[i]]+config.eos_MassRadius(ofpc_array[0],config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos))
-        except RuntimeWarning:
-            print('Runtimewarning happens at addstars: '+str(ofpc_array[i]))
-            print(parameter[x].args)
+    try:
+        if(parameter[x].properity[35]==0):
+            ofpc_array=centerdensity(10,parameter[x].properity[3],parameter[x].properity[1],config.concentration,number_per_parameter)
+            for i in range(np.size(ofpc_array)):
+                processOutput_ofpc = config.eos_MassRadius(ofpc_array[0],config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
+                if(ofpc_array[i]<parameter[x].args[7]):
+                    parameter[x].add_star([0,ofpc_array[i]]+processOutput_ofpc)
+                else:
+                    parameter[x].add_star([1,ofpc_array[i]]+processOutput_ofpc)
+        else:
+            if(parameter[x].properity[11]==0):
+                ofpc_array=centerdensity(10,parameter[x].properity[3],parameter[x].properity[19],config.concentration,number_per_parameter)
+            else:
+                ofpc_array=centerdensity(10,parameter[x].properity[11],parameter[x].properity[19],config.concentration,number_per_parameter)
+            for i in range(np.size(ofpc_array)):
+                processOutput_ofpc = config.eos_MassRadius(ofpc_array[i],config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
+                if(ofpc_array[i]<parameter[x].args[7]):
+                    parameter[x].add_star([0,ofpc_array[i]]+processOutput_ofpc)
+                elif(ofpc_array[i]<parameter[x].properity[27]):
+                    parameter[x].add_star([1,ofpc_array[i]]+processOutput_ofpc)
+                elif(ofpc_array[i]<parameter[x].properity[19]):
+                    parameter[x].add_star([2,ofpc_array[i]]+processOutput_ofpc)
+                else:
+                    parameter[x].add_star([3,ofpc_array[i]]+processOutput_ofpc)
+    except RuntimeWarning:
+        print('Runtimewarning happens at addstars: '+str(ofpc_array[i]))
+        print(parameter[x].args)
     return parameter[x]
 
 def processInput(i,num_cores,complete_set):

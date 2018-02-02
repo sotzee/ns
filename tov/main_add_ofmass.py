@@ -11,7 +11,7 @@ from joblib import Parallel, delayed
 from multiprocessing import cpu_count
 from time import time
 import pickle
-from Find_OfMass import Properity_ofmass
+from Find_OfMass import Properity_ofmass,Properity_ofmass_two_peak
 import warnings
 
 Preset_rtol = 1e-4
@@ -19,13 +19,30 @@ Preset_rtol = 1e-4
 def Calculation(x):
     eos=config.eos_config(parameter[x].args)
     warnings.filterwarnings('error')
-    MaximumMass_pressure_center=parameter[x].properity[0]
+    MaximumMass_pressure_center=parameter[x].properity[1]
     for i in range(np.size(ofmass_array)):
         try:
-            parameter[x].add_star(Properity_ofmass(ofmass_array[i],config.Preset_pressure_center_low,MaximumMass_pressure_center,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos))
+            if(parameter[x].properity[35]==0):
+                processOutput_ofmass=Properity_ofmass(ofmass_array[i],config.Preset_pressure_center_low,MaximumMass_pressure_center,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
+                if(processOutput_ofmass[0]<parameter[x].args[7]):
+                    parameter[x].add_star([0]+processOutput_ofmass)
+                else:
+                    parameter[x].add_star([1]+processOutput_ofmass)
+            else:
+                processOutput_ofmass,processOutput_ofmass_quark = Properity_ofmass_two_peak(ofmass_array[i],config.Preset_pressure_center_low,parameter[x].properity[19],parameter[x].properity[35],parameter[x].properity[27],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos,f_log_name)
+                if(processOutput_ofmass_quark[0]==0):
+                    if(processOutput_ofmass[0]<parameter[x].args[7]):
+                        parameter[x].add_star([0]+processOutput_ofmass)
+                    else:
+                        parameter[x].add_star([1]+processOutput_ofmass)
+                else:
+                    parameter[x].add_star([3]+processOutput_ofmass_quark)
+
         except RuntimeWarning:
             print('Runtimewarning happens at OfMass: '+str(ofmass_array[i]))
+            print('parameter[%d]'%x)
             print(parameter[x].args)
+            print(parameter[x].properity[19],parameter[x].properity[35],parameter[x].properity[27])
     return parameter[x]
 
 def processInput(i,num_cores,complete_set):
@@ -53,7 +70,7 @@ def main(processInput):
     leftover_num=total_num-complete_set*num_cores
     timebegin=time()
 
-    f_log=open('./'+dir_name+'/'+name_log,'wb')
+    f_log=open(f_log_name,'wb')
     f_log.write("Calculation_mode: " + Calculation_mode)
     f_log.write('%d cores are being used.\n'% num_cores)
     f_log.write("OfMass array: " + sys.argv[3])
@@ -100,6 +117,7 @@ if __name__ == '__main__':
         dir_name='data_hadronic'
     else:
         print 'Calculation_mode not found!'
+    f_log_name='./'+dir_name+'/'+name_log
     f1=open('./'+dir_name+'/'+name_dat_main,'rb')
     parameter=pickle.load(f1)
     f1.close()
