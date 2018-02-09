@@ -69,7 +69,10 @@ def MassRadius_CSS(pressure_center,MRorMRBIT,eos):
     tidal_R=6*beta*(2-yR+beta*(5*yR-8))+4*beta**3*(13-11*yR+beta*(3*yR-2)+2*beta**2*(1+yR))+3*(1-2*beta)**2*(2-yR+2*beta*(yR-1))*np.log(1-2*beta)
     k2=8.0/5.0*beta**5*(1-2*beta)**2*(2-yR+2*beta*(yR-1))/tidal_R
     tidal=2.0/3.0*(k2/beta**5)
-    return [M,R,beta,M_binding,momentofinertia,yR,tidal]
+    if(MRorMRBIT=='MRBIT'):
+        return [M,R,beta,M_binding,momentofinertia,yR,tidal]
+    elif(MRorMRBIT=='MR'):
+        return [M,R]
 
 def Integration_CSS(x0_,xf_,eos):
     cs2_=eos.cs2
