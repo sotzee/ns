@@ -40,13 +40,13 @@ class final_data_BPSwithPolyCSS(object):
             properity_matrix.append(parameter[i].properity)
             for j in range(np.size(parameter[i].stars)/9-5):
                 if(parameter[i].stars[j][0]==0):
-                    stars_type0.append(parameter[i].stars[j])
+                    stars_type0.append(parameter[i].stars[j+5])
                 if(parameter[i].stars[j][0]==1):
-                    stars_type1.append(parameter[i].stars[j])
+                    stars_type1.append(parameter[i].stars[j+5])
                 if(parameter[i].stars[j][0]==2):
-                    stars_type2.append(parameter[i].stars[j])
+                    stars_type2.append(parameter[i].stars[j+5])
                 if(parameter[i].stars[j][0]==3):
-                    stars_type3.append(parameter[i].stars[j])
+                    stars_type3.append(parameter[i].stars[j+5])
 
         args_matrix=np.array(args_matrix)
         self.args_matrix=args_matrix.transpose()

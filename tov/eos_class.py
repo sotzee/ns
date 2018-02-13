@@ -188,20 +188,6 @@ class EOS_BPSwithPolyCSS(EOS_BPSwithPoly,EOS_CSS):
     def eosChempo(self,pressure):
         return (pressure+self.eosDensity(pressure))/self.eosBaryonDensity(pressure)
 
-# =============================================================================
-# baryon_density0=0.16/2.7
-# baryon_density1=1.85*0.16
-# baryon_density2=3.74*0.16
-# baryon_density3=7.4*0.16
-# pressure1=10.0
-# pressure2=150.
-# pressure3=1000.
-# pressure_trans=120
-# det_density=100
-# cs2=1.0
-# args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans,det_density,cs2]
-# a=EOS_BPSwithPolyCSS(args)
-# =============================================================================
 
 class EOS_MIT(EOS_BPS):
     def __init__(self,args):
@@ -240,11 +226,21 @@ def show_eos(eos,pressure):
     chempo=np.linspace(0,200,N)
     baryondensity=np.linspace(0,200,N)
     cs2=np.linspace(0,200,N)
+    cs2_bound=np.linspace(0,200,N)
+
     for i in range(N):
-        density[i]=eos.eosDensity(pressure[i])/eos.density_s
-        chempo[i]=eos.eosChempo(pressure[i])*eos.baryon_density_s/(eos.density_s+eos.pressure_s)
-        baryondensity[i]=eos.eosBaryonDensity(pressure[i])/eos.baryon_density_s
+        density[i]=eos.eosDensity(pressure[i])#/eos.density_s
+        chempo[i]=eos.eosChempo(pressure[i])#*eos.baryon_density_s/(eos.density_s+eos.pressure_s)
+        baryondensity[i]=eos.eosBaryonDensity(pressure[i])#/eos.baryon_density_s
+# =============================================================================
+#         try:
+#             cs2[i]=eos.eosCs2(pressure[i])
+#         except RuntimeWarning:
+#             print pressure[i]
+# =============================================================================
         cs2[i]=eos.eosCs2(pressure[i])
+        print pressure[i],density[i],baryondensity[i],chempo[i]
+        cs2_bound[i]=1-1.302e-7*973**4*((chempo[i]-973)*(chempo[i]+973))**2.5/(np.pi**2*(density[i]+pressure[i])*chempo[i]*973**4)
     import matplotlib.pyplot as plt
     f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2, sharex=True,figsize=(10, 10))
     ax1.plot(pressure,density)
@@ -255,6 +251,23 @@ def show_eos(eos,pressure):
     ax3.set_xlabel('pressure(MeV fm$^{-3}$)')
     ax3.set_ylabel('baryon density(fm$^{-3}$)')
     ax4.plot(pressure,cs2)
+    ax4.plot(pressure,cs2_bound)
     ax4.set_xlabel('pressure(MeV fm$^{-3}$)')
     ax4.set_ylabel('sound speed square')
-    
+
+# =============================================================================
+# baryon_density0=0.16/2.7
+# baryon_density1=1.85*0.16
+# baryon_density2=3.74*0.16
+# baryon_density3=7.4*0.16
+# pressure1=10.0
+# pressure2=150.
+# pressure3=1000.
+# pressure_trans=120
+# det_density=100
+# cs2=1.0/4
+# args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans,det_density,cs2]
+# a=EOS_BPSwithPolyCSS(args)
+# pressure=np.linspace(10,200,100)
+# show_eos(a,pressure)
+# =============================================================================
