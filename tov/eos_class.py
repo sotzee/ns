@@ -91,6 +91,7 @@ class EOS_BPSwithPoly(EOS_BPS):
         self.baryon_density0,self.pressure1,self.baryon_density1\
         ,self.pressure2,self.baryon_density2,self.pressure3\
         ,self.baryon_density3=args
+        self.args=args
         self.pressure0=EOS_BPS.eosPressure_frombaryon(self.baryon_density0)
         self.density0=EOS_BPS.eosDensity(self.pressure0)
         args_eosPiecewisePoly=[self.density0,self.pressure0\
@@ -189,9 +190,9 @@ class EOS_BPSwithPolyCSS(EOS_BPSwithPoly,EOS_CSS):
         return (pressure+self.eosDensity(pressure))/self.eosBaryonDensity(pressure)
 
 
-class EOS_MIT(EOS_BPS):
+class EOS_MIT(EOS_BPS): #reference: HYBRID STARS THAT MASQUERADE AS NEUTRON STARS
     def __init__(self,args):
-        self.ms,self.bag,self.delta,self.a4=args
+        self.ms,self.bag,self.delta,self.a4=args #bag in unit MeVfm-3
         self.baryon_density_s=0.16
         self.pressure_s=self.bag
         self.density_s=self.bag
@@ -200,15 +201,16 @@ class EOS_MIT(EOS_BPS):
         self.eosPressure = interp1d(self.densityMIT,self.pressureMIT, kind='linear')
         self.eosDensity  = interp1d(self.pressureMIT,self.densityMIT, kind='linear')
         self.eosBaryonDensity = interp1d(self.pressureMIT,self.baryondensityMIT, kind='linear')
+
     def Omega(self,chempo):
         return -3./4/np.pi**2*self.a4*chempo**4+3.*self.ms**2*chempo**2/4\
     /np.pi**2-3.*self.delta**2*chempo**2/np.pi**2\
-    +(12.*np.log(self.ms/2/chempo)-1)*self.ms**4/32/np.pi**2+self.bag
+    +(12.*np.log(self.ms/2./chempo)-1)*self.ms**4/32/np.pi**2
     def dOmega_dchempo(self,chempo):
         return -3./np.pi**2*self.a4*chempo**3+3.*self.ms**2*chempo/2/np.pi**2\
     -6.*self.delta**2*chempo/np.pi**2-3.*self.ms**4/8/np.pi**4/chempo
     def eos_for_intepolation(self,chempo):
-        pressure=toMevfm(-self.Omega(chempo),'mev4')
+        pressure=toMevfm(-self.Omega(chempo),'mev4')-self.bag
         baryondensity=toMevfm(-self.dOmega_dchempo(chempo),'mev4')
         energydensity=chempo*baryondensity-pressure
         return pressure,energydensity,baryondensity
@@ -219,15 +221,47 @@ class EOS_MIT(EOS_BPS):
 # =============================================================================
 # a=EOS_MIT([100.,133**4,0,0.61])
 # =============================================================================
+        
+class EOS_FermiGas(EOS_BPS): #reference: THE PHYSICS OF COMPACT OBJECTS BY SHAPIRO  PAGE24 
+    def __init__(self,args):
+        self.m,self.g=args #m in unit MeV
+        self.baryon_density_s=0.16
+        self.pressure_s=toMevfm(self.m**4,'mev4')
+        self.density_s=self.pressure_s
+        x_intepolation=np.linspace(0,2000./self.m,1001)
+        self.pressureFermiGas=self.eos_for_intepolation(x_intepolation)
+        self.eos_x_from_pressure = interp1d(self.pressureFermiGas,x_intepolation, kind='linear')
 
-def show_eos(eos,pressure):
+    def phi(self,x):
+        return (x*(1+x**2)**0.5*(2*x**2-3)+3*np.log(x+(1+x**2)**0.5))/(24*np.pi**2)
+    def chi(self,x):
+        return (x*(1+x**2)**0.5*(2*x**2+1)-np.log(x+(1+x**2)**0.5))/(8*np.pi**2)
+    def eos_for_intepolation(self,x):
+        pressure=toMevfm(self.g*self.m**4*self.phi(x),'mev4')
+        #energydensity=toMevfm(self.g*self.m**4*self.chi(x),'mev4')
+        return pressure#,energydensity
+    
+    def eosDensity(self,pressure):
+        return toMevfm(self.g*self.m**4*self.chi(self.eos_x_from_pressure(pressure)),'mev4')
+    def eosBaryonDensity(self,pressure):
+        return toMevfm(self.g*self.m**3*self.eos_x_from_pressure(pressure)**3/(6*np.pi**2),'mev4')
+    def eosCs2(self,pressure):
+        return 1.0/derivative(self.eosDensity,pressure,dx=1e-8)
+    def eosChempo(self,pressure):
+        return (self.eos_x_from_pressure(pressure)**2+1)**0.5*self.m
+
+def show_eos(eos,pressure,add_togetherwith):
     N=np.size(pressure)
     density=np.linspace(0,200,N)
     chempo=np.linspace(0,200,N)
     baryondensity=np.linspace(0,200,N)
     cs2=np.linspace(0,200,N)
-    cs2_bound=np.linspace(0,200,N)
+    #cs2_bound1=np.linspace(0,200,N)
+    #cs2_bound2=np.linspace(0,200,N)
 
+    #m0=939.5654
+    #unit_MeV4_to_MeVfm3=1.302e-7
+    #A0=m0**4/np.pi**2*unit_MeV4_to_MeVfm3
     for i in range(N):
         density[i]=eos.eosDensity(pressure[i])#/eos.density_s
         chempo[i]=eos.eosChempo(pressure[i])#*eos.baryon_density_s/(eos.density_s+eos.pressure_s)
@@ -239,8 +273,9 @@ def show_eos(eos,pressure):
 #             print pressure[i]
 # =============================================================================
         cs2[i]=eos.eosCs2(pressure[i])
-        print pressure[i],density[i],baryondensity[i],chempo[i]
-        cs2_bound[i]=1-1.302e-7*973**4*((chempo[i]-973)*(chempo[i]+973))**2.5/(np.pi**2*(density[i]+pressure[i])*chempo[i]*973**4)
+        #v=chempo[i]/m0-1
+        #cs2_bound1[i]=1-(A0*(4./45))*(v*(v+2))**(2.5)/((v+1)*(density[i]+pressure[i]))
+        #cs2_bound2[i]=(density[i]-pressure[i]/3)/(density[i]+pressure[i])
     import matplotlib.pyplot as plt
     f, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2,2, sharex=True,figsize=(10, 10))
     ax1.plot(pressure,density)
@@ -250,10 +285,33 @@ def show_eos(eos,pressure):
     ax3.plot(pressure,baryondensity)
     ax3.set_xlabel('pressure(MeV fm$^{-3}$)')
     ax3.set_ylabel('baryon density(fm$^{-3}$)')
-    ax4.plot(pressure,cs2)
-    ax4.plot(pressure,cs2_bound)
+    ax4.plot(pressure,cs2,label='$c_{s}^2$')
+    plt.ylim(0,1)
+    #ax4.plot(pressure,cs2_bound1,label='original bound')
+    #ax4.plot(pressure,cs2_bound2,label='modified bound')
+    #ax4.legend(loc=4,prop={'size':8},frameon=False)
     ax4.set_xlabel('pressure(MeV fm$^{-3}$)')
     ax4.set_ylabel('sound speed square')
+    if(add_togetherwith==True):
+        show_eos_togetherwith(eos,pressure,ax1,ax2,ax3,ax4)
+
+def show_eos_togetherwith(eos,pressure,ax1,ax2,ax3,ax4):
+# =============================================================================
+#     B=120
+#     g=2*3*3*0.7
+#     ax1.plot(pressure,3*pressure+4*B)
+#     ax2.plot(pressure,3*((pressure+B)*24*np.pi**2/g/1.302e-7)**0.25)
+# =============================================================================
+    ax4.plot(pressure,1-4.*(eos.eosChempo(pressure)**2-eos.m**2)/(eos.eosChempo(pressure)**2*15.),label='$c_{max}^2$')
+    ax4.plot(pressure,[11.0/15]*100,'--',label='$c_{max}^2$ asymptotic value')
+    ax4.plot(pressure,[5.0/15]*100,'--',label='$c_{s}^2$ asymptotic value')
+    ax4.legend(loc=4,prop={'size':8},frameon=False)
+    
+# =============================================================================
+# a=EOS_FermiGas([400,2])
+# pressure=np.linspace(0.1,2000,100)
+# show_eos(a,pressure,True)
+# =============================================================================
 
 # =============================================================================
 # baryon_density0=0.16/2.7
@@ -270,4 +328,20 @@ def show_eos(eos,pressure):
 # a=EOS_BPSwithPolyCSS(args)
 # pressure=np.linspace(10,200,100)
 # show_eos(a,pressure)
+# =============================================================================
+
+# =============================================================================
+# args=[0.059259259259259255, 20.0, 0.29600000000000004, 169.32898412566584, 0.5984, 244.0137227866619, 1.1840000000000002]
+# a=EOS_BPSwithPoly(args)
+# pressure=np.linspace(1,200,100)
+# show_eos(a,pressure,True)
+# print 'a'
+# =============================================================================
+
+# =============================================================================
+# args=[100, 100, 0, 1]
+# a=EOS_MIT(args)
+# pressure=np.linspace(1,200,100)
+# show_eos(a,pressure)
+# print 'a'
 # =============================================================================
