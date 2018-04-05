@@ -106,6 +106,24 @@ class final_data_BPSwithPolyCSS(object):
 def merge_final_data_BPSwithPolyCSS(final_data1,final_data2):
     return final_data_BPSwithPolyCSS(final_data1.parameter+final_data2.parameter)
 
+unit_MeV4_to_MeVfm3=1.302e-7
+m0=939.5654
+n_s=0.16
+A0=m0**4/np.pi**2*unit_MeV4_to_MeVfm3
+def stable_final_data_BPSwithPolyCSS(final_data):
+    stable_parameter=[]
+    for i in range(final_data.N):
+        eos=EOS_BPSwithPoly(final_data.parameter[i].args[0:7])
+        pressure_trans=final_data.parameter[i].args[7]
+        det_density=final_data.parameter[i].args[8]
+        cs2=final_data.parameter[i].args[9]
+        density_trans=eos.eosDensity(pressure_trans)
+        baryondensity_trans=eos.eosBaryonDensity(pressure_trans)
+        chempo=(density_trans+pressure_trans)/baryondensity_trans
+        if(1-cs2-4.*A0*((chempo/m0)**2-1)**2.5/(45*chempo*(density_trans+det_density+pressure_trans)/m0)>0):
+            stable_parameter.append(final_data.parameter[i])
+    return final_data_BPSwithPolyCSS(stable_parameter)
+    
 def read_parameter(p1,cs2,Calculation_mode,Hybrid_sampling):
     if(Calculation_mode=='hybrid'):
         print('%s'%Hybrid_sampling)
