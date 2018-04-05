@@ -344,19 +344,21 @@ def show_eos_togetherwith(eos,pressure,ax1,ax2,ax3,ax4):
     ax4.legend(loc=4,prop={'size':8},frameon=False)
     
 
-pressure=np.linspace(0.01,8000,100)
-import matplotlib.pyplot as plt
-f = plt.figure(figsize=(6, 6))
-m0=1000
-ms=np.linspace(1,0.8,11)
-a=EOS_FermiGas([m0,2])
-plt.plot(pressure,a.eosCs2(pressure))
-for i in range(len(ms)):
-    a=EOS_FermiGas_eff([m0,ms[i]*m0,0.16,2])
-    plt.plot(pressure,a.eosCs2(pressure),label='$m_s$=%.2f $m_0$'%ms[i])
-plt.legend(loc=4,prop={'size':8},frameon=False)
-plt.xlabel('pressure ($MeV fm^{-3}$)')
-plt.ylabel(' $c_s^2$')
+# =============================================================================
+# pressure=np.linspace(0.01,8000,100)
+# import matplotlib.pyplot as plt
+# f = plt.figure(figsize=(6, 6))
+# m0=1000
+# ms=np.linspace(1,0.8,11)
+# a=EOS_FermiGas([m0,2])
+# plt.plot(pressure,a.eosCs2(pressure))
+# for i in range(len(ms)):
+#     a=EOS_FermiGas_eff([m0,ms[i]*m0,0.16,2])
+#     plt.plot(pressure,a.eosCs2(pressure),label='$m_s$=%.2f $m_0$'%ms[i])
+# plt.legend(loc=4,prop={'size':8},frameon=False)
+# plt.xlabel('pressure ($MeV fm^{-3}$)')
+# plt.ylabel(' $c_s^2$')
+# =============================================================================
 
 
 # =============================================================================
