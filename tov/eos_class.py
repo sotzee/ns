@@ -250,6 +250,42 @@ class EOS_FermiGas(EOS_BPS): #reference: THE PHYSICS OF COMPACT OBJECTS BY SHAPI
     def eosChempo(self,pressure):
         return (self.eos_x_from_pressure(pressure)**2+1)**0.5*self.m
 
+class EOS_FermiGas_eff(EOS_BPS): #reference: THE PHYSICS OF COMPACT OBJECTS BY SHAPIRO  PAGE24 
+    def __init__(self,args):
+        self.m0,self.ms,self.ns,self.g=args #m in unit MeV
+        self.baryon_density_s=self.ns
+        self.pressure_s=toMevfm(self.m0**4,'mev4')
+        self.density_s=self.pressure_s
+        n_intepolation=np.linspace(0,20,1001)
+        self.pressureFermiGas=self.eos_for_intepolation(n_intepolation)
+        self.eos_n_from_pressure = interp1d(self.pressureFermiGas,n_intepolation, kind='linear')
+
+    def phi(self,x):
+        return (x*(1+x**2)**0.5*(2*x**2-3)+3*np.log(x+(1+x**2)**0.5))/(24*np.pi**2)
+    def chi(self,x):
+        return (x*(1+x**2)**0.5*(2*x**2+1)-np.log(x+(1+x**2)**0.5))/(8*np.pi**2)
+    def m(self,n):
+        return self.m0*self.ms*self.ns/(self.ms*self.ns+(self.m0-self.ms)*n)
+    def x(self,n):
+        return (6*np.pi**2*n)**(1./3.)/(self.m(n)*5.064e-3)    
+    def eos_for_intepolation(self,n):
+        pressure=toMevfm(self.g*self.m(n)**4*self.phi(self.x(n)),'mev4')
+        #energydensity=toMevfm(self.g*self.m**4*self.chi(x),'mev4')
+        return pressure#,energydensity
+    
+    def eosDensity(self,pressure):
+        n=self.eos_n_from_pressure(pressure)
+        return toMevfm(self.g*self.m(n)**4*self.chi(self.x(n)),'mev4')
+    def eosBaryonDensity(self,pressure):
+        n=self.eos_n_from_pressure(pressure)
+        return toMevfm(self.g*self.m(n)**3*self.x(n)**3/(6*np.pi**2),'mev4')
+    def eosCs2(self,pressure):
+        return 1.0/derivative(self.eosDensity,pressure,dx=1e-8)
+    def eosChempo(self,pressure):
+        n=self.eos_n_from_pressure(pressure)
+        return (self.x(n)**2+1)**0.5*self.m(n)
+
+
 def show_eos(eos,pressure,add_togetherwith):
     N=np.size(pressure)
     density=np.linspace(0,200,N)
@@ -307,11 +343,21 @@ def show_eos_togetherwith(eos,pressure,ax1,ax2,ax3,ax4):
     ax4.plot(pressure,[5.0/15]*100,'--',label='$c_{s}^2$ asymptotic value')
     ax4.legend(loc=4,prop={'size':8},frameon=False)
     
-# =============================================================================
-# a=EOS_FermiGas([400,2])
-# pressure=np.linspace(0.1,2000,100)
-# show_eos(a,pressure,True)
-# =============================================================================
+
+pressure=np.linspace(0.01,8000,100)
+import matplotlib.pyplot as plt
+f = plt.figure(figsize=(6, 6))
+m0=1000
+ms=np.linspace(1,0.8,11)
+a=EOS_FermiGas([m0,2])
+plt.plot(pressure,a.eosCs2(pressure))
+for i in range(len(ms)):
+    a=EOS_FermiGas_eff([m0,ms[i]*m0,0.16,2])
+    plt.plot(pressure,a.eosCs2(pressure),label='$m_s$=%.2f $m_0$'%ms[i])
+plt.legend(loc=4,prop={'size':8},frameon=False)
+plt.xlabel('pressure ($MeV fm^{-3}$)')
+plt.ylabel(' $c_s^2$')
+
 
 # =============================================================================
 # baryon_density0=0.16/2.7

@@ -13,13 +13,12 @@ from time import time
 import pickle
 #from tov_f import Mass_transition_formax
 #import scipy.optimize as opt
-from distribution_centerdensity import centerdensity
 import warnings
 
 Preset_rtol = 1e-4
 number_per_parameter=10
 
-def Calculation(x):
+def Calculation(x,random_chisquare):
     eos=config.eos_config(parameter[x].args)
     warnings.filterwarnings('error')
 
@@ -37,18 +36,18 @@ def Calculation(x):
 # =============================================================================
     try:
         if(parameter[x].properity[35]==0):
-            ofpc_array=centerdensity(10,parameter[x].properity[3],parameter[x].properity[1],config.concentration,number_per_parameter)
+            ofpc_array=centerdensity(10,parameter[x].properity[3],parameter[x].properity[1],config.concentration,random_chisquare[x])
             for i in range(np.size(ofpc_array)):
-                processOutput_ofpc = config.eos_MassRadius(ofpc_array[0],config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
+                processOutput_ofpc = config.eos_MassRadius(ofpc_array[i],config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
                 if(ofpc_array[i]<parameter[x].args[7]):
                     parameter[x].add_star([0,ofpc_array[i]]+processOutput_ofpc)
                 else:
                     parameter[x].add_star([1,ofpc_array[i]]+processOutput_ofpc)
         else:
             if(parameter[x].properity[11]==0):
-                ofpc_array=centerdensity(10,parameter[x].properity[3],parameter[x].properity[19],config.concentration,number_per_parameter)
+                ofpc_array=centerdensity(10,parameter[x].properity[3],parameter[x].properity[19],config.concentration,random_chisquare[x])
             else:
-                ofpc_array=centerdensity(10,parameter[x].properity[11],parameter[x].properity[19],config.concentration,number_per_parameter)
+                ofpc_array=centerdensity(10,parameter[x].properity[11],parameter[x].properity[19],config.concentration,random_chisquare[x])
             for i in range(np.size(ofpc_array)):
                 processOutput_ofpc = config.eos_MassRadius(ofpc_array[i],config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
                 if(ofpc_array[i]<parameter[x].args[7]):
@@ -64,16 +63,23 @@ def Calculation(x):
         print(parameter[x].args)
     return parameter[x]
 
-def processInput(i,num_cores,complete_set):
+def processInput(i,num_cores,complete_set,random_chisquare):
     timenow=time()
     timebegin=timenow
     timeprev=timenow
     result=list()
     for ii in range(complete_set):
-        result.append(Calculation(i+num_cores*ii))
+        result.append(Calculation(i+num_cores*ii,random_chisquare))
         timeprev=remainingTime(timebegin,timeprev,ii,config.start_from,complete_set)
     return result
 
+def centerdensity(begin,mid,end,concentration,random_array):
+    ratio=(mid-begin)/concentration/(1-2.0/9/concentration)**3
+    random_array=random_array*ratio
+    #array=array[(array >= 0) & (array <= end)]
+    #array=(array*array+begin*end)/(begin+end)
+    random_array=random_array[(random_array >= begin) & (random_array <= end)]
+    return random_array
 
 def remainingTime(timebegin,timeprev,ii,start_from,complete_set):
     timenow=time()
@@ -93,9 +99,10 @@ def main(processInput):
     f_log.write("Calculation_mode: " + Calculation_mode)
     f_log.write('%d cores are being used.\n'% num_cores)
     f_log.close()
-
-    Output=Parallel(n_jobs=num_cores)(delayed(processInput)(i,num_cores,complete_set) for i in range(num_cores))
-    Output_leftover=Parallel(n_jobs=num_cores)(delayed(Calculation)(i+complete_set*num_cores) for i in range(leftover_num))
+    
+    random_chisquare=np.random.chisquare(config.concentration,[total_num,number_per_parameter])
+    Output=Parallel(n_jobs=num_cores)(delayed(processInput)(i,num_cores,complete_set,random_chisquare) for i in range(num_cores))
+    Output_leftover=Parallel(n_jobs=num_cores)(delayed(Calculation)(i+complete_set*num_cores,random_chisquare) for i in range(leftover_num))
     result=list()
     for i in range(complete_set):
         for ii in range(num_cores):
