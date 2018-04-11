@@ -63,7 +63,7 @@ def Calculation(x,random_chisquare):
                     parameter[x].add_star([2,ofpc_array[i]]+processOutput_ofpc)
                 else:#discontinuous hybrid
                     parameter[x].add_star([3,ofpc_array[i]]+processOutput_ofpc)
-                for j in range(np.size(ofpc_array)):
+                for j in range(i):
                     m1=parameter[x].stars[i+5][2]
                     tidal1=parameter[x].stars[i+5][8]
                     m2=parameter[x].stars[j+5][2]
