@@ -48,6 +48,7 @@ def Calculation(x,random_chisquare):
                     parameter[x].add_star([0,ofpc_array[i]]+processOutput_ofpc)
                 else:
                     parameter[x].add_star([1,ofpc_array[i]]+processOutput_ofpc)
+                
         else:
             if(parameter[x].properity[11]==0):
                 ofpc_array=centerdensity(10,parameter[x].properity[3],parameter[x].properity[19],config.concentration,random_chisquare[x])
@@ -63,12 +64,14 @@ def Calculation(x,random_chisquare):
                     parameter[x].add_star([2,ofpc_array[i]]+processOutput_ofpc)
                 else:#discontinuous hybrid
                     parameter[x].add_star([3,ofpc_array[i]]+processOutput_ofpc)
-                for j in range(i):
-                    m1=parameter[x].stars[i+5][2]
-                    tidal1=parameter[x].stars[i+5][8]
-                    m2=parameter[x].stars[j+5][2]
-                    tidal2=parameter[x].stars[j+5][8]
-                    binaries.append([i,j,mass_chirp(m1,m2),tidal_binary(m1,m2,tidal1,tidal2)])
+
+        for i in range(np.size(ofpc_array)):
+            for j in range(i):
+                m1=parameter[x].stars[i+5][2]
+                tidal1=parameter[x].stars[i+5][8]
+                m2=parameter[x].stars[j+5][2]
+                tidal2=parameter[x].stars[j+5][8]
+                binaries.append([i,j,mass_chirp(m1,m2),tidal_binary(m1,m2,tidal1,tidal2)])
     except RuntimeWarning:
         print('Runtimewarning happens at addstars: '+str(ofpc_array[i]))
         print(parameter[x].args)

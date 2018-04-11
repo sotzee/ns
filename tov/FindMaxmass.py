@@ -47,7 +47,7 @@ def Maxmass_transition(Preset_Pressure_final,Preset_rtol,eos):
 
 def Maxmass(Preset_Pressure_final,Preset_rtol,eos):
     result=opt.minimize(Mass_formax,100.0,tol=0.001,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
-    return [result.x[0],-result.fun,0,result.x[0],0]
+    return [0,result.x[0],-result.fun,result.x[0],-result.fun,result.x[0],-result.fun]
 
 # =============================================================================
 # from eos_class import EOS_BPSwithPolyCSS
