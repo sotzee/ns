@@ -20,29 +20,39 @@ def Calculation(x):
     eos=config.eos_config(parameter[x].args)
     warnings.filterwarnings('error')
     MaximumMass_pressure_center=parameter[x].properity[1]
-    for i in range(np.size(ofmass_array)):
-        try:
-            if(parameter[x].properity[35]==0):
-                processOutput_ofmass=Properity_ofmass(ofmass_array[i],config.Preset_pressure_center_low,MaximumMass_pressure_center,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
-                if(processOutput_ofmass[0]<parameter[x].args[7]):
-                    parameter[x].add_star([0]+processOutput_ofmass)
-                else:
-                    parameter[x].add_star([1]+processOutput_ofmass)
-            else:
-                processOutput_ofmass,processOutput_ofmass_quark = Properity_ofmass_two_peak(ofmass_array[i],config.Preset_pressure_center_low,parameter[x].properity[19],parameter[x].properity[35],parameter[x].properity[27],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos,f_log_name)
-                if(processOutput_ofmass_quark[0]==0):
+    if(Calculation_mode=='hybrid'):
+        for i in range(np.size(ofmass_array)):
+            try:
+                if(parameter[x].properity[35]==0):
+                    processOutput_ofmass=Properity_ofmass(ofmass_array[i],config.Preset_pressure_center_low,MaximumMass_pressure_center,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
                     if(processOutput_ofmass[0]<parameter[x].args[7]):
                         parameter[x].add_star([0]+processOutput_ofmass)
                     else:
                         parameter[x].add_star([1]+processOutput_ofmass)
                 else:
-                    parameter[x].add_star([3]+processOutput_ofmass_quark)
-
-        except RuntimeWarning:
-            print('Runtimewarning happens at OfMass: '+str(ofmass_array[i]))
-            print('parameter[%d]'%x)
-            print(parameter[x].args)
-            print(parameter[x].properity[19],parameter[x].properity[35],parameter[x].properity[27])
+                    processOutput_ofmass,processOutput_ofmass_quark = Properity_ofmass_two_peak(ofmass_array[i],config.Preset_pressure_center_low,parameter[x].properity[19],parameter[x].properity[35],parameter[x].properity[27],config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos,f_log_name)
+                    if(processOutput_ofmass_quark[0]==0):
+                        if(processOutput_ofmass[0]<parameter[x].args[7]):
+                            parameter[x].add_star([0]+processOutput_ofmass)
+                        else:
+                            parameter[x].add_star([1]+processOutput_ofmass)
+                    else:
+                        parameter[x].add_star([3]+processOutput_ofmass_quark)
+    
+            except RuntimeWarning:
+                print('Runtimewarning happens at OfMass: '+str(ofmass_array[i]))
+                print('parameter[%d]'%x)
+                print(parameter[x].args)
+                print(parameter[x].properity[19],parameter[x].properity[35],parameter[x].properity[27])
+    elif(Calculation_mode=='hadronic'):
+        for i in range(np.size(ofmass_array)):
+            try:
+                processOutput_ofmass=Properity_ofmass(ofmass_array[i],config.Preset_pressure_center_low,MaximumMass_pressure_center,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
+                parameter[x].add_star([0]+processOutput_ofmass)
+            except RuntimeWarning:
+                print('Runtimewarning happens at OfMass: '+str(ofmass_array[i]))
+                print('parameter[%d]'%x)
+                print(parameter[x].args)
     return parameter[x]
 
 def processInput(i,num_cores,complete_set):
