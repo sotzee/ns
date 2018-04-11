@@ -39,42 +39,51 @@ def Calculation(x,random_chisquare):
 #         parameter[x].set_properity(properity_new)
 #     ofpc_array=centerdensity(10,parameter[x].properity[3],Maximum_pressure_center,config.concentration,number_per_parameter)
 # =============================================================================
-    try:
-        if(parameter[x].properity[35]==0):
-            ofpc_array=centerdensity(10,parameter[x].properity[3],parameter[x].properity[1],config.concentration,random_chisquare[x])
-            for i in range(np.size(ofpc_array)):
-                processOutput_ofpc = config.eos_MassRadius(ofpc_array[i],config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
-                if(ofpc_array[i]<parameter[x].args[7]):
-                    parameter[x].add_star([0,ofpc_array[i]]+processOutput_ofpc)
-                else:
-                    parameter[x].add_star([1,ofpc_array[i]]+processOutput_ofpc)
-                
-        else:
-            if(parameter[x].properity[11]==0):
-                ofpc_array=centerdensity(10,parameter[x].properity[3],parameter[x].properity[19],config.concentration,random_chisquare[x])
+    if(Calculation_mode=='hybrid'):
+        try:
+            if(parameter[x].properity[35]==0):
+                ofpc_array=centerdensity(10,parameter[x].properity[3],parameter[x].properity[1],config.concentration,random_chisquare[x])
+                for i in range(np.size(ofpc_array)):
+                    processOutput_ofpc = config.eos_MassRadius(ofpc_array[i],config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
+                    if(ofpc_array[i]<parameter[x].args[7]):
+                        parameter[x].add_star([0,ofpc_array[i]]+processOutput_ofpc)
+                    else:
+                        parameter[x].add_star([1,ofpc_array[i]]+processOutput_ofpc)
+                    
             else:
-                ofpc_array=centerdensity(10,parameter[x].properity[11],parameter[x].properity[19],config.concentration,random_chisquare[x])
-            for i in range(np.size(ofpc_array)):
-                processOutput_ofpc = config.eos_MassRadius(ofpc_array[i],config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
-                if(ofpc_array[i]<parameter[x].args[7]):#hadronic
-                    parameter[x].add_star([0,ofpc_array[i]]+processOutput_ofpc)
-                elif(ofpc_array[i]<parameter[x].properity[27]):#continuous hybrid
-                    parameter[x].add_star([1,ofpc_array[i]]+processOutput_ofpc)
-                elif(ofpc_array[i]<parameter[x].properity[35]):#unstable hybrid   [35]used to be [19] as a bug 04/10/2018
-                    parameter[x].add_star([2,ofpc_array[i]]+processOutput_ofpc)
-                else:#discontinuous hybrid
-                    parameter[x].add_star([3,ofpc_array[i]]+processOutput_ofpc)
+                if(parameter[x].properity[11]==0):
+                    ofpc_array=centerdensity(10,parameter[x].properity[3],parameter[x].properity[19],config.concentration,random_chisquare[x])
+                else:
+                    ofpc_array=centerdensity(10,parameter[x].properity[11],parameter[x].properity[19],config.concentration,random_chisquare[x])
+                for i in range(np.size(ofpc_array)):
+                    processOutput_ofpc = config.eos_MassRadius(ofpc_array[i],config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
+                    if(ofpc_array[i]<parameter[x].args[7]):#hadronic
+                        parameter[x].add_star([0,ofpc_array[i]]+processOutput_ofpc)
+                    elif(ofpc_array[i]<parameter[x].properity[27]):#continuous hybrid
+                        parameter[x].add_star([1,ofpc_array[i]]+processOutput_ofpc)
+                    elif(ofpc_array[i]<parameter[x].properity[35]):#unstable hybrid   [35]used to be [19] as a bug 04/10/2018
+                        parameter[x].add_star([2,ofpc_array[i]]+processOutput_ofpc)
+                    else:#discontinuous hybrid
+                        parameter[x].add_star([3,ofpc_array[i]]+processOutput_ofpc)
+    
+        except RuntimeWarning:
+            print('Runtimewarning happens at addstars: '+str(ofpc_array[i]))
+            print(parameter[x].args)
 
+    elif(Calculation_mode=='hadronic'):
+        ofpc_array=centerdensity(10,parameter[x].properity[3],parameter[x].properity[1],config.concentration,random_chisquare[x])
         for i in range(np.size(ofpc_array)):
-            for j in range(i):
-                m1=parameter[x].stars[i+5][2]
-                tidal1=parameter[x].stars[i+5][8]
-                m2=parameter[x].stars[j+5][2]
-                tidal2=parameter[x].stars[j+5][8]
-                binaries.append([i,j,mass_chirp(m1,m2),tidal_binary(m1,m2,tidal1,tidal2)])
-    except RuntimeWarning:
-        print('Runtimewarning happens at addstars: '+str(ofpc_array[i]))
-        print(parameter[x].args)
+            processOutput_ofpc = config.eos_MassRadius(ofpc_array[i],config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
+            parameter[x].add_star([0,ofpc_array[i]]+processOutput_ofpc)
+
+    for i in range(np.size(ofpc_array)):
+        for j in range(i):
+            m1=parameter[x].stars[i+5][2]
+            tidal1=parameter[x].stars[i+5][8]
+            m2=parameter[x].stars[j+5][2]
+            tidal2=parameter[x].stars[j+5][8]
+            binaries.append([i,j,mass_chirp(m1,m2),tidal_binary(m1,m2,tidal1,tidal2)])
+
     return EOS_item_with_binary(parameter[x].args,parameter[x].properity,parameter[x].stars,binaries)
 
 def processInput(i,num_cores,complete_set,random_chisquare):
