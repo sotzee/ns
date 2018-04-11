@@ -26,6 +26,7 @@ class final_data_BPSwithPolyCSS(object):
         stars_type1=list()
         stars_type2=list()
         stars_type3=list()
+        binaries_matrix=list()
         tidal_binary_matrix=list()
         density_trans=list()
         baryondensity_trans=list()
@@ -47,12 +48,15 @@ class final_data_BPSwithPolyCSS(object):
                     stars_type2.append(parameter[i].stars[j+5])
                 if(parameter[i].stars[j+5][0]==3):
                     stars_type3.append(parameter[i].stars[j+5])
-
+            binaries_matrix+=parameter[i].binaries
+            
         args_matrix=np.array(args_matrix)
         self.args_matrix=args_matrix.transpose()
         properity_matrix=np.array(properity_matrix)
         self.properity_matrix=properity_matrix.transpose()
-        
+        binaries_matrix=np.array(binaries_matrix)
+        self.binaries_matrix=binaries_matrix.transpose()
+
         stars_type0=np.array(stars_type0)
         self.stars_type0=stars_type0.transpose()
         stars_type1=np.array(stars_type1)
