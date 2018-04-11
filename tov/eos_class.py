@@ -12,6 +12,14 @@ class EOS_item(object):
         self.properity=properity
     def add_star(self,star_properity):
         self.stars.append(star_properity)
+
+class EOS_item_with_binary(object):
+    def __init__(self,para,prop,single_stars,binary_stars):
+        self.args=para
+        self.properity=prop
+        self.stars=single_stars
+        self.binaries=binary_stars
+        
     
 class EOS_BPS(object):
     #density in units: g/cm3

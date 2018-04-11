@@ -11,17 +11,22 @@ from joblib import Parallel, delayed
 from multiprocessing import cpu_count
 from time import time
 import pickle
-#from tov_f import Mass_transition_formax
-#import scipy.optimize as opt
+from eos_class import EOS_item_with_binary
 import warnings
 
 Preset_rtol = 1e-4
-number_per_parameter=10
+number_per_parameter=5
+
+def mass_chirp(m1,m2):
+    return (m1*m2)**0.6/(m1+m2)**0.2
+
+def tidal_binary(m1,m2,tidal1,tidal2):
+    return 16*((m1+12*m2)*m1**4*tidal1+(m2+12*m1)*m2**4*tidal2)/(13*(m1+m2)**5)
 
 def Calculation(x,random_chisquare):
     eos=config.eos_config(parameter[x].args)
     warnings.filterwarnings('error')
-
+    binaries=[]
 # =============================================================================
 #     if(parameter[x].properity[2]>2):
 #         result1=opt.minimize(Mass_transition_formax,800.0,tol=0.001,args=(config.Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
@@ -50,18 +55,24 @@ def Calculation(x,random_chisquare):
                 ofpc_array=centerdensity(10,parameter[x].properity[11],parameter[x].properity[19],config.concentration,random_chisquare[x])
             for i in range(np.size(ofpc_array)):
                 processOutput_ofpc = config.eos_MassRadius(ofpc_array[i],config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
-                if(ofpc_array[i]<parameter[x].args[7]):
+                if(ofpc_array[i]<parameter[x].args[7]):#hadronic
                     parameter[x].add_star([0,ofpc_array[i]]+processOutput_ofpc)
-                elif(ofpc_array[i]<parameter[x].properity[27]):
+                elif(ofpc_array[i]<parameter[x].properity[27]):#continuous hybrid
                     parameter[x].add_star([1,ofpc_array[i]]+processOutput_ofpc)
-                elif(ofpc_array[i]<parameter[x].properity[19]):
+                elif(ofpc_array[i]<parameter[x].properity[35]):#unstable hybrid   [35]used to be [19] as a bug 04/10/2018
                     parameter[x].add_star([2,ofpc_array[i]]+processOutput_ofpc)
-                else:
+                else:#discontinuous hybrid
                     parameter[x].add_star([3,ofpc_array[i]]+processOutput_ofpc)
+                for j in range(np.size(ofpc_array)):
+                    m1=parameter[x].stars[i+5][2]
+                    tidal1=parameter[x].stars[i+5][8]
+                    m2=parameter[x].stars[j+5][2]
+                    tidal2=parameter[x].stars[j+5][8]
+                    binaries.append([i,j,mass_chirp(m1,m2),tidal_binary(m1,m2,tidal1,tidal2)])
     except RuntimeWarning:
         print('Runtimewarning happens at addstars: '+str(ofpc_array[i]))
         print(parameter[x].args)
-    return parameter[x]
+    return EOS_item_with_binary(parameter[x].args,parameter[x].properity,parameter[x].stars,binaries)
 
 def processInput(i,num_cores,complete_set,random_chisquare):
     timenow=time()
@@ -79,7 +90,7 @@ def centerdensity(begin,mid,end,concentration,random_array):
     #array=array[(array >= 0) & (array <= end)]
     #array=(array*array+begin*end)/(begin+end)
     random_array=random_array[(random_array >= begin) & (random_array <= end)]
-    return random_array
+    return random_array[0:number_per_parameter]
 
 def remainingTime(timebegin,timeprev,ii,start_from,complete_set):
     timenow=time()
@@ -100,7 +111,7 @@ def main(processInput):
     f_log.write('%d cores are being used.\n'% num_cores)
     f_log.close()
     
-    random_chisquare=np.random.chisquare(config.concentration,[total_num,number_per_parameter])
+    random_chisquare=np.random.chisquare(config.concentration,[total_num,5*number_per_parameter])
     Output=Parallel(n_jobs=num_cores)(delayed(processInput)(i,num_cores,complete_set,random_chisquare) for i in range(num_cores))
     Output_leftover=Parallel(n_jobs=num_cores)(delayed(Calculation)(i+complete_set*num_cores,random_chisquare) for i in range(leftover_num))
     result=list()
