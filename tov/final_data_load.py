@@ -33,9 +33,13 @@ class final_data_BPSwithPolyCSS(object):
         gamma2=list()
         for i in range(self.N):
             eos=EOS_BPSwithPoly(parameter[i].args[0:7])
-            density_trans.append(eos.eosDensity(parameter[i].args[7]))
-            baryondensity_trans.append(eos.eosBaryonDensity(parameter[i].args[7]))
             gamma2.append(eos.eosPiecewisePoly.gamma2)
+            if(len(parameter[0].args)>7):
+                density_trans.append(eos.eosDensity(parameter[i].args[7]))
+                baryondensity_trans.append(eos.eosBaryonDensity(parameter[i].args[7]))
+            else:
+                density_trans=0
+                baryondensity_trans=0
             tidal_binary_matrix.append([parameter[i].stars[0][-1],parameter[i].stars[1][-1],parameter[i].stars[2][-1],parameter[i].stars[3][-1],parameter[i].stars[4][-1]])
             args_matrix.append(parameter[i].args)
             properity_matrix.append(parameter[i].properity)
