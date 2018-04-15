@@ -65,24 +65,27 @@ def Calculation(x,random_chisquare):
                         parameter[x].add_star([2,ofpc_array[i]]+processOutput_ofpc)
                     else:#discontinuous hybrid
                         parameter[x].add_star([3,ofpc_array[i]]+processOutput_ofpc)
-    
         except RuntimeWarning:
             print('Runtimewarning happens at addstars: '+str(ofpc_array[i]))
             print(parameter[x].args)
+        beta14_hadronic=parameter[x].properity[6]
+        beta14_quark=parameter[x].properity[14]
 
     elif(Calculation_mode=='hadronic'):
         ofpc_array=centerdensity(10,parameter[x].properity[3],parameter[x].properity[1],config.concentration,random_chisquare[x])
         for i in range(np.size(ofpc_array)):
             processOutput_ofpc = config.eos_MassRadius(ofpc_array[i],config.Preset_Pressure_final,Preset_rtol,'MRBIT',eos)
             parameter[x].add_star([0,ofpc_array[i]]+processOutput_ofpc)
-
+        beta14_hadronic=parameter[x].properity[6]
+        beta14_quark=0
+        
     for i in range(np.size(ofpc_array)):
         for j in range(i):
             m1=parameter[x].stars[i+5][2]
             tidal1=parameter[x].stars[i+5][8]
             m2=parameter[x].stars[j+5][2]
             tidal2=parameter[x].stars[j+5][8]
-            binaries.append([i,j,mass_chirp(m1,m2),tidal_binary(m1,m2,tidal1,tidal2)])
+            binaries.append([i,j,mass_chirp(m1,m2),tidal_binary(m1,m2,tidal1,tidal2),parameter[x].properity[2],beta14_hadronic,beta14_quark])
 
     return EOS_item_with_binary(parameter[x].args,parameter[x].properity,parameter[x].stars,binaries)
 
@@ -139,7 +142,7 @@ def main(processInput):
     f1=open('./'+dir_name+'/'+name_dat_main+'_addstars','wb')
     pickle.dump(result,f1)
     f1.close()
-    print('Congratulation! %s successfully saved!!!!!!!!!!!!!'%name_dat_main)
+    print('Congratulation! %s_addstars successfully saved!!!!!!!!!!!!!'%name_dat_main)
 
 if __name__ == '__main__':
     import sys

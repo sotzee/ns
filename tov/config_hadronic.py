@@ -17,9 +17,9 @@ baryon_density3 = 7.4*0.16
 
 #EoS parameter for Hadronic star
 Calculation_mode='hadronic'
-Preset_pressure1=[13*5+1,7.,20.] ##[num,lower_bound,up_bound] 
-Preset_pressure2=[50,100.] #[num,lower_bound] 
-Preset_pressure3=[70,150.] #[num,lower_bound]
+Preset_pressure1=[13*1+1,7.,20.] ##[num,lower_bound,up_bound] 
+Preset_pressure2=[5*5,100.] #[num,lower_bound] 
+Preset_pressure3=[7*5,150.] #[num,lower_bound]
 
 from eos_class import EOS_BPSwithPoly
 eos_config=EOS_BPSwithPoly

@@ -38,8 +38,8 @@ class final_data_BPSwithPolyCSS(object):
                 density_trans.append(eos.eosDensity(parameter[i].args[7]))
                 baryondensity_trans.append(eos.eosBaryonDensity(parameter[i].args[7]))
             else:
-                density_trans=0
-                baryondensity_trans=0
+                density_trans=[]
+                baryondensity_trans=[]
             tidal_binary_matrix.append([parameter[i].stars[0][-1],parameter[i].stars[1][-1],parameter[i].stars[2][-1],parameter[i].stars[3][-1],parameter[i].stars[4][-1]])
             args_matrix.append(parameter[i].args)
             properity_matrix.append(parameter[i].properity)
@@ -83,11 +83,17 @@ class final_data_BPSwithPolyCSS(object):
             self.tidal_binary_max=tidal_binay123.max(0)
             self.tidal_binary_min=tidal_binay123.min(0)
             self.pressure2=self.args_matrix[3]
-            self.pressure_trans=self.args_matrix[7]
-            self.det_density=self.args_matrix[8]
             self.Maximum_mass=self.properity_matrix[2]
-            [self.R_opf,self.beta_opf,self.M_binding_opf,self.momentofinertia_opf,self.yR_opf,self.tidal_opf]=self.properity_matrix[5:11]
-            [self.R_opf_quark,self.beta_opf_quark,self.M_binding_opf_quark,self.momentofinertia_opf_quark,self.yR_opf_quark,self.tidal_opf_quark]=self.properity_matrix[13:19]
+            if(len(parameter[0].args)>7):
+                self.pressure_trans=self.args_matrix[7]
+                self.det_density=self.args_matrix[8]
+                [self.R_opf_quark,self.beta_opf_quark,self.M_binding_opf_quark,self.momentofinertia_opf_quark,self.yR_opf_quark,self.tidal_opf_quark]=self.properity_matrix[13:19]
+            else:
+                self.pressure_trans=[]
+                self.det_density=[]
+                [self.R_opf_quark,self.beta_opf_quark,self.M_binding_opf_quark,self.momentofinertia_opf_quark,self.yR_opf_quark,self.tidal_opf_quark]=[[],[],[],[],[],[]]
+                [self.R_opf_quark,self.beta_opf_quark,self.M_binding_opf_quark,self.momentofinertia_opf_quark,self.yR_opf_quark,self.tidal_opf_quark]=[[],[],[],[],[],[]]
+
         else:
             self.tidal_binary1=[]
             self.tidal_binary2=[]
@@ -110,6 +116,16 @@ class final_data_BPSwithPolyCSS(object):
             else:
                 beyond_tidal_binary_devide.append(self.parameter[i])
         return final_data_BPSwithPolyCSS(within_tidal_binary_devide),final_data_BPSwithPolyCSS(beyond_tidal_binary_devide)
+
+    def maxmass_restriction(self,maxmass_devide):
+        within_devide=list()
+        beyond_devide=list()
+        for i in range(self.N):
+            if (self.Maximum_mass[i]<maxmass_devide):
+                within_devide.append(self.parameter[i])
+            else:
+                beyond_devide.append(self.parameter[i])
+        return final_data_BPSwithPolyCSS(within_devide),final_data_BPSwithPolyCSS(beyond_devide)
 
 def merge_final_data_BPSwithPolyCSS(final_data1,final_data2):
     return final_data_BPSwithPolyCSS(final_data1.parameter+final_data2.parameter)

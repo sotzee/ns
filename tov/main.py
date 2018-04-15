@@ -58,7 +58,8 @@ def Calculation(x):
     else:#transition type 0 have no transition
         processOutput_star_after_peak=[0,0,0,0,0,0,0,0]
     #t3=time()
-    if(config.TurnOn_radius_onepointfour and config.eos_MassRadius(MaximumMass_pressure_center,config.Preset_Pressure_final,Preset_rtol,'M',eos)>1.4):
+    processOutput_maxmass[2]=config.eos_MassRadius(MaximumMass_pressure_center,config.Preset_Pressure_final,Preset_rtol,'M',eos)
+    if(config.TurnOn_radius_onepointfour and processOutput_maxmass[2]>1.4):
         try:
             if(processOutput_star_after_peak[0]==0):
                 processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,MaximumMass_pressure_center,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)

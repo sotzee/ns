@@ -48,6 +48,7 @@ def Calculation(x):
         for i in range(np.size(ofmass_array)):
             try:
                 processOutput_ofmass=Properity_ofmass(ofmass_array[i],config.Preset_pressure_center_low,MaximumMass_pressure_center,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
+                print processOutput_ofmass
                 parameter[x].add_star([0]+processOutput_ofmass)
             except RuntimeWarning:
                 print('Runtimewarning happens at OfMass: '+str(ofmass_array[i]))
