@@ -48,64 +48,53 @@ def transform_circle_left(points,R):
     y=-(R-points_nor[:,0])*np.cos(2*np.pi*(1-points_nor[:,1]))
     return np.array([x,y]).transpose()
 
-def hull2(points,transform_f,R):
+def hull(points,list_0123,transform_f,R):
     points = transform_f(points)
+    transform_circle_0123=[transform_circle_down,transform_circle_right,transform_circle_up,transform_circle_left]
+    vertices_list=[]
+    for i in list_0123:
+        vertices_i=list(ConvexHull(transform_circle_0123[i](points,R)).vertices)
+        if(i==0):
+            index_start=list(points[vertices_i,0]).index(np.min(points[vertices_i,0]))
+            vertices_i=vertices_i[index_start:]+vertices_i[:index_start]
+            vertices_list.append(vertices_i)
+        elif(i==1):
+            index_start=list(points[vertices_i,1]).index(np.min(points[vertices_i,1]))
+            vertices_i=vertices_i[index_start:]+vertices_i[:index_start]
+            vertices_list.append(vertices_i)
+        elif(i==2):
+            index_start=list(points[vertices_i,0]).index(np.max(points[vertices_i,0]))
+            vertices_i=vertices_i[index_start:]+vertices_i[:index_start]
+            vertices_list.append(vertices_i)
+        elif(i==3):
+            index_start=list(points[vertices_i,1]).index(np.max(points[vertices_i,1]))
+            vertices_i=vertices_i[index_start:]+vertices_i[:index_start]
+            vertices_list.append(vertices_i)
+        else:
+            print 'Error at hull(points,list_0123,transform_f,R) !!!!!!!!'
+            
+    return vertices_list
 
-    vertices1=list(ConvexHull(transform_circle_down(points,R)).vertices)
-    vertices3=list(ConvexHull(transform_circle_up(points,R)).vertices)
-    
-    index_start=list(points[vertices1,0]).index(np.min(points[vertices1,0]))
-    vertices1=vertices1[index_start:]+vertices1[:index_start]
-    
-    index_start=list(points[vertices3,0]).index(np.max(points[vertices3,0]))
-    vertices3=vertices3[index_start:]+vertices3[:index_start]
-    
-    return [vertices1,vertices3]
-
-def plot_hull2(points,hull2_vertices):
-    for i in range(2):
-        plt.plot(points[hull2_vertices[i],0], points[hull2_vertices[i],1], 'k--', lw=2)
-
-def hull4(points,transform_f,R):
-    points = transform_f(points)
-
-    vertices1=list(ConvexHull(transform_circle_down(points,R)).vertices)
-    vertices2=list(ConvexHull(transform_circle_right(points,R)).vertices)
-    vertices3=list(ConvexHull(transform_circle_up(points,R)).vertices)
-    vertices4=list(ConvexHull(transform_circle_left(points,R)).vertices)
-    
-    index_start=list(points[vertices1,0]).index(np.min(points[vertices1,0]))
-    vertices1=vertices1[index_start:]+vertices1[:index_start]
-    
-    index_start=list(points[vertices2,1]).index(np.min(points[vertices2,1]))
-    vertices2=vertices2[index_start:]+vertices2[:index_start]
-    
-    index_start=list(points[vertices3,0]).index(np.max(points[vertices3,0]))
-    vertices3=vertices3[index_start:]+vertices3[:index_start]
-    
-    index_start=list(points[vertices4,1]).index(np.max(points[vertices4,1]))
-    vertices4=vertices4[index_start:]+vertices4[:index_start]
-    
-    return [vertices1,vertices2,vertices3,vertices4]
-
-def plot_hull4(points,hull4_vertices):
-    for i in range(4):
-        plt.plot(points[hull4_vertices[i],0], points[hull4_vertices[i],1], 'k--', lw=2)
+def plot_hull(points,hull_vertices):
+    for i in range(len(hull_vertices)):
+        plt.plot(points[hull_vertices[i],0], points[hull_vertices[i],1], 'k--', lw=2)
 
 
-#test:
 # =============================================================================
+# #test:
 # import matplotlib.pyplot as plt
-# points = np.random.rand(1000000, 2)
+# points = np.random.rand(100000, 2)
 # points = points[(points[:,1]-0.5)**2+(points[:,0])**2>0.1]
 # points = points[(points[:,1]-0.5)**2+(points[:,0]-1)**2>0.1]
 # points = points[(points[:,1])**2+(points[:,0]-0.5)**2>0.1]
 # points = points[(points[:,1]-1)**2+(points[:,0]-0.5)**2>0.1]
 # 
 # plt.plot(points[:,0], points[:,1], 'o')
-# hull4_vertices=hull4(points,max([1,len(points)/1000]))
-# plot_hull4(points,hull4_vertices)
+# hull4_vertices=hull(points,[0],transform_fit,max([1,len(points)/1000]))
+# plot_hull(points,hull4_vertices)
 # =============================================================================
+
+
 
 
 # =============================================================================
