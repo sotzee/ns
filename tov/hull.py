@@ -24,6 +24,9 @@ def transform_fit(points):
     #plt.plot(points[:,0], points[:,1], 'o')
     return np.array([points[:,0]-points[:,0].min(),points[:,1]-tmp-np.min(points[:,1]-tmp)]).transpose()
 
+def transform_shift(points):
+    return np.array([points[:,0]-points[:,0].min(),points[:,1]-np.min(points[:,1])]).transpose()
+
 def transform_circle_down(points,R):
     points_nor=points/points.max(0)
     x=(R-points_nor[:,1])*np.sin(2*np.pi*points_nor[:,0])
@@ -88,7 +91,15 @@ def plot_hull(points,hull_vertices):
 # points = points[(points[:,1]-0.5)**2+(points[:,0]-1)**2>0.1]
 # points = points[(points[:,1])**2+(points[:,0]-0.5)**2>0.1]
 # points = points[(points[:,1]-1)**2+(points[:,0]-0.5)**2>0.1]
-# 
+# =============================================================================
+# =============================================================================
+# import pickle
+# f_check=open('./check_dat/hull_of_this_array','rb')
+# points=pickle.load(f_check)
+# f_check.close()
+# =============================================================================
+
+# =============================================================================
 # plt.plot(points[:,0], points[:,1], 'o')
 # hull4_vertices=hull(points,[0],transform_fit,max([1,len(points)/1000]))
 # plot_hull(points,hull4_vertices)

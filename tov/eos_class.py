@@ -383,7 +383,7 @@ def show_eos_togetherwith(eos,pressure,ax1,ax2,ax3,ax4):
 # args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans,det_density,cs2]
 # a=EOS_BPSwithPolyCSS(args)
 # pressure=np.linspace(10,200,100)
-# show_eos(a,pressure)
+# show_eos(a,pressure,False)
 # =============================================================================
 
 # =============================================================================
