@@ -10,15 +10,16 @@ from scipy.spatial import ConvexHull
 import numpy as np
 import matplotlib.pyplot as plt
 
+def transform_trivial(points):
+    return points
+
 def transform_fit(points):
     import scipy.optimize as optimization
     def func(x,a,b,c,d,e):
         return a+b*x+c*x**2+d*x**3+e*x**5
-    def func_(x,fit_para):
-        return fit_para[0]+fit_para[1]*x+fit_para[2]*x**2+fit_para[3]*x**3+fit_para[4]*x**5
     x0=np.array([1.,1.,1.,1.,1.])
     fit_result_all=optimization.curve_fit(func, points[:,0],points[:,1], x0)
-    tmp=func_(points[:,0],fit_result_all[0])
+    tmp=func(points[:,0],*fit_result_all[0])
     #points_new=np.array([points[:,0],points[:,1]-tmp]).transpose()
     #plt.plot(points_new[:,0], points_new[:,1], 'o')
     #plt.plot(points[:,0], points[:,1], 'o')
