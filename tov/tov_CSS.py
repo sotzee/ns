@@ -73,6 +73,10 @@ def MassRadius_CSS(pressure_center,MRorMRBIT,eos):
         return [M,R,beta,M_binding,momentofinertia,yR,tidal]
     elif(MRorMRBIT=='MR'):
         return [M,R]
+    elif(MRorMRBIT=='M'):
+        return M
+def Mass_CSS_formax(pressure_center,eos):
+    return -MassRadius_CSS(pressure_center,'M',eos)
 
 def Integration_CSS(x0_,xf_,eos):
     cs2_=eos.cs2
