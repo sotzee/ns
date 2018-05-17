@@ -132,9 +132,11 @@ pressure1_max = 20
 pressure1_min = 3.
 n=6
 
+tidal1_upper,tidal2_upper = get_bound_upper(q,m1_grid,m2_grid)
+tidal1_lower,tidal2_lower = get_bound_lower(q,m1_grid,m2_grid)
+
 import matplotlib.pyplot as plt
 f, axs= plt.subplots(2,1, sharex=True,figsize=(6, 10))
-tidal1_upper,tidal2_upper = get_bound_upper(q,m1_grid,m2_grid)
 for i in range(len(chip_mass)):
     axs[0].plot(q,tidal2_upper[:,i]*q**6/tidal1_upper[:,i],label='$M_{ch}$=%.2f'%chip_mass[i])
     axs[0].legend(loc=1,prop={'size':10},frameon=False)
@@ -142,8 +144,6 @@ for i in range(len(chip_mass)):
     axs[0].set_xlabel('q',fontsize=18)
     axs[0].set_ylabel('$\\bar \lambda_2 q^%d /\\bar \lambda_1$'%(n),fontsize=18)
 
-tidal1_lower,tidal2_lower = get_bound_lower(q,m1_grid,m2_grid)
-for i in range(len(chip_mass)):
     axs[1].plot(q,tidal2_lower[:,i]*q**6/tidal1_lower[:,i],label='$M_{ch}$=%.2f'%chip_mass[i])
     axs[1].legend(loc=4,prop={'size':10},frameon=False)
     axs[1].set_title('$M_{max}<%.1f M_\odot, p_1>%.1f$ MeV fm$^{-3}$ lower bound'%(maxmass_upper_bound,pressure1_min))
