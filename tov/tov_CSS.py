@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import pi
 from scipy.integrate import ode
-import pickle
+import cPickle
 from astropy.constants import M_sun
 from scipy.constants import m_n
 
@@ -179,9 +179,9 @@ if __name__ == '__main__':
             r.integrate(x0[j]-np.log(Preset_Pressure_final))
             result[i][j][N]=[r.t,r.y[0],r.y[1],r.y[2],r.y[3],r.y[4]]
     f1=open('./tov_CSS_result.dat','wb')
-    pickle.dump(result,f1)
+    cPickle.dump(result,f1)
     f1.close()
 else:
     f2=open('./tov_CSS_result.dat','rb')
-    result=pickle.load(f2)
+    result=cPickle.load(f2)
     f2.close()

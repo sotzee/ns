@@ -6,19 +6,18 @@ Created on Thu May  3 16:17:52 2018
 @author: sotzee
 """
 
-from eos_class import EOS_BPSwithPolyCSS,EOS_BPSwithPoly
+from eos_class import EOS_BPSwithPolyCSS,EOS_BPSwithPoly,EOS_BPS
 from tov_f import MassRadius_transition,MassRadius, Mass_transition_formax
 from Find_OfMass import Properity_ofmass
 import numpy as np
 import scipy.optimize as opt
-import BPS
 baryon_density_s= 0.16
 baryon_density0 = 0.16/2.7
 baryon_density1 = 1.85*0.16
 baryon_density2 = 3.74*0.16
 baryon_density3 = 7.4*0.16
-pressure0=BPS.eosPressure_frombaryon(baryon_density0)
-density0=BPS.eosDensity(pressure0)
+pressure0=EOS_BPS.eosPressure_frombaryon(baryon_density0)
+density0=EOS_BPS.eosDensity(pressure0)
 pressure3=1000000
 
 def causality_trans(gamma2,pressure_trans):
@@ -68,41 +67,67 @@ def cs2_ofmaxmass(ofmaxmass,Preset_cs2_low,Preset_cs2_high,Maxmass_function,Pres
     result=opt.brenth(Ofmaxmass,Preset_cs2_low,Preset_cs2_high,args=(ofmaxmass,Maxmass_function,Preset_Pressure_final,Preset_rtol,eos_args))
     return result
 
-def get_bound_upper(q,m1_grid,m2_grid):
-    tidal1=m1_grid.copy()
-    tidal2=m1_grid.copy()
+def bound_upper(m1,m2,pressure1,ofmaxmass):
     cs2=1.
-    pressure1=pressure1_max
-    ofmaxmass = maxmass_lower_bound
-    for i in range(len(m1_grid)):
-        print i
-        for j in range(len(m1_grid[0])):
-            pressure_trans,tidal2[i,j],pressure2 = np.array(Properity_ofmass_at_transition(m2_grid[i,j],1,1000,MassRadius,Preset_Pressure_final,Preset_rtol,1))[[0,7,8]]
-            eos_args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans]
-            det_density = det_density_ofmaxmass(ofmaxmass,0,1000,Maxmass,Preset_Pressure_final,Preset_rtol,eos_args)
-            args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans,det_density,cs2]
-            a=EOS_BPSwithPolyCSS(args)
-            tidal1[i,j]=Properity_ofmass(m1_grid[i,j],pressure_trans+1,Maxmass(Preset_Pressure_final,Preset_rtol,a)[1],MassRadius_transition,Preset_Pressure_final,Preset_rtol,1,a)[7]
+    pressure_trans,tidal2,pressure2 = np.array(Properity_ofmass_at_transition(m2,1,1000,MassRadius,Preset_Pressure_final,Preset_rtol,1))[[0,7,8]]
+    eos_args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans]
+    det_density = det_density_ofmaxmass(ofmaxmass,0,1000,Maxmass,Preset_Pressure_final,Preset_rtol,eos_args)
+    args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans,det_density,cs2]
+    a=EOS_BPSwithPolyCSS(args)
+    tidal1=Properity_ofmass(m1,pressure_trans+1,Maxmass(Preset_Pressure_final,Preset_rtol,a)[1],MassRadius_transition,Preset_Pressure_final,Preset_rtol,1,a)[7]
     return tidal1,tidal2
 
-def get_bound_lower(q,m1_grid,m2_grid):
+def bound_lower(m1,m2,pressure1,ofmaxmass):
+    pressure2=100 #trivial parameter
+    pressure_trans=pressure1
+    gamma1=np.log(pressure1/pressure0)/np.log(baryon_density1/baryon_density0)
+    pressure_s=pressure1*(baryon_density_s/baryon_density1)**gamma1
+    pressure_trans=pressure_s
+    det_density=0
+    eos_args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans]
+    cs2 = cs2_ofmaxmass(ofmaxmass,0.25,1.,Maxmass,Preset_Pressure_final,Preset_rtol,eos_args)
+    args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans,det_density,cs2]
+    a=EOS_BPSwithPolyCSS(args)
+    tidal1=Properity_ofmass(m1,pressure_trans+1,Maxmass(Preset_Pressure_final,Preset_rtol,a)[1],MassRadius_transition,Preset_Pressure_final,Preset_rtol,1,a)[7]
+    tidal2=Properity_ofmass(m2,pressure_trans+1,Maxmass(Preset_Pressure_final,Preset_rtol,a)[1],MassRadius_transition,Preset_Pressure_final,Preset_rtol,1,a)[7]
+    return tidal1,tidal2
+
+def bound_lower_no_maxmass_max(m1,m2,pressure1,ofmaxmass):
+    pressure2=100 #trivial parameter
+    gamma1=np.log(pressure1/pressure0)/np.log(baryon_density1/baryon_density0)
+    pressure_s=pressure1*(baryon_density_s/baryon_density1)**gamma1
+    pressure_trans=pressure_s
+    det_density=0
+    args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans,det_density,1]
+    a=EOS_BPSwithPolyCSS(args)
+    tidal1=Properity_ofmass(m1,pressure_trans+1,Maxmass(Preset_Pressure_final,Preset_rtol,a)[1],MassRadius_transition,Preset_Pressure_final,Preset_rtol,1,a)[7]
+    tidal2=Properity_ofmass(m2,pressure_trans+1,Maxmass(Preset_Pressure_final,Preset_rtol,a)[1],MassRadius_transition,Preset_Pressure_final,Preset_rtol,1,a)[7]
+    return tidal1,tidal2
+
+def get_bound(q,m1_grid,m2_grid,maxmass_range,p1_range,upper_or_lower):
     tidal1=m1_grid.copy()
     tidal2=m1_grid.copy()
-    pressure1=pressure1_min
-    pressure_trans=pressure1
-    pressure2=100 #trivial parameter
-    det_density=0
-    ofmaxmass = maxmass_upper_bound
+    maxmass_min,maxmass_max = maxmass_range
+    pressure1_min,pressure1_max = p1_range
+    if(upper_or_lower=='upper'):
+        pressure1=pressure1_max
+        ofmaxmass = maxmass_min
+        bound_function=bound_upper
+    elif(upper_or_lower=='lower'):
+        pressure1=pressure1_min
+        ofmaxmass = maxmass_max
+        bound_function=bound_lower
+    elif(upper_or_lower=='lower_no_maxmass_max'):
+        pressure1=pressure1_min
+        ofmaxmass = maxmass_max
+        bound_function=bound_lower_no_maxmass_max
     for i in range(len(m1_grid)):
         print i
         for j in range(len(m1_grid[0])):
-            eos_args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans]
-            cs2 = cs2_ofmaxmass(ofmaxmass,0.25,1.,Maxmass,Preset_Pressure_final,Preset_rtol,eos_args)
-            args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure_trans,det_density,cs2]
-            a=EOS_BPSwithPolyCSS(args)
-            tidal1[i,j]=Properity_ofmass(m1_grid[i,j],pressure_trans+1,Maxmass(Preset_Pressure_final,Preset_rtol,a)[1],MassRadius_transition,Preset_Pressure_final,Preset_rtol,1,a)[7]
-            tidal2[i,j]=Properity_ofmass(m2_grid[i,j],pressure_trans+1,Maxmass(Preset_Pressure_final,Preset_rtol,a)[1],MassRadius_transition,Preset_Pressure_final,Preset_rtol,1,a)[7]
+            tidal1[i,j],tidal2[i,j] = bound_function(m1_grid[i,j],m2_grid[i,j],pressure1,ofmaxmass)
     return tidal1,tidal2
+
+
 
 # def get_tidal1tidal2(m1_grid,m2_grid,MassRadius_function,eos):
 #     tidal1=m1_grid.copy()
@@ -120,33 +145,33 @@ def mass_binary(mc,q):
 Preset_rtol=1e-4
 Preset_Pressure_final=1e-8
 
-chip_mass= np.linspace(1.05, 1.4,8)
-q=np.linspace(0.7,1.,7)
+chip_mass= np.linspace(0.85, 1.0,4)
+q=np.linspace(1.,1.,2)
 chip_mass_grid,q_grid = np.meshgrid(chip_mass,q)
 
 m2_grid,m1_grid=mass_binary(chip_mass_grid,q_grid)  #q=m2/m1
 
-maxmass_lower_bound=2.0
-maxmass_upper_bound=2.4
+maxmass_min=2.0
+maxmass_max=2.4
 pressure1_max = 20
 pressure1_min = 3.
 n=6
 
-tidal1_upper,tidal2_upper = get_bound_upper(q,m1_grid,m2_grid)
-tidal1_lower,tidal2_lower = get_bound_lower(q,m1_grid,m2_grid)
+tidal1_upper,tidal2_upper = get_bound(q,m1_grid,m2_grid,[maxmass_min,maxmass_max],[pressure1_min,pressure1_max],'upper')
+tidal1_lower,tidal2_lower = get_bound(q,m1_grid,m2_grid,[maxmass_min,maxmass_max],[pressure1_min,pressure1_max],'lower')
 
 import matplotlib.pyplot as plt
 f, axs= plt.subplots(2,1, sharex=True,figsize=(6, 10))
 for i in range(len(chip_mass)):
     axs[0].plot(q,tidal2_upper[:,i]*q**6/tidal1_upper[:,i],label='$M_{ch}$=%.2f'%chip_mass[i])
     axs[0].legend(loc=1,prop={'size':10},frameon=False)
-    axs[0].set_title('$M_{max}>%.1f M_\odot, p_1<%.1f$ MeV fm$^{-3}$ upper bound'%(maxmass_lower_bound,pressure1_max))
+    axs[0].set_title('$M_{max}>%.1f M_\odot, p_1<%.1f$ MeV fm$^{-3}$ upper bound'%(maxmass_min,pressure1_max))
     axs[0].set_xlabel('q',fontsize=18)
     axs[0].set_ylabel('$\\bar \lambda_2 q^%d /\\bar \lambda_1$'%(n),fontsize=18)
 
     axs[1].plot(q,tidal2_lower[:,i]*q**6/tidal1_lower[:,i],label='$M_{ch}$=%.2f'%chip_mass[i])
     axs[1].legend(loc=4,prop={'size':10},frameon=False)
-    axs[1].set_title('$M_{max}<%.1f M_\odot, p_1>%.1f$ MeV fm$^{-3}$ lower bound'%(maxmass_upper_bound,pressure1_min))
+    axs[1].set_title('$M_{max}<%.1f M_\odot, p_1>%.1f$ MeV fm$^{-3}$ lower bound'%(maxmass_max,pressure1_min))
     axs[1].set_xlabel('q',fontsize=18)
     axs[1].set_ylabel('$\\bar \lambda_2 q^%d /\\bar \lambda_1$'%(n),fontsize=18)
 
