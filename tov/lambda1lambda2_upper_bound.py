@@ -145,15 +145,15 @@ def mass_binary(mc,q):
 Preset_rtol=1e-4
 Preset_Pressure_final=1e-8
 
-chip_mass= np.linspace(0.85, 1.0,4)
-q=np.linspace(1.,1.,2)
+chip_mass= np.linspace(1.05, 1.4,8)
+q=np.linspace(0.7,1.,7)
 chip_mass_grid,q_grid = np.meshgrid(chip_mass,q)
 
 m2_grid,m1_grid=mass_binary(chip_mass_grid,q_grid)  #q=m2/m1
 
 maxmass_min=2.0
 maxmass_max=2.4
-pressure1_max = 20
+pressure1_max = 30
 pressure1_min = 3.
 n=6
 
