@@ -3,6 +3,7 @@ import numpy as np
 from unitconvert import toMevfm
 from scipy.misc import derivative
 from scipy.constants import c,G,e
+dx_cs2=1e-6
 
 class EOS_item(object):
     def __init__(self,para):
@@ -84,7 +85,7 @@ class EOS_PiecewisePoly(object):
                         self.baryon_density1*(pressure/self.pressure1)**(1.0/self.gamma2),
                         self.baryon_density2*(pressure/self.pressure2)**(1.0/self.gamma3)))
     def eosCs2(self,pressure):
-        return 1.0/derivative(self.eosDensity,pressure,dx=1e-10)
+        return 1.0/derivative(self.eosDensity,pressure,dx=dx_cs2)
     def eosChempo(self,pressure):
         return (pressure+self.eosDensity(pressure))/self.eosBaryonDensity(pressure)
 
@@ -115,7 +116,7 @@ class EOS_BPSwithPoly(EOS_BPS):
         return np.where(pressure>self.pressure0,self.eosPiecewisePoly.eosBaryonDensity(pressure),\
                         EOS_BPS.eosBaryonDensity(pressure))
     def eosCs2(self,pressure): #it is a step function at BPS region, since I use Linear intepolation
-        return 1.0/derivative(self.eosDensity,pressure,dx=1e-10)
+        return 1.0/derivative(self.eosDensity,pressure,dx=dx_cs2)
     def eosChempo(self,pressure):
         return (pressure+self.eosDensity(pressure))/self.eosBaryonDensity(pressure)
 
@@ -204,7 +205,7 @@ class EOS_MIT(EOS_BPS): #reference: HYBRID STARS THAT MASQUERADE AS NEUTRON STAR
         energydensity=chempo*baryondensity-pressure
         return pressure,energydensity,baryondensity
     def eosCs2(self,pressure):
-        return 1.0/derivative(self.eosDensity,pressure,dx=1e-10)
+        return 1.0/derivative(self.eosDensity,pressure,dx=dx_cs2)
     def eosChempo(self,pressure):
         return (pressure+self.eosDensity(pressure))/self.eosBaryonDensity(pressure)
 # =============================================================================
@@ -235,7 +236,7 @@ class EOS_FermiGas(EOS_BPS): #reference: THE PHYSICS OF COMPACT OBJECTS BY SHAPI
     def eosBaryonDensity(self,pressure):
         return toMevfm(self.g*self.m**3*self.eos_x_from_pressure(pressure)**3/(6*np.pi**2),'mev4')
     def eosCs2(self,pressure):
-        return 1.0/derivative(self.eosDensity,pressure,dx=1e-8)
+        return 1.0/derivative(self.eosDensity,pressure,dx=dx_cs2)
     def eosChempo(self,pressure):
         return (self.eos_x_from_pressure(pressure)**2+1)**0.5*self.m
 
