@@ -25,7 +25,7 @@ def Calculation(x):
     except RuntimeWarning:
         print 'Runtimewarning happens at calculating max mass:'
         print parameter[x].args
-        print processOutput_maxmass
+        #print processOutput_maxmass
 
     [transition_type,MaximumMass_pressure_center,MaximumMass_stash,Left_pressure_center,Left_Mass_stash,Right_pressure_center,Right_Mass_stash]=processOutput_maxmass
     #t2=time()
@@ -203,8 +203,8 @@ if __name__ == '__main__':
     else:
         print('Calculation_mode not found!')
     f_log_name='./'+dir_name+'/'+name_log
-    main(processInput)
-    #main_test_a_single_eos_parameter(16+23*9519)
+    #main(processInput)
+    main_test_a_single_eos_parameter(7738)
 #################################################
 #setParameter(xxx) returns parameter[x][x]
 #parameter[x][0] = pressure1
