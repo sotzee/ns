@@ -14,31 +14,31 @@ def calculate_mass_radius(pressure_center,a,MassRadius_function):
     mass_radius=np.array(mass_radius).transpose()
     return mass_radius
 
-def plot_eos_mass_radius(pressure_eos,a,mass_radius,axs,label_text):
+def plot_eos_mass_radius(pressure_eos,a,mass_radius,axs,line_symb,label_text):
     density=a.eosDensity(pressure_eos)
     #chempo=a.eosChempo(pressure_eos)
     #baryondensity=a.eosBaryonDensity(pressure_eos)
     cs2=a.eosCs2(pressure_eos)
     ax1,ax2,ax3=axs
-    ax1.plot(pressure_eos,density,label=label_text)
+    ax1.plot(pressure_eos,density,line_symb,label=label_text)
     ax1.set_xlabel('pressure (MeV fm$^{-3}$)')
     ax1.set_ylabel('density (MeV fm$^{-3}$)')
     ax1.set_xscale('log')
     ax1.set_yscale('log')
     ax1.set_xlim(pressure_eos[0],pressure_eos[-1])
-    ax1.legend(loc=4,prop={'size':8},frameon=False)
+    #ax1.legend(loc=4,prop={'size':8},frameon=False)
 
-    ax2.plot(pressure_eos,cs2,label=label_text)
+    ax2.plot(pressure_eos,cs2,line_symb,label=label_text)
     ax2.set_xlabel('pressure (MeV fm$^{-3}$)')
     ax2.set_ylabel('$c_s^2$')
     ax2.set_xscale('log')
     ax2.set_xlim(pressure_eos[0],pressure_eos[-1])
-    ax2.legend(loc=4,prop={'size':8},frameon=False)
+    ax2.legend(loc=2,prop={'size':8},frameon=False)
 
-    ax3.plot(mass_radius[1]/1000,mass_radius[0],label=label_text)
+    ax3.plot(mass_radius[1]/1000,mass_radius[0],line_symb,label=label_text)
     ax3.set_xlabel('Radius(km)')
     ax3.set_ylabel('$M/M_{\odot}$')
-    ax3.legend(loc=2,prop={'size':8},frameon=False)
+    #ax3.legend(loc=2,prop={'size':8},frameon=False)
 
 
 args=[]
@@ -144,7 +144,7 @@ p3=np.array([ 709.99383688,  718.26442343,  725.28285356,  733.15705901,
         790.73066288,  792.2578489 ,  796.06025067,  798.64917053,
         801.46346533,  803.44888216447089])
 
-for i in [0,3,6,9,12,15,18,21]:
+for i in [3,6,9,12,15,18,21]:
     args.append([0.059259259259259255, p1[i], 0.29600000000000004,p2[i], 0.5984, p3[i], 1.1840000000000002])
 
 args.append([0.059259259259259255, 3.75, 0.29600000000000004,144.85571948688346, 0.5984, 951.205339935, 1.1840000000000002])
@@ -162,9 +162,14 @@ for i in range(len(args)):
 # mass_radius.append(calculate_mass_radius(pressure_center,a,MassRadius))
 # =============================================================================
 f, axs = plt.subplots(1,3, sharex=False,figsize=(15, 5))
-for i in range(len(args)):
+maxmass_min=2.0
+pressure1_min=3.75
+for i in range(3,len(args)):
     a=EOS_BPSwithPoly(args[i])
-    plot_eos_mass_radius(pressure_eos,a,mass_radius[i],axs,'.')
+    if(i==len(args)-1):
+        plot_eos_mass_radius(pressure_eos,a,mass_radius[i],axs,'-','$p_1>%.2f$ MeV fm$^{-3}$ lower bound'%(pressure1_min))
+    else:
+        plot_eos_mass_radius(pressure_eos,a,mass_radius[i],axs,'--','$M_{max}>%.1f M_\odot$, $p_1 = %.2f$ MeV fm$^-3$ upper bound'%(maxmass_min,args[i][1]))
 plt.show()
 
 # =============================================================================
