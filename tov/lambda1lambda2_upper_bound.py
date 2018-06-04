@@ -161,7 +161,7 @@ Preset_rtol=1e-4
 Preset_Pressure_final=1e-8
 
 chip_mass= np.linspace(1.05, 1.4,8)
-q=np.linspace(0.7,1.,7)
+q=np.linspace(0.7,1.,13)
 chip_mass_grid,q_grid = np.meshgrid(chip_mass,q)
 
 m2_grid,m1_grid=mass_binary(chip_mass_grid,q_grid)  #q=m2/m1

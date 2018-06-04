@@ -14,12 +14,12 @@ def calculate_mass_radius(pressure_center,a,MassRadius_function):
     mass_radius=np.array(mass_radius).transpose()
     return mass_radius
 
-def plot_eos_mass_radius(pressure_eos,a,mass_radius,ax1,ax2,label_text):
+def plot_eos_mass_radius(pressure_eos,a,mass_radius,axs,label_text):
     density=a.eosDensity(pressure_eos)
     #chempo=a.eosChempo(pressure_eos)
     #baryondensity=a.eosBaryonDensity(pressure_eos)
-    #cs2=a.eosCs2(pressure_eos)
-
+    cs2=a.eosCs2(pressure_eos)
+    ax1,ax2,ax3=axs
     ax1.plot(pressure_eos,density,label=label_text)
     ax1.set_xlabel('pressure (MeV fm$^{-3}$)')
     ax1.set_ylabel('density (MeV fm$^{-3}$)')
@@ -27,11 +27,18 @@ def plot_eos_mass_radius(pressure_eos,a,mass_radius,ax1,ax2,label_text):
     ax1.set_yscale('log')
     ax1.set_xlim(pressure_eos[0],pressure_eos[-1])
     ax1.legend(loc=4,prop={'size':8},frameon=False)
-    
-    ax2.plot(mass_radius[1]/1000,mass_radius[0],label=label_text)
-    ax2.set_xlabel('Radius(km)')
-    ax2.set_ylabel('$M/M_{\odot}$')
-    ax2.legend(loc=2,prop={'size':8},frameon=False)
+
+    ax2.plot(pressure_eos,cs2,label=label_text)
+    ax2.set_xlabel('pressure (MeV fm$^{-3}$)')
+    ax2.set_ylabel('$c_s^2$')
+    ax2.set_xscale('log')
+    ax2.set_xlim(pressure_eos[0],pressure_eos[-1])
+    ax2.legend(loc=4,prop={'size':8},frameon=False)
+
+    ax3.plot(mass_radius[1]/1000,mass_radius[0],label=label_text)
+    ax3.set_xlabel('Radius(km)')
+    ax3.set_ylabel('$M/M_{\odot}$')
+    ax3.legend(loc=2,prop={'size':8},frameon=False)
 
 
 args=[]
@@ -106,31 +113,58 @@ args=[]
 # =============================================================================
 
 
-args=[]
-args.append([0.059259259259259255, 30., 0.29600000000000004, 100., 0.5984, 1000., 1.1840000000000002])
-args.append([0.059259259259259255, 20., 0.29600000000000004, 100., 0.5984, 1000., 1.1840000000000002])
-args.append([0.059259259259259255, 10., 0.29600000000000004, 100., 0.5984, 1000., 1.1840000000000002])
-
-args.append([0.059259259259259255, 30., 0.29600000000000004, 80., 0.5984, 1000., 1.1840000000000002])
-args.append([0.059259259259259255, 20., 0.29600000000000004, 80., 0.5984, 1000., 1.1840000000000002])
-args.append([0.059259259259259255, 10., 0.29600000000000004, 80., 0.5984, 1000., 1.1840000000000002])
 # =============================================================================
+# args=[]
+# args.append([0.059259259259259255, 30., 0.29600000000000004, 100., 0.5984, 1000., 1.1840000000000002])
+# args.append([0.059259259259259255, 20., 0.29600000000000004, 100., 0.5984, 1000., 1.1840000000000002])
+# args.append([0.059259259259259255, 10., 0.29600000000000004, 100., 0.5984, 1000., 1.1840000000000002])
+# args.append([0.059259259259259255, 30., 0.29600000000000004, 80., 0.5984, 1000., 1.1840000000000002])
+# args.append([0.059259259259259255, 20., 0.29600000000000004, 80., 0.5984, 1000., 1.1840000000000002])
+# args.append([0.059259259259259255, 10., 0.29600000000000004, 80., 0.5984, 1000., 1.1840000000000002])
 # args.append([0.059259259259259255, 20, 0.29600000000000004, 100, 0.5984, 1000, 1.1840000000000002])
 # args.append([0.059259259259259255, 15, 0.29600000000000004, 100, 0.5984, 1000, 1.1840000000000002])
 # args.append([0.059259259259259255, 10, 0.29600000000000004, 100, 0.5984, 1000, 1.1840000000000002])
-# 
 # =============================================================================
+
+
+args=[]
+p1=np.array([  3.75,   5.  ,   6.25,   7.5 ,   8.75,  10.  ,  11.25,  12.5 ,
+        13.75,  15.  ,  16.25,  17.5 ,  18.75,  20.  ,  21.25,  22.5 ,
+        23.75,  25.  ,  26.25,  27.5 ,  28.75,  30.  ])
+p2=np.array([ 104.26717346,  105.11604357,  105.83978536,  106.38411989,
+        106.84723169,  107.28065821,  107.63345538,  107.92487999,
+        108.11459401,  108.30821794,  108.4056973 ,  108.46972529,
+        108.44228606,  108.3680998 ,  108.26704699,  108.18718424,
+        107.90861583,  107.76621428,  107.45699893,  107.07103081,
+        106.66652256,  105.97243558573562])
+p3=np.array([ 709.99383688,  718.26442343,  725.28285356,  733.15705901,
+        738.56285734,  745.48386621,  749.99089341,  755.0078768 ,
+        759.82728681,  764.43917982,  768.50273892,  772.33052703,
+        776.57254859,  780.08699751,  783.45911346,  787.28921923,
+        790.73066288,  792.2578489 ,  796.06025067,  798.64917053,
+        801.46346533,  803.44888216447089])
+
+for i in [0,3,6,9,12,15,18,21]:
+    args.append([0.059259259259259255, p1[i], 0.29600000000000004,p2[i], 0.5984, p3[i], 1.1840000000000002])
+
+args.append([0.059259259259259255, 3.75, 0.29600000000000004,144.85571948688346, 0.5984, 951.205339935, 1.1840000000000002])
+
 N=500
-pressure_eos = np.linspace(0.1,200,N)
+pressure_eos = np.linspace(0.1,1000,N)
 pressure_center = np.linspace(10,1000,N)
 mass_radius=[]
 for i in range(len(args)):
     a=EOS_BPSwithPoly(args[i])
     mass_radius.append(calculate_mass_radius(pressure_center,a,MassRadius))
-f, ((ax1, ax2)) = plt.subplots(1,2, sharex=False,figsize=(10, 5))
+
+# =============================================================================
+# a=EOS_BPSwithPoly(args[-1])
+# mass_radius.append(calculate_mass_radius(pressure_center,a,MassRadius))
+# =============================================================================
+f, axs = plt.subplots(1,3, sharex=False,figsize=(15, 5))
 for i in range(len(args)):
     a=EOS_BPSwithPoly(args[i])
-    plot_eos_mass_radius(pressure_eos,a,mass_radius[i],ax1,ax2,'.')
+    plot_eos_mass_radius(pressure_eos,a,mass_radius[i],axs,'.')
 plt.show()
 
 # =============================================================================
