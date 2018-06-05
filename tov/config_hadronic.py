@@ -7,7 +7,7 @@ start_from = 0.0 #start_from=0 for calcuate all the parameter space
 TurnOn_radius_onepointfour = True
 Preset_pressure_center_low = 1.0         # this parameter is only for setting boundary for searching 1.4 solar mass stars
 Preset_Pressure_final_index = 1          # equal 2 means Preset_Pressure_final for solving radius is Preset_Pressure_final**2, which include more low density area
-number_per_parameter = 5
+number_per_parameter = 10
 concentration = 2
 
 baryon_density0 = 0.16/2.7
@@ -17,9 +17,9 @@ baryon_density3 = 7.4*0.16
 
 #EoS parameter for Hadronic star
 Calculation_mode='hadronic'
-Preset_pressure1=[13*5+1,7.,20.] ##[num,lower_bound,up_bound] 
+Preset_pressure1=[22,3.75,30.] ##[num,lower_bound,up_bound] 
 Preset_pressure2=[50,100.] #[num,lower_bound] 
-Preset_pressure3=[70,150.] #[num,lower_bound]
+Preset_pressure3=[100,300.] #[num,lower_bound]
 
 from eos_class import EOS_BPSwithPoly
 eos_config=EOS_BPSwithPoly
