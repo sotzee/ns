@@ -59,7 +59,7 @@ def Calculation(x):
         processOutput_star_after_peak=[0,0,0,0,0,0,0,0]
     #t3=time()
     processOutput_maxmass[2]=config.eos_MassRadius(MaximumMass_pressure_center,config.Preset_Pressure_final,Preset_rtol,'M',eos)
-    if(config.TurnOn_radius_onepointfour and processOutput_maxmass[2]>1.4):
+    if(config.TurnOn_radius_onepointfour and processOutput_maxmass[2]>2.0):
         try:
             if(processOutput_star_after_peak[0]==0):
                 processOutput_onepointfour = Properity_ofmass(1.4,config.Preset_pressure_center_low,MaximumMass_pressure_center,config.eos_MassRadius,config.Preset_Pressure_final,Preset_rtol,config.Preset_Pressure_final_index,eos)
@@ -203,8 +203,8 @@ if __name__ == '__main__':
     else:
         print('Calculation_mode not found!')
     f_log_name='./'+dir_name+'/'+name_log
-    #main(processInput)
-    main_test_a_single_eos_parameter(7738)
+    main(processInput)
+    #main_test_a_single_eos_parameter(7738)
 #################################################
 #setParameter(xxx) returns parameter[x][x]
 #parameter[x][0] = pressure1
