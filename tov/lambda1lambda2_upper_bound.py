@@ -168,8 +168,8 @@ m2_grid,m1_grid=mass_binary(chip_mass_grid,q_grid)  #q=m2/m1
 
 maxmass_min=2.0
 maxmass_max=2.4
-pressure1_max = 30
-pressure1_min = 3.75
+pressure1_max = 20.
+pressure1_min = 8.4
 
 tidal1_upper,tidal2_upper,eos_args_upper = get_bound(q,m1_grid,m2_grid,[maxmass_min,maxmass_max],[pressure1_min,pressure1_max],'upper')
 tidal1_lower,tidal2_lower,eos_args_lower = get_bound(q,m1_grid,m2_grid,[maxmass_min,maxmass_max],[pressure1_min,pressure1_max],'lower')
@@ -185,12 +185,22 @@ f=open('hybrid_lower_bound_no_maxmass_max.dat','wb')
 pickle.dump([tidal1_lower_no_maxmass_max,tidal2_lower_no_maxmass_max,eos_args_no_maxmass_max],f)
 f.close()
 
+f=open('hybrid_upper_bound.dat','rb')
+tidal1_upper,tidal2_upper,eos_args_upper=pickle.load(f)
+f.close()
+f=open('hybrid_lower_bound.dat','rb')
+tidal1_lower,tidal2_lower,eos_args_lower=pickle.load(f)
+f.close()
+f=open('hybrid_lower_bound_no_maxmass_max.dat','rb')
+tidal1_lower_no_maxmass_max,tidal2_lower_no_maxmass_max,eos_args_no_maxmass_max=pickle.load(f)
+f.close()
+
 import matplotlib.pyplot as plt
 n=6
 cmap = plt.cm.get_cmap('jet')
 (np.array(cmap.N*np.linspace(0,1,len(chip_mass)))).astype(int)
 colors = cmap((np.array(cmap.N*np.linspace(0,1,len(chip_mass)))).astype(int))
-f, axs= plt.subplots(4,1, sharex=True,figsize=(6, 20))
+f, axs= plt.subplots(4,1, sharex=True,figsize=(10, 80./3))
 for i in range(len(chip_mass)):
     axs[0].plot(q,q**n*tidal2_upper[:,i]/tidal1_upper[:,i],color=colors[i],label='$M_{ch}$=%.2f'%chip_mass[i])
     axs[0].legend(loc=1,prop={'size':10},frameon=False)
@@ -224,10 +234,10 @@ for i in range(len(chip_mass)):
         axs[3].plot([0,0,0],[0,1,2],color='k',label='$%.1f M_\odot<M_{max}<%.1f M_\odot$ upper bound'%(maxmass_min,maxmass_max))
         axs[3].plot([0,0,0],[0,1,2],'--',color='k',label='$%.1f M_\odot<M_{max}<%.1f M_\odot$ lower bound'%(maxmass_min,maxmass_max))
         axs[3].plot([0,0,0],[0,1,2],':',color='k',label='$%.1f M_\odot<M_{max}< \infty$         lower bound'%(maxmass_min))
-    axs[3].legend(loc=1,prop={'size':8},frameon=False)
-    axs[3].set_title('$%.2f$ MeV fm$^{-3}<p_1<%.0f$ MeV fm$^{-3}$ upper and lower bounds'%(pressure1_min,pressure1_max))
-    axs[3].set_xlabel('q',fontsize=18)
-    axs[3].set_ylabel('$q^6 \Lambda_2 /\Lambda_1$',fontsize=18)
+    axs[3].legend(loc=7,prop={'size':15},frameon=False)
+    #axs[3].set_title('$%.2f$ MeV fm$^{-3}<p_1<%.0f$ MeV fm$^{-3}$ upper and lower bounds'%(pressure1_min,pressure1_max))
+    axs[3].set_xlabel('q',fontsize=25)
+    axs[3].set_ylabel('$q^6 \Lambda_2 /\Lambda_1$',fontsize=25)
     axs[3].set_ylim(0.5,22)
     axs[3].set_yscale('log')
 

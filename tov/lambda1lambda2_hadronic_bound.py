@@ -173,13 +173,16 @@ def causality_p3(pressure3,pressure1,pressure2):
     +pressure3/(a.eosPiecewisePoly.gamma3-1)
     return a.eosPiecewisePoly.gamma3*pressure3/(density3+pressure3)-1.
 
-p1_lower_bound=3.75
+p1_lower_bound=8.4
 p2_causal=opt.newton(causality_p2,100.,args=(p1_lower_bound,))
-p3_preset=opt.newton(causality_p3,800.,args=(p1_lower_bound,p2_causal))
+p3_causal=opt.newton(causality_p3,800.,args=(p1_lower_bound,p2_causal))
 print p1_lower_bound,p2_causal
-print p3_preset
-print opt.newton(caulality_central_pressure_at_peak,p3_preset,tol=0.1,args=(p1_lower_bound,p2_causal,Preset_Pressure_final,Preset_rtol))
+print p3_causal
+print opt.newton(caulality_central_pressure_at_peak,p3_causal,tol=0.1,args=(p1_lower_bound,p2_causal,Preset_Pressure_final,Preset_rtol))
 args_lower_bound = [0.059259259259259255, 3.75, 0.29600000000000004,144.85571948688346, 0.5984, 951.205339935, 1.1840000000000002]
+args_lower_bound = [0.059259259259259255, 8.4 , 0.29600000000000004,185.215383526, 0.5984, 1074.26387308, 1.1840000000000002]
+args_lower_bound = [0.059259259259259255, p1_lower_bound , 0.29600000000000004,p2_causal, 0.5984, p3_causal, 1.1840000000000002]
+
 eos_lower_bound = EOS_BPSwithPoly(args_lower_bound)
 
 def get_bound_lower(m1,m2):
@@ -207,7 +210,8 @@ def get_bound(m1_grid,m2_grid,upper_or_lower):
 def mass_binary(mc,q):
     return [mc*(1+q)**0.2*q**0.4,mc*(1+q)**0.2/q**0.6]
 
-chip_mass= np.linspace(1.05, 1.4,8)
+#chip_mass= np.linspace(1.05, 1.4,8)
+chip_mass= np.linspace(1.188, 1.188,1)
 q=np.linspace(0.7,1.,12,endpoint=False)
 chip_mass_grid,q_grid = np.meshgrid(chip_mass,q)
 
@@ -215,11 +219,17 @@ m2_grid,m1_grid=mass_binary(chip_mass_grid,q_grid)  #q=m2/m1
 
 tidal1_upper,tidal2_upper,eos_args_upper = get_bound(m1_grid,m2_grid,'upper')
 tidal1_lower,tidal2_lower,eos_args_lower = get_bound(m1_grid,m2_grid,'lower')
-f=open('hadronic_upper_bound.dat','wb')
+f=open('hadronic_upper_bound_1.188.dat','wb')
 pickle.dump([tidal1_upper,tidal2_upper,eos_args_upper],f)
 f.close()
-f=open('hadronic_lower_bound.dat','wb')
+f=open('hadronic_lower_bound_1.188_p1=%.2f.dat'%(p1_lower_bound),'wb')
 pickle.dump([tidal1_lower,tidal2_lower,eos_args_lower],f)
+f.close()
+f=open('hadronic_upper_bound.dat','rb')
+tidal1_upper,tidal2_upper,eos_args_upper=pickle.load(f)
+f.close()
+f=open('hadronic_lower_bound_p1=8.40.dat','rb')
+tidal1_lower,tidal2_lower,eos_args_lower=pickle.load(f)
 f.close()
 
 import matplotlib.pyplot as plt
@@ -230,7 +240,7 @@ pressure1_max=30.
 cmap = plt.cm.get_cmap('jet')
 (np.array(cmap.N*np.linspace(0,1,len(chip_mass)))).astype(int)
 colors = cmap((np.array(cmap.N*np.linspace(0,1,len(chip_mass)))).astype(int))
-f, axs= plt.subplots(3,1, sharex=True,figsize=(6, 15))
+f, axs= plt.subplots(3,1, sharex=True,figsize=(10, 20))
 for i in range(len(chip_mass)):
     axs[0].plot(list(q)+[1],list(q**n*tidal2_upper[:,i]/tidal1_upper[:,i])+[1],color=colors[i],label='$M_{ch}$=%.2f'%chip_mass[i])
     axs[0].legend(loc=1,prop={'size':10},frameon=False)
@@ -254,13 +264,13 @@ for i in range(len(chip_mass)):
     if(i==0):
         axs[2].plot([0,0,0],[0,1,2],color='k',label='$M_{max}>%.1f M_\odot$ upper bound'%(maxmass_min))
         axs[2].plot([0,0,0],[0,1,2],'--',color='k',label='$p_1>%.2f$ MeV fm$^{-3}$ lower bound'%(pressure1_min))
-    axs[2].legend(loc=1,prop={'size':8},frameon=False)
-    axs[2].set_title('upper and lower bounds')
-    axs[2].set_xlabel('q',fontsize=18)
-    axs[2].set_ylabel('$q^6 \Lambda_2 /\Lambda_1$',fontsize=18)
+    axs[2].legend(loc=1,prop={'size':15},frameon=False)
+    #axs[2].set_title('upper and lower bounds')
+    axs[2].set_xlabel('q',fontsize=25)
+    axs[2].set_ylabel('$q^6 \Lambda_2 /\Lambda_1$',fontsize=25)
     axs[2].set_ylim(0.5,22)
     axs[2].set_yscale('log')
-
+    
 f.colorbar(bound_log,ax=axs[2])
 bound_log.set_clim(chip_mass[0], chip_mass[-1])
 plt.xlim(0.7,1)
