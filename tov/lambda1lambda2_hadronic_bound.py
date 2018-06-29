@@ -6,7 +6,7 @@ Created on Tue May 22 15:27:13 2018
 @author: sotzee
 """
 import numpy as np
-from eos_class import EOS_BPS,EOS_BPSwithPoly,EOS_PiecewisePoly
+from eos_class import EOS_BPS,EOS_BPSwithPoly,EOS_PiecewisePoly,EOS_BPSwithPoly_4
 from tov_f import MassRadius,Mass_formax
 from Find_OfMass import Properity_ofmass
 from FindMaxmass import Maxmass
@@ -79,13 +79,10 @@ def main_upper_bound_configuration():
     for i in range(len(p1)):
         p2[i],p3[i],pc_maxmass[i]=p2p3_ofmaxmass(2.0,105.,Maxmass,Preset_Pressure_final,Preset_rtol,p1[i])
     
-    f=open('hadronic_upper_bound_p1_p2p3pc.dat','wb')
+    f=open('./hadronic_upper_bound_p1_p2p3pc.dat','wb')
     pickle.dump([p1,p2,p3,pc_maxmass],f)
     f.close()
-
-f=open('hadronic_upper_bound_p1_p2p3pc.dat','wb')
-p1,p2,p3,pc_maxmass=pickle.load(f)
-f.close()
+    
 def func(x,a,b,c,d,e,f):
     return a+b*x+c*x**2+d*x**3+e*x**4+f*x**5
 
@@ -95,6 +92,11 @@ x0=[600,0,0,0,0,0]
 fit_result_p3=opt.curve_fit(func, p1,p3, x0)
 x0=[1000,0,0,0,0,0]
 fit_result_pc_maxmass=opt.curve_fit(func, p1,pc_maxmass, x0)
+
+f=open('./hadronic_upper_bound_p1_p2p3pc_fit_result.dat','wb')
+pickle.dump([fit_result_p2,fit_result_p3,fit_result_pc_maxmass],f)
+f.close()
+
 
 def bound_upper(pressure1,m1,m2):
     #pressure2,pressure3,pressure_center_maxmass = p2p3_ofmaxmass(ofmaxmass,105,Maxmass,Preset_Pressure_final,Preset_rtol,pressure1)
@@ -173,6 +175,14 @@ def causality_p3(pressure3,pressure1,pressure2):
     +pressure3/(a.eosPiecewisePoly.gamma3-1)
     return a.eosPiecewisePoly.gamma3*pressure3/(density3+pressure3)-1.
 
+def causality_p4(pressure4,pressure1,pressure2,pressure3):
+    args=[baryon_density0,pressure1,baryon_density1,pressure2,baryon_density2,pressure3,baryon_density3,pressure4,baryon_density4]
+    a=EOS_BPSwithPoly_4(args)
+    density4=(a.eosPiecewisePoly.density3-pressure3/(a.eosPiecewisePoly.gamma4-1))\
+    *(pressure4/pressure3)**(1./a.eosPiecewisePoly.gamma4)\
+    +pressure4/(a.eosPiecewisePoly.gamma4-1)
+    return a.eosPiecewisePoly.gamma4*pressure4/(density4+pressure4)-1.
+
 p1_lower_bound=8.4
 p2_causal=opt.newton(causality_p2,100.,args=(p1_lower_bound,))
 p3_causal=opt.newton(causality_p3,800.,args=(p1_lower_bound,p2_causal))
@@ -182,6 +192,7 @@ print opt.newton(caulality_central_pressure_at_peak,p3_causal,tol=0.1,args=(p1_l
 args_lower_bound = [0.059259259259259255, 3.75, 0.29600000000000004,144.85571948688346, 0.5984, 951.205339935, 1.1840000000000002]
 args_lower_bound = [0.059259259259259255, 8.4 , 0.29600000000000004,185.215383526, 0.5984, 1074.26387308, 1.1840000000000002]
 args_lower_bound = [0.059259259259259255, p1_lower_bound , 0.29600000000000004,p2_causal, 0.5984, p3_causal, 1.1840000000000002]
+#args_lower_bound_add_poly_2.63ns = [0.059259259259259255,3.75,0.29600000000000004,59.8916739433,0.4208,227.829791898,0.5984,1199.18663593,1.1840000000000002]
 
 eos_lower_bound = EOS_BPSwithPoly(args_lower_bound)
 

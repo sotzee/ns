@@ -106,6 +106,10 @@ def MassRadius(pressure_center,Preset_Pressure_final,Preset_rtol,MRorMRBIT,eos):
         tidal=2.0/3.0*(k2/beta**5)
         return [M,R,beta,M_binding,momentofinertia,yR,tidal]
 
+def Radius_correction_ratio(pc,Preset_Pressure_final,beta,eos):
+    X=(eos.eosChempo(pc*Preset_Pressure_final)/930.4)**2-1
+    return (1+X/(2*beta))/(1+X)
+
 def Mass_formax(pressure_center,Preset_Pressure_final,Preset_rtol,eos):#(this function is used for finding maxmass in FindMaxmass.py ONLY!!
     if(pressure_center[0]<=0):
         return 0
