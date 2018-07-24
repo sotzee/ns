@@ -5,11 +5,13 @@ Created on Fri Sep 23 18:03:02 2016
 @author: sotzee
 """
 
-unitMeVfm=1.302e-7
-unitPressure=2.085e26
-unitDensity=2.32e5
+from astropy.constants import M_sun
+from physicalconst import e,hbar,c
+unitMeVfm=((1e6*e/hbar/c)/1e13)**3
+unitPressure=(1e6*e)**4/(hbar*c)**3
+unitDensity=(1e6*e)**4/(hbar*c)**3/c**2
 unitBaryonDensity=1e-39
-unitMass=2.0e33
+unitMass=M_sun.value*1000
 
 def toPressure(pressure_before,unit_before):
     if(unit_before=='mevfm' or unit_before=='mevfm3' or unit_before=='mevfm-3'):
@@ -29,7 +31,7 @@ def toDensity(density_before,unit_before):
     if(unit_before=='mev'):
         return density_before**4.0*unitDensity
     if(unit_before=='fm-4'):
-        return density_before/unitMeVfm**(4/3)*unitDensity
+        return density_before/unitMeVfm**(4./3)*unitDensity
 
 def toBaryonDensity(density_before,unit_before):
     if(unit_before=='mevfm' or unit_before=='mevfm3' or unit_before=='mevfm-3'):

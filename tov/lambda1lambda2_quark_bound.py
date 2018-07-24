@@ -206,29 +206,36 @@ plt.show()
 # # For single quark star:
 from fractions import Fraction
 cs2=[Fraction(1,3),Fraction(1,2),Fraction(2,3),Fraction(5,6),Fraction(1,1)]
-maxmass=2.0
+maxmass=[2.0,2.1,2.2,2.3,2.4]
 beta=[]
 Lambda=[]
 mass=[]
 N=50
-for j in range(len(cs2)):
-    eos_20=EOS_CSS([density_surface_ofmaxmass(maxmass,100.,1000.,Maxmass,cs2[j]),0.,1.,cs2[j]])
-    beta_20=[]
-    Lambda_20=[]
-    mass_20=[]
-    pc_20=Maxmass(eos_20)[1]*0.1**(np.linspace(0,1.2,N))
-    for i in range(N):
-        result=MassRadius_CSS(pc_20[i],'MRBIT',eos_20)
-        mass_20.append(result[0])
-        beta_20.append(result[2])
-        Lambda_20.append(result[-1])
-    beta.append(np.array(beta_20))
-    Lambda.append(np.array(Lambda_20))
-    mass.append(np.array(mass_20)/maxmass)
+for k in range(len(maxmass)):
+    beta.append([])
+    Lambda.append([])
+    mass.append([])
+    for j in range(len(cs2)):
+        eos_20=EOS_CSS([density_surface_ofmaxmass(maxmass[k],100.,1000.,Maxmass,cs2[j]),0.,1.,cs2[j]])
+        beta_20=[]
+        Lambda_20=[]
+        mass_20=[]
+        pc_20=Maxmass(eos_20)[1]*0.1**(np.linspace(0,1.2,N))
+        for i in range(N):
+            result=MassRadius_CSS(pc_20[i],'MRBIT',eos_20)
+            mass_20.append(result[0])
+            beta_20.append(result[2])
+            Lambda_20.append(result[-1])
+        beta[k].append(np.array(beta_20))
+        Lambda[k].append(np.array(Lambda_20))
+        mass[k].append(np.array(mass_20))
+mass=np.array(mass)
+Lambda=np.array(Lambda)
+beta=np.array(beta)
 n=7
-for j in range(len(cs2)):
-    plt.plot(beta[j],cs2[j]**0.*np.array(Lambda[j])*np.array(beta[j])**n,label='$s=%s$'%cs2[j])
+for j in range(len(maxmass)):
+    plt.plot(mass[j,4],Lambda[j,4],label='$Maxmass=%s$'%maxmass[j])
 plt.legend()
-plt.xlabel('$M/M_{max}$')
-plt.ylabel('$\Lambda \\beta^%d$'%(n))
+plt.xlabel('$M/M_\odot$')
+plt.ylabel('$\Lambda$')
 

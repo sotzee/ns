@@ -12,14 +12,14 @@ concentration = 2
 
 baryon_density0 = 0.16/2.7
 baryon_density1 = 1.85*0.16
-baryon_density2 = 3.74*0.16
+baryon_density2 = 3.7*0.16
 baryon_density3 = 7.4*0.16
 
 #EoS parameter for Hadronic star
 Calculation_mode='hadronic'
-Preset_pressure1=[22,3.75,30.] ##[num,lower_bound,up_bound] 
-Preset_pressure2=[50,100.] #[num,lower_bound] 
-Preset_pressure3=[100,300.] #[num,lower_bound]
+Preset_pressure1=[8,3.74,30.] ##[num,lower_bound,up_bound] 
+Preset_pressure2=[30,100.] #[num,lower_bound] 
+Preset_pressure3=[50,300.] #[num,lower_bound]
 
 from eos_class import EOS_BPSwithPoly
 eos_config=EOS_BPSwithPoly
