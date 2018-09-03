@@ -23,37 +23,6 @@ density0=EOS_BPS.eosDensity(pressure0)
 Preset_Pressure_final=1e-8
 Preset_rtol=1e-4
 
-# =============================================================================
-# args_upper_bound_no_maxmass=[0.059259259259259255,
-#  30.0,
-#  0.29600000000000004,
-#  305.8554783223734,
-#  0.5984,
-#  1930.4,
-#  1.1840000000000002]
-# 
-# #args_upper_bound_no_maxmass=[0.059259259259259255, 7.5, 0.29600000000000004, 175.62037979189225, 0.5984, 377.5848971934659, 1.1840000000000002]
-# args_upper_bound_no_maxmass=[0.059259259259259255, 16.25, 0.29600000000000004, 108.40226442132136, 0.5984, 768.8614658282588, 1.1840000000000002]
-# eos_upper_bound_no_maxmass=EOS_BPSwithPoly(args_upper_bound_no_maxmass)
-# pc_upper_bound_no_maxmass=Maxmass(Preset_Pressure_final,Preset_rtol,eos_upper_bound_no_maxmass)[1]
-# print eos_upper_bound_no_maxmass.eosCs2(pc_upper_bound_no_maxmass)
-# 
-# args_lower_bound=[0.059259259259259255,
-#  8.4,
-#  0.29600000000000004,
-#  106.77589359156613,
-#  0.5984,
-#  737.29507167870486,
-#  1.1840000000000002]
-# 
-# eos_lower_bound=EOS_BPSwithPoly(args_lower_bound)
-# pc_lower_bound=Maxmass(Preset_Pressure_final,Preset_rtol,eos_lower_bound)[1]
-# =============================================================================
-
-
-
-
-
 def Density_i(pressure_i,baryon_density_i,pressure_i_minus,baryon_density_i_minus,density_i_minus):
     gamma_i=np.log(pressure_i/pressure_i_minus)/np.log(baryon_density_i/baryon_density_i_minus)
     return gamma_i,(density_i_minus-pressure_i_minus/(gamma_i-1))*\
@@ -65,7 +34,7 @@ def causality_i(pressure_i,baryon_density_i,pressure_i_minus,baryon_density_i_mi
 
 def causality_p2(p1):
     density1=Density_i(p1,baryon_density1,pressure0,baryon_density0,density0)[1]
-    return opt.newton(causality_i,200.,args=(baryon_density2,p1,baryon_density1,density1))
+    return opt.newton(causality_i,200.,tol=1e-4,args=(baryon_density2,p1,baryon_density1,density1))
 
 def causality_center(p3,p1,p2):
     a=EOS_BPSwithPoly([baryon_density0,p1,baryon_density1,p2,baryon_density2,p3,baryon_density3])
@@ -160,10 +129,10 @@ def beta6lambda_ofmass(p1,ofmass):
 print opt.minimize(beta6lambda_ofmass,20.,args=(1.6,),tol=1e-03,method='Nelder-Mead')
 
 #Lambda*beta**6 bound
-lower_bound_p1=[]#=[16.76171875, 16.31640625, 16.5234375, 16.875, 17.490234375]
-lower_bound_p2=[]#[105.14796003297099,125.37650780304907,148.83080036594265,176.08807511574906,207.87137636674274]
-lower_bound_p3=[]#=[770.00099208777806,906.6066208960541,1059.2581321601538,1225.3575962054197,1405.0576563527995]
-lower_bound_pc_maxmass=[]#[891.94617460746917,823.54374309717764,764.7251041526473,721.2344048234047,690.03631320222746]
+lower_bound_p1=[16.76171875, 16.31640625, 16.5234375, 16.875, 17.490234375]
+lower_bound_p2=[105.14796003297099,125.37650780304907,148.83080036594265,176.08807511574906,207.87137636674274]
+lower_bound_p3=[770.00099208777806,906.6066208960541,1059.2581321601538,1225.3575962054197,1405.0576563527995]
+lower_bound_pc_maxmass=[891.94617460746917,823.54374309717764,764.7251041526473,721.2344048234047,690.03631320222746]
 for i in range(5):
     f=open('./hadronic_upper_bound_p1_p2p3pc_fit_result_2.%d.dat'%i,'rb')
     fit_result_p2,fit_result_p3,fit_result_pc_maxmass=pickle.load(f)
@@ -181,10 +150,10 @@ for i in range(len(lower_bound_p1)):
     ofmass_result=Properity_ofmass(1.4,lower_bound_p1[i],lower_bound_pc_maxmass[i],MassRadius,Preset_Pressure_final,Preset_rtol,1.0,eos_lower_bound[i])
     lower_bound_beta_one_point_four.append(ofmass_result[3])
 
-upper_bound_p1=[3.74,8.4,30.]
-upper_bound_p2=[141.46621614222298,181.0373156703981,298.98747443548757]
-upper_bound_p3=[958.1,1203.2,1949.2]
-upper_bound_pc_maxmass=[826.751708984375,753.30078125,597.7783203125]
+upper_bound_p1=[3.74,4.06,7.51,8.4,12.49,30.]
+upper_bound_p2=[141.46621614222298,144.76149521439103,174.46951849156656,181.0373156703981,208.09475251740099,298.98747443548757]
+upper_bound_p3=[958.1,978.46880147527577,1161.897025044974,1203.2,1368.7681496008929,1949.2]
+upper_bound_pc_maxmass=[826.751708984375,819.36279296875,764.66796875,753.30078125,717.2314453125,597.7783203125]
 upper_bound_beta_one_point_four=[]
 eos_upper_bound=[]
 for i in range(len(upper_bound_p1)):
@@ -216,20 +185,29 @@ for j in range(len(eos_lower_bound+eos_upper_bound)):
 beta=np.array(beta)
 Lambda=np.array(Lambda)
 mass=np.array(mass)
-for j in range(len(eos)-3):
+
+plt.figure(figsize=(10,8))
+for j in range(len(eos)-6):
     plt.plot(mass[j],beta[j]**6*Lambda[j],label='lower bound $M_{max}/M_\odot>2.%d$'%j)
-j=len(eos)-3
+j=len(eos)-6
 plt.plot(mass[j],beta[j]**6*Lambda[j],'--',label='upper bound $p_1>%.1f MeV fm^{-3}$'%(upper_bound_p1[0]))
+j=len(eos)-5
+plt.plot(mass[j],beta[j]**6*Lambda[j],'--',label='upper bound $M_{max}/M_\odot>2.2$')
+j=len(eos)-4
+plt.plot(mass[j],beta[j]**6*Lambda[j],'--',label='upper bound $M_{max}/M_\odot>2.3$')
+j=len(eos)-3
+plt.plot(mass[j],beta[j]**6*Lambda[j],'--',label='upper bound $p_1>%.1f MeV fm^{-3}$'%(upper_bound_p1[3]))
 j=len(eos)-2
-plt.plot(mass[j],beta[j]**6*Lambda[j],'--',label='upper bound $p_1>%.1f MeV fm^{-3}$'%(upper_bound_p1[1]))
+plt.plot(mass[j],beta[j]**6*Lambda[j],'--',label='upper bound $M_{max}/M_\odot>2.4$')
 j=len(eos)-1
-plt.plot(mass[j],beta[j]**6*Lambda[j],'--',label='upper bound $p_1<%.1f MeV fm^{-3}$'%(upper_bound_p1[2]))
+plt.plot(mass[j],beta[j]**6*Lambda[j],'--',label='upper bound $p_1<%.1f MeV fm^{-3}$'%(upper_bound_p1[5]))
+
 plt.xlabel('$M/M_\odot$')
 plt.ylabel('$\Lambda \\beta^6$')
 plt.title('Hadronic single star bound')
 plt.xlim(1.0,2.65)
 plt.ylim(0.003,0.011)
-plt.legend(frameon=False)
+plt.legend(frameon=False,fontsize=1)
 
 # =============================================================================
 # def mass_chirp(mass1,mass2):

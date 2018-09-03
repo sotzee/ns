@@ -53,6 +53,8 @@ def toMev4(before,unit_before):
         return before/unitPressure
     if(unit_before=='density'):
         return before/unitDensity
+    if(unit_before=='mevfm' or unit_before=='mevfm3' or unit_before=='mevfm-3'):
+        return before/unitMeVfm
         
 def toMev(before,unit_before):
     if(unit_before=='pressure'):

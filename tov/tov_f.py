@@ -38,6 +38,28 @@ def f_baryon_number(x, y, eos):
         dNdx=4*pi*r4*baryondensity*np.sqrt(rel)*den
     return np.array([dmdx,dr2dx,dNdx])
 
+def f_tidal(x, y, eos):
+    p=np.exp(-x)
+    p_dimentionful=p*eos.density_s
+    eps=eos.eosDensity(p_dimentionful)/eos.density_s
+    cs2=eos.eosCs2(p_dimentionful)
+    if(y[1]==0):
+        den=p/((eps+p)*(eps/3.0+p))
+        Q=4*pi*((5-y[2])*eps+(9+y[2])*p+(eps+p)/cs2)#-(8*pi*np.sqrt(y[1])*(eps/3.0+p))**2
+        dmdx=0#np.sqrt(y[1])*eps*den
+        dr2dx=0.5/pi*den
+        dydx=-Q*den/(4*pi)
+    else:
+        r=y[1]**0.5
+        r4=y[1]**2
+        den=p/((y[0]+4*pi*y[1]*r*p)*(eps+p))
+        rel=1-2*y[0]/r
+        Q=4*pi*((5-y[2])*eps+(9+y[2])*p+(eps+p)/cs2)/rel-(2*p/(den*(eps+p)*y[1]*rel))**2
+        dmdx=4*pi*eps*r4*rel*den
+        dr2dx=2*y[1]*r*rel*den
+        dydx=-(y[2]**2+(y[2]-6)/rel+y[1]*Q)*r*rel*den
+    return np.array([dmdx,dr2dx,dydx])
+
 def f_MRI(x, y, eos):
     p=np.exp(-x)
     p_dimentionful=p*eos.density_s
@@ -55,7 +77,6 @@ def f_MRI(x, y, eos):
         dmdx=4*pi*eps*r4*rel*den
         dr2dx=2*y[1]*r*rel*den
         dzdx=((4+y[2])*4*pi*(eps+p)*y[1]-rel*y[2]*(3+y[2]))*r*den
-    print p,eps,[dmdx,dr2dx,dzdx]
     return np.array([dmdx,dr2dx,dzdx])
 
 def f_complete(x, y, eos):
@@ -117,7 +138,7 @@ def MassRadius(pressure_center,Preset_Pressure_final,Preset_rtol,MRorMRBIT,eos):
         r = lsoda_ode(f,Preset_rtol,[0.,0.],x0,xf,eos)
         M=r.y[0]*eos.unit_mass/M_sun.value
         return M
-    if(MRorMRBIT=='B'):
+    elif(MRorMRBIT=='B'):
         r = lsoda_ode(f_baryon_number,Preset_rtol,[0.,0.,0,],x0,xf,eos)
         M_binding=r.y[2]*eos.unit_N*m_n/M_sun.value
         return M_binding
@@ -128,6 +149,18 @@ def MassRadius(pressure_center,Preset_Pressure_final,Preset_rtol,MRorMRBIT,eos):
         beta=r.y[0]/R*eos.unit_radius
         R=R*Radius_correction_ratio(pressure_center,Preset_Pressure_final,beta,eos)
         return [M,R]
+    elif(MRorMRBIT=='MRT'):
+        r = lsoda_ode(f_tidal,Preset_rtol,[0.,0.,2.],x0,xf,eos)
+        M=r.y[0]*eos.unit_mass/M_sun.value
+        R=r.y[1]**0.5*eos.unit_radius
+        beta=r.y[0]/R*eos.unit_radius
+        R=R*Radius_correction_ratio(pressure_center,Preset_Pressure_final,beta,eos)
+        yR=r.y[2]
+        tidal_R=6*beta*(2-yR+beta*(5*yR-8))+4*beta**3*(13-11*yR+beta*(3*yR-2)+2*beta**2*(1+yR))+3*(1-2*beta)**2*(2-yR+2*beta*(yR-1))*np.log(1-2*beta)
+        k2=8.0/5.0*beta**5*(1-2*beta)**2*(2-yR+2*beta*(yR-1))/tidal_R
+        tidal=2.0/3.0*(k2/beta**5)
+        beta=beta/Radius_correction_ratio(pressure_center,Preset_Pressure_final,beta,eos)
+        return [M,R,beta,yR,tidal]
     elif(MRorMRBIT=='MRBIT'):
         r = lsoda_ode(f_complete,Preset_rtol,[0.,0.,0.,0.,2.],x0,xf,eos)
         M=r.y[0]*eos.unit_mass/M_sun.value
@@ -240,44 +273,90 @@ def Mass_transition_formax(pressure_center,Preset_Pressure_final,Preset_rtol,eos
         r = lsoda_ode(f,Preset_rtol,yt,xt,xf,eos)
     return -r.y[0]*eos.unit_mass/M_sun.value
 
+
+
+def f_momentofinertia(x, y, eos):
+    p=np.exp(-x)
+    p_dimentionful=p*eos.density_s
+    eps=eos.eosDensity(p_dimentionful)/eos.density_s
+    if(y[1]==0):
+        den=p/((eps+p)*(eps/3.0+p))
+        dmdx=0#np.sqrt(y[1])*eps*den
+        dr2dx=0.5/pi*den
+        djdx=0
+        dzdx=(4+y[3])/(eps/p/3.0+1)
+        dwdx=0
+    else:
+        r=y[1]**0.5
+        den=p/((y[0]+4*pi*y[1]*r*p)*(eps+p))
+        rel=1-2*y[0]/r
+        dmdx=4*pi*eps*y[1]**2*rel*den
+        dr2dx=2*y[1]*r*rel*den
+        djdx=-4*pi*p*y[1]*r/(y[0]+4*pi*y[1]*r*p)
+        dzdx=((4+y[3])*4*pi*(eps+p)*y[1]-rel*y[3]*(3+y[3]))*r*den
+        dwdx=y[3]/2/y[1]*dr2dx
+    return np.array([dmdx,dr2dx,djdx,dzdx,dwdx])
+
+def MomentOfInertia_profile(pressure_center,Preset_Pressure_final,Preset_rtol,N,eos):
+    x0 = -np.log(pressure_center/eos.density_s)
+    xf = x0-np.log(Preset_Pressure_final)
+    xf_array = np.linspace(x0,xf,N)
+    p=np.exp(-xf_array)*eos.density_s
+    bds=eos.eosBaryonDensity(p)*939.5654
+    y_array = lsoda_ode_array(f_momentofinertia,Preset_rtol,[0.,0.,0.,0.,0.],x0,xf_array,eos)
+    # runtime warning due to zeros at star center
+    M_array=y_array[:,0]*eos.unit_mass/M_sun.value
+    r_array=y_array[:,1]**0.5
+    beta_array=y_array[:,0]/(r_array)
+    R_array=r_array*eos.unit_radius
+    j_array=np.exp(y_array[:,2]-y_array[-1,2])
+    z_array=y_array[:,3]
+    w_array=3./(3.+z_array[-1])*np.exp(y_array[:,4]-y_array[-1,4])
+    I_array=r_array*y_array[:,1]*j_array*z_array*w_array/(6*y_array[-1,0]**3)
+    beta=y_array[-1,0]/r_array[-1]
+    I_array_Lattimer=28*np.pi*p*r_array[-1]**3*(1-1.67*beta-0.6*beta**2)*beta/(3*eos.density_s*y_array[-1,0]*(beta**2+2*p*(1+7*beta)*(1-2*beta)/bds))
+    I_array_Lattimer=(1-I_array_Lattimer)*I_array[-1]
+    I_array_Lattimer2=I_array[-1]-(6*np.pi*p*r_array[-1]**6/(eos.density_s*y_array[-1,0]**4))*(4+z_array[-1])/(3+z_array[-1])**2
+    
+    I_array_z3z=r_array**3*z_array/(z_array+3)
+    I_array_test1=I_array[-1]-(0.5/(beta_array[-1]**3)-I_array)*16*np.pi*p*r_array**3/(3.*eos.density_s*y_array[:,0])
+    I_array_test2=I_array[-1]-(0.5/(beta_array**3)-I_array)*16*np.pi*p*r_array**3/(3.*eos.density_s*y_array[:,0])
+    I_array_test3=0.5/(beta_array**3)-(0.5/(beta_array**3)-I_array[-1])/(1-16*np.pi*p*r_array**3/(3.*eos.density_s*y_array[:,0]))
+    return  [eos.density_s*np.exp(-xf_array),M_array,R_array,j_array,z_array,w_array,I_array,I_array_Lattimer,I_array_Lattimer2,I_array_z3z,I_array_test1,I_array_test2,I_array_test3]
+
 # =============================================================================
-# def f_momentofinertia(x, y, eos):
-#     p=np.exp(-x)
-#     p_dimentionful=p*eos.density_s
-#     eps=eos.eosDensity(p_dimentionful)/eos.density_s
-#     if(y[1]==0):
-#         den=p/((eps+p)*(eps/3.0+p))
-#         dmdx=0#np.sqrt(y[1])*eps*den
-#         dr2dx=0.5/pi*den
-#         djdx=0
-#         dzdx=(4+y[3])/(eps/p/3.0+1)
-#         dwdx=0
-#     else:
-#         r=y[1]**0.5
-#         den=p/((y[0]+4*pi*y[1]*r*p)*(eps+p))
-#         rel=1-2*y[0]/r
-#         dmdx=4*pi*eps*y[1]**2*rel*den
-#         dr2dx=2*y[1]*r*rel*den
-#         djdx=-4*pi*p*y[1]*r/(y[0]+4*pi*y[1]*r*p)
-#         dzdx=((4+y[3])*4*pi*(eps+p)*y[1]-rel*y[3]*(3+y[3]))*r*den
-#         dwdx=y[3]/2/y[1]*dr2dx
-#     return np.array([dmdx,dr2dx,djdx,dzdx,dwdx])
-# 
-# def MomentOfInertia_profile(pressure_center,Preset_Pressure_final,Preset_rtol,N,eos):
-#     x0 = -np.log(pressure_center/eos.density_s)
-#     xf = x0-np.log(Preset_Pressure_final)
-#     xf_array = np.linspace(x0,xf,N)
-#     y_array = lsoda_ode_array(f_momentofinertia,Preset_rtol,[0.,0.,0.,0.,0.],x0,xf_array,eos)
-# 
-#     M_array=y_array[:,0]*eos.unit_mass/M_sun.value
-#     r_array=y_array[:,1]**0.5
-#     R_array=r_array*eos.unit_radius
-#     j_array=np.exp(y_array[:,2]-y_array[-1,2])
-#     z_array=y_array[:,3]
-#     w_array=3./(3.+z_array[-1])*np.exp(y_array[:,4]-y_array[-1,4])
-#     return  [eos.density_s*np.exp(-xf_array),M_array,R_array,j_array,z_array,w_array,r_array*y_array[:,1]*j_array*z_array*w_array/(6*y_array[-1,0]**3)]
-# mri_result=MomentOfInertia_profile(pc,Preset_Pressure_final,1e-4,100,eos)
-# 
+# import matplotlib.pyplot as plt
+# label_list=['M','R','j','y','$\omega$','I','I_Lattimer1999','I_Lattimer_TOV_notes','$\\frac{yr^3}{y+3}$','I_APPROX_I','I_APPROX_II','I_APPROX_III']
+# mri_result=MomentOfInertia_profile(379.908447265625,1e-20,1e-8,100,eos)
+# for i in range(5):
+#     plt.plot(mri_result[0],mri_result[i+1]/mri_result[i+1][-1],label=label_list[i])
+# i=5
+# plt.plot(mri_result[0],mri_result[i+1]/mri_result[i+1][-1],'k',label=label_list[i])
+# i=6
+# plt.plot(mri_result[0],mri_result[i+1]/mri_result[i+1][-1],':',label=label_list[i])
+# i=7
+# plt.plot(mri_result[0],mri_result[i+1]/mri_result[i+1][-1],':',label=label_list[i])
+# i=8
+# plt.plot(mri_result[0],mri_result[i+1]/mri_result[i+1][-1],'--',label=label_list[i])
+# i=9
+# plt.plot(mri_result[0],mri_result[i+1]/mri_result[i+1][-1],'--',label=label_list[i])
+# i=10
+# plt.plot(mri_result[0],mri_result[i+1]/mri_result[i+1][-1],'--',label=label_list[i])
+# i=11
+# plt.plot(mri_result[0],mri_result[i+1]/mri_result[i+1][-1],'-.',label=label_list[i])
+# #plt.plot([0.5006],[0.986],'o')
+# #plt.xscale('log')
+# plt.xlim(0,2)
+# plt.ylim(0.96,1.02)
+# plt.xlabel('Crustal pressure(MeV fm$^{-3}$)')
+# plt.ylabel('normalized to surface value')
+# plt.legend(frameon=False,fontsize=8)
+# plt.savefig('CrustalI.eps', format='eps', dpi=1000)
+# =============================================================================
+
+
+
+# =============================================================================
 # def MassRadius_profile(pressure_center,Preset_Pressure_final,Preset_rtol,N,eos):
 #     x0 = -np.log(pressure_center/eos.density_s)
 #     xf = x0-np.log(Preset_Pressure_final)
