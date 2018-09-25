@@ -36,14 +36,9 @@ def causality_p2(p1):
     density1=Density_i(p1,baryon_density1,pressure0,baryon_density0,density0)[1]
     return opt.newton(causality_i,200.,args=(baryon_density2,p1,baryon_density1,density1))
 
-
-
-N1=27
-N2=15
-N3=20
-N1=3
-N2=3
-N3=3
+N1=50
+N2=50
+N3=50
 p1=np.linspace(3.74,30,N1)
 p2=[]
 p3=[]
@@ -89,13 +84,13 @@ def Calculation_onepointfour(args_list,i):
 
 from Parallel_process import main_parallel
 import cPickle
-f_maxmass_result='./Lambda_hadronic_calculation_maxmass.dat'
+f_maxmass_result='./'+dir_name+'/Lambda_hadronic_calculation_maxmass.dat'
 main_parallel(Calculation_maxmass,eos_flat,f_maxmass_result,0)
 f=open(f_maxmass_result,'rb')
 maxmass_result=cPickle.load(f)
 f.close()
 
-f_onepointfour_result='./Lambda_hadronic_calculation_onepointfour.dat'
+f_onepointfour_result='./'+dir_name+'/Lambda_hadronic_calculation_onepointfour.dat'
 main_parallel(Calculation_onepointfour,np.array([eos_flat,maxmass_result]).transpose(),f_onepointfour_result,0)
 f=open(f_onepointfour_result,'rb')
 Properity_onepointfour=np.array(cPickle.load(f))
@@ -108,10 +103,10 @@ logic1=np.array(maxmass_result)[:,1]>2.0
 logic2=np.array(maxmass_result)[:,2]<1.0
 
 logic_eos=np.logical_and(logic1,logic2)
-f=open('./Lambda_hadronic_calculation_logic.dat','wb')
+f=open('./'+dir_name+'/Lambda_hadronic_calculation_logic.dat','wb')
 cPickle.dump([logic1,logic2,logic_eos],f)
 f.close()
-f=open('./Lambda_hadronic_calculation_logic.dat','rb')
+f=open('./'+dir_name+'/Lambda_hadronic_calculation_logic.dat','rb')
 p1p2p3=np.array(cPickle.load(f))
 f.close()
 
@@ -127,10 +122,10 @@ f.close()
 # maxmass_result=list(np.array(maxmass_result)[logic_eos])
 # Properity_onepointfour=Properity_onepointfour[logic_eos]
 # p1p2p3=filter_eos(p1p2p3,logic_eos)
-# f=open('./Lambda_hadronic_calculation_p1p2p3_filtered.dat','wb')
+# f=open('./'+dir_name+'Lambda_hadronic_calculation_p1p2p3_filtered.dat','wb')
 # cPickle.dump(p1p2p3,f)
 # f.close()
-# f=open('./Lambda_hadronic_calculation_p1p2p3_filtered.dat','rb')
+# f=open('./'+dir_name+'Lambda_hadronic_calculation_p1p2p3_filtered.dat','rb')
 # p1p2p3=np.array(cPickle.load(f))
 # f.close()
 # =============================================================================
@@ -148,7 +143,7 @@ def Calculation_mass_beta_Lambda(args_list,i):
         beta.append(MR_result[2])
         Lambda.append(MR_result[4])
     return [mass,beta,Lambda]
-f_mass_beta_Lambda_result = './Lambda_hadronic_calculation_mass_beta_Lambda.dat'
+f_mass_beta_Lambda_result = './'+dir_name+'/Lambda_hadronic_calculation_mass_beta_Lambda.dat'
 main_parallel(Calculation_mass_beta_Lambda,np.array([eos_flat,maxmass_result]).transpose(),f_mass_beta_Lambda_result,0)
 f=open(f_mass_beta_Lambda_result,'rb')
 mass_beta_Lambda_result=np.array(cPickle.load(f))
@@ -176,7 +171,7 @@ def Calculation_chirpmass_Lambdabeta6(args_list,i):
     Lambda_binary_beta6=(beta_onepointfour[i]/1.4*chirp_mass)**6*tidal_binary(mass2/mass1,Lambda1,Lambda2).flatten()
     return [chirp_mass,Lambda_binary_beta6]
 
-f_chirpmass_Lambdabeta6_result='./Lambda_hadronic_calculation_chirpmass_Lambdabeta6.dat'
+f_chirpmass_Lambdabeta6_result='./'+dir_name+'/Lambda_hadronic_calculation_chirpmass_Lambdabeta6.dat'
 main_parallel(Calculation_chirpmass_Lambdabeta6,np.array([list(mass_beta_Lambda_result),list(Properity_onepointfour[:,3])]).transpose(),f_chirpmass_Lambdabeta6_result,0)
 f=open(f_chirpmass_Lambdabeta6_result,'rb')
 chirpmass_Lambdabeta6_result=np.array(cPickle.load(f))
