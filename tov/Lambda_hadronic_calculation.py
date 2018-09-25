@@ -84,6 +84,7 @@ def Calculation_onepointfour(args_list,i):
 
 from Parallel_process import main_parallel
 import cPickle
+dir_name='Lambda_hadronic_calculation'
 f_maxmass_result='./'+dir_name+'/Lambda_hadronic_calculation_maxmass.dat'
 main_parallel(Calculation_maxmass,eos_flat,f_maxmass_result,0)
 f=open(f_maxmass_result,'rb')
