@@ -114,9 +114,9 @@ def Maxmass(Preset_Pressure_final,Preset_rtol,eos):
     result=opt.minimize(Mass_formax,100.0,tol=0.001,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
     return [0,result.x[0],-result.fun,result.x[0],-result.fun,result.x[0],-result.fun]
 
-N1=2
-N2=2
-N3=2
+N1=40
+N2=40
+N3=40
 p1=np.linspace(3.74,30,N1)
 p2=[]
 p3=[]
@@ -152,10 +152,10 @@ for i in range(N1):
 from Parallel_process import main_parallel
 import cPickle
 dir_name='Lambda_hadronic_calculation'
-f_file=open('./'+dir_name+'Lambda_hadronic_calculation_p1p2p3_eos.dat','wb')
+f_file=open('./'+dir_name+'/Lambda_hadronic_calculation_p1p2p3_eos.dat','wb')
 cPickle.dump([p1p2p3,eos],f_file)
 f_file.close()
-f_file=open('./'+dir_name+'Lambda_hadronic_calculation_p1p2p3_eos.dat','rb')
+f_file=open('./'+dir_name+'/Lambda_hadronic_calculation_p1p2p3_eos.dat','rb')
 p1p2p3=np.array(cPickle.load(f_file))
 f_file.close()
 
