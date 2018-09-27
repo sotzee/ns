@@ -156,7 +156,7 @@ f_file=open('./'+dir_name+'/Lambda_hadronic_calculation_p1p2p3_eos.dat','wb')
 cPickle.dump([p1p2p3,eos],f_file)
 f_file.close()
 f_file=open('./'+dir_name+'/Lambda_hadronic_calculation_p1p2p3_eos.dat','rb')
-p1p2p3=np.array(cPickle.load(f_file))
+p1p2p3,eos=np.array(cPickle.load(f_file))
 f_file.close()
 
 eos_flat=np.array(eos).flatten()
