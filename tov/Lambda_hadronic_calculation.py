@@ -114,132 +114,145 @@ def Maxmass(Preset_Pressure_final,Preset_rtol,eos):
     result=opt.minimize(Mass_formax,100.0,tol=0.001,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
     return [0,result.x[0],-result.fun,result.x[0],-result.fun,result.x[0],-result.fun]
 
-N1=40
-N2=40
-N3=40
-p1=np.linspace(3.74,30,N1)
-p2=[]
-p3=[]
-Preset_Pressure_final=1e-8
-Preset_rtol=1e-4
-for i in range(len(p1)):
-    p2.append([])
-    p2[i]=np.linspace(100,causality_p2(p1[i]),N2)
-for i in range(len(p1)):
-    p3.append([])
-    for j in range(len(p2[i])):
-        p3[i].append([])
-        density1=Density_i(p1[i],baryon_density1,pressure0,baryon_density0,density0)[1]
-        density2=Density_i(p2[i][j],baryon_density2,p1[i],baryon_density1,density1)[1]
-        gamma3_max=1+density2/p2[i][j]
-        p3_max= p2[i][j]*(baryon_density3/baryon_density2)**gamma3_max
-        p3[i][j]=np.exp(np.linspace(np.log(np.max([1.2*p2[i][j],250])),np.log(p3_max),N3))
+def Properity_ofmass(ofmass,Preset_pressure_center_low,MaximumMass_pressure_center,MassRadius_function,Preset_Pressure_final,Preset_rtol,Preset_Pressure_final_index,eos):
+    pressure_center=pressure_center_ofmass(ofmass,Preset_pressure_center_low,MaximumMass_pressure_center,MassRadius_function,Preset_Pressure_final,Preset_rtol,eos)
+    [M,R,beta,yR,tidal]=MassRadius_function(pressure_center,Preset_Pressure_final**Preset_Pressure_final_index,Preset_rtol,'MRT',eos)
+    return [pressure_center,M,R,beta,yR,tidal]
 
+def pressure_center_ofmass(ofmass,Preset_pressure_center_low,Preset_pressure_center_high,MassRadius_function,Preset_Pressure_final,Preset_rtol,eos):
+    result=opt.brenth(Ofmass,Preset_pressure_center_low,Preset_pressure_center_high,args=(ofmass,MassRadius_function,Preset_Pressure_final,Preset_rtol,eos))
+    return result
 
-eos=[]
-p1p2p3=[]
-for i in range(N1):
-    eos.append([])
-    p1p2p3.append([])
-    for j in range(N2):
-        eos[i].append([])
-        p1p2p3[i].append([])
-        for k  in range(N3):
-            eos[i][j].append([])
-            eos[i][j][k].append(EOS_BPSwithPoly([baryon_density0,p1[i],baryon_density1,p2[i][j],baryon_density2,p3[i][j][k],baryon_density3]))
-            p1p2p3[i][j].append([])
-            p1p2p3[i][j][k].append([p1[i],p2[i][j],p3[i][j][k]])
-from Parallel_process import main_parallel
-import cPickle
-dir_name='Lambda_hadronic_calculation'
-f_file=open('./'+dir_name+'/Lambda_hadronic_calculation_p1p2p3_eos.dat','wb')
-cPickle.dump([p1p2p3,eos],f_file)
-f_file.close()
-f_file=open('./'+dir_name+'/Lambda_hadronic_calculation_p1p2p3_eos.dat','rb')
-p1p2p3,eos=np.array(cPickle.load(f_file))
-f_file.close()
+def Ofmass(pressure_center,ofmass,MassRadius_function,Preset_Pressure_final,Preset_rtol,eos):
+    return -ofmass+MassRadius_function(pressure_center,Preset_Pressure_final,Preset_rtol,'M',eos)
 
-eos_flat=np.array(eos).flatten()
-p1p2p3_flat=np.array(p1p2p3).flatten()
-
-def Calculation_maxmass(eos,i):
-    maxmass_result=Maxmass(Preset_Pressure_final,Preset_rtol,eos[i])[1:3]
-    return maxmass_result+[eos[i].eosCs2(maxmass_result[0])]
-
-f_maxmass_result='./'+dir_name+'/Lambda_hadronic_calculation_maxmass.dat'
-main_parallel(Calculation_maxmass,eos_flat,f_maxmass_result,0)
-f_file=open(f_maxmass_result,'rb')
-maxmass_result=cPickle.load(f_file)
-f_file.close()
-
-# =============================================================================
-# def Calculation_onepointfour(args_list,i):
-#     eos=args_list[:,0]
-#     maxmass_result=args_list[:,1]
-#     Properity_onepointfour=Properity_ofmass(1.4,10,maxmass_result[i][0],MassRadius,Preset_Pressure_final,Preset_rtol,1,eos[i])
-#     return Properity_onepointfour
-# f_onepointfour_result='./'+dir_name+'/Lambda_hadronic_calculation_onepointfour.dat'
-# main_parallel(Calculation_onepointfour,np.array([eos_flat,maxmass_result]).transpose(),f_onepointfour_result,0)
-# f_file=open(f_onepointfour_result,'rb')
-# Properity_onepointfour=np.array(cPickle.load(f_file))
-# f_file.close()
-# =============================================================================
-
-
-#M_max>2.0M_sun
-logic1=np.array(maxmass_result)[:,1]>2.0
-#cs2 at center < 1.0
-logic2=np.array(maxmass_result)[:,2]<1.0
-
-logic_eos=np.logical_and(logic1,logic2)
-f_file=open('./'+dir_name+'/Lambda_hadronic_calculation_logic.dat','wb')
-cPickle.dump([logic1,logic2,logic_eos],f_file)
-f_file.close()
-f_file=open('./'+dir_name+'/Lambda_hadronic_calculation_logic.dat','rb')
-p1p2p3=np.array(cPickle.load(f_file))
-f_file.close()
-
-# =============================================================================
-# def filter_eos(eos,bool_array):
-#     result=[]
-#     for i in range(len(bool_array)):
-#         if(bool_array[i]):
-#             result.append(eos[i])
-#     return result
-# 
-# eos=filter_eos(eos,logic_eos)
-# maxmass_result=list(np.array(maxmass_result)[logic_eos])
-# Properity_onepointfour=Properity_onepointfour[logic_eos]
-# p1p2p3=filter_eos(p1p2p3,logic_eos)
-# f_file=open('./'+dir_name+'Lambda_hadronic_calculation_p1p2p3_filtered.dat','wb')
-# cPickle.dump(p1p2p3,f_file)
-# f_file.close()
-# f_file=open('./'+dir_name+'Lambda_hadronic_calculation_p1p2p3_filtered.dat','rb')
-# p1p2p3=np.array(cPickle.load(f_file))
-# f_file.close()
-# =============================================================================
-
-pc_list=10**np.linspace(0,-1.5,40)
-def Calculation_mass_beta_Lambda(args_list,i):
-    eos=args_list[:,0]
-    maxmass_result=args_list[:,1]
-    mass=[]
-    beta=[]
-    Lambda=[]
-    for j in range(len(pc_list)):
-        MR_result=MassRadius(maxmass_result[i][0]*pc_list[j],Preset_Pressure_final,Preset_rtol,'MRT',eos[i])
-        mass.append(MR_result[0])
-        beta.append(MR_result[2])
-        Lambda.append(MR_result[4])
-    return [mass,beta,Lambda]
-f_mass_beta_Lambda_result = './'+dir_name+'/Lambda_hadronic_calculation_mass_beta_Lambda.dat'
-main_parallel(Calculation_mass_beta_Lambda,np.array([eos_flat,maxmass_result]).transpose(),f_mass_beta_Lambda_result,0)
-f_file=open(f_mass_beta_Lambda_result,'rb')
-mass_beta_Lambda_result=np.array(cPickle.load(f_file))
-f_file.close()
-mass=mass_beta_Lambda_result[:,0]
-beta=mass_beta_Lambda_result[:,1]
-Lambda=mass_beta_Lambda_result[:,2]
+if __name__ == '__main__':
+    N1=40
+    N2=40
+    N3=40
+    p1=np.linspace(3.74,30,N1)
+    p2=[]
+    p3=[]
+    Preset_Pressure_final=1e-8
+    Preset_rtol=1e-4
+    for i in range(len(p1)):
+        p2.append([])
+        p2[i]=np.linspace(100,causality_p2(p1[i]),N2)
+    for i in range(len(p1)):
+        p3.append([])
+        for j in range(len(p2[i])):
+            p3[i].append([])
+            density1=Density_i(p1[i],baryon_density1,pressure0,baryon_density0,density0)[1]
+            density2=Density_i(p2[i][j],baryon_density2,p1[i],baryon_density1,density1)[1]
+            gamma3_max=1+density2/p2[i][j]
+            p3_max= p2[i][j]*(baryon_density3/baryon_density2)**gamma3_max
+            p3[i][j]=np.exp(np.linspace(np.log(np.max([1.2*p2[i][j],250])),np.log(p3_max),N3))
+    
+    
+    eos=[]
+    p1p2p3=[]
+    for i in range(N1):
+        eos.append([])
+        p1p2p3.append([])
+        for j in range(N2):
+            eos[i].append([])
+            p1p2p3[i].append([])
+            for k  in range(N3):
+                eos[i][j].append([])
+                eos[i][j][k].append(EOS_BPSwithPoly([baryon_density0,p1[i],baryon_density1,p2[i][j],baryon_density2,p3[i][j][k],baryon_density3]))
+                p1p2p3[i][j].append([])
+                p1p2p3[i][j][k].append([p1[i],p2[i][j],p3[i][j][k]])
+    from Parallel_process import main_parallel
+    import cPickle
+    dir_name='Lambda_hadronic_calculation'
+    f_file=open('./'+dir_name+'/Lambda_hadronic_calculation_p1p2p3_eos.dat','wb')
+    cPickle.dump([p1p2p3,eos],f_file)
+    f_file.close()
+    f_file=open('./'+dir_name+'/Lambda_hadronic_calculation_p1p2p3_eos.dat','rb')
+    p1p2p3,eos=np.array(cPickle.load(f_file))
+    f_file.close()
+    
+    eos_flat=np.array(eos).flatten()
+    p1p2p3_flat=np.array(p1p2p3).flatten()
+    
+    def Calculation_maxmass(eos,i):
+        maxmass_result=Maxmass(Preset_Pressure_final,Preset_rtol,eos[i])[1:3]
+        return maxmass_result+[eos[i].eosCs2(maxmass_result[0])]
+    
+    f_maxmass_result='./'+dir_name+'/Lambda_hadronic_calculation_maxmass.dat'
+    main_parallel(Calculation_maxmass,eos_flat,f_maxmass_result,0)
+    f_file=open(f_maxmass_result,'rb')
+    maxmass_result=cPickle.load(f_file)
+    f_file.close()
+    
+    # =============================================================================
+    # def Calculation_onepointfour(args_list,i):
+    #     eos=args_list[:,0]
+    #     maxmass_result=args_list[:,1]
+    #     Properity_onepointfour=Properity_ofmass(1.4,10,maxmass_result[i][0],MassRadius,Preset_Pressure_final,Preset_rtol,1,eos[i])
+    #     return Properity_onepointfour
+    # f_onepointfour_result='./'+dir_name+'/Lambda_hadronic_calculation_onepointfour.dat'
+    # main_parallel(Calculation_onepointfour,np.array([eos_flat,maxmass_result]).transpose(),f_onepointfour_result,0)
+    # f_file=open(f_onepointfour_result,'rb')
+    # Properity_onepointfour=np.array(cPickle.load(f_file))
+    # f_file.close()
+    # =============================================================================
+    
+    
+    #M_max>2.0M_sun
+    logic1=np.array(maxmass_result)[:,1]>2.0
+    #cs2 at center < 1.0
+    logic2=np.array(maxmass_result)[:,2]<1.0
+    
+    logic_eos=np.logical_and(logic1,logic2)
+    f_file=open('./'+dir_name+'/Lambda_hadronic_calculation_logic.dat','wb')
+    cPickle.dump([logic1,logic2,logic_eos],f_file)
+    f_file.close()
+    f_file=open('./'+dir_name+'/Lambda_hadronic_calculation_logic.dat','rb')
+    p1p2p3=np.array(cPickle.load(f_file))
+    f_file.close()
+    
+    # =============================================================================
+    # def filter_eos(eos,bool_array):
+    #     result=[]
+    #     for i in range(len(bool_array)):
+    #         if(bool_array[i]):
+    #             result.append(eos[i])
+    #     return result
+    # 
+    # eos=filter_eos(eos,logic_eos)
+    # maxmass_result=list(np.array(maxmass_result)[logic_eos])
+    # Properity_onepointfour=Properity_onepointfour[logic_eos]
+    # p1p2p3=filter_eos(p1p2p3,logic_eos)
+    # f_file=open('./'+dir_name+'Lambda_hadronic_calculation_p1p2p3_filtered.dat','wb')
+    # cPickle.dump(p1p2p3,f_file)
+    # f_file.close()
+    # f_file=open('./'+dir_name+'Lambda_hadronic_calculation_p1p2p3_filtered.dat','rb')
+    # p1p2p3=np.array(cPickle.load(f_file))
+    # f_file.close()
+    # =============================================================================
+    
+    pc_list=10**np.linspace(0,-1.5,40)
+    def Calculation_mass_beta_Lambda(args_list,i):
+        eos=args_list[:,0]
+        maxmass_result=args_list[:,1]
+        mass=[]
+        beta=[]
+        Lambda=[]
+        for j in range(len(pc_list)):
+            MR_result=MassRadius(maxmass_result[i][0]*pc_list[j],Preset_Pressure_final,Preset_rtol,'MRT',eos[i])
+            mass.append(MR_result[0])
+            beta.append(MR_result[2])
+            Lambda.append(MR_result[4])
+        return [mass,beta,Lambda]
+    f_mass_beta_Lambda_result = './'+dir_name+'/Lambda_hadronic_calculation_mass_beta_Lambda.dat'
+    main_parallel(Calculation_mass_beta_Lambda,np.array([eos_flat,maxmass_result]).transpose(),f_mass_beta_Lambda_result,0)
+    f_file=open(f_mass_beta_Lambda_result,'rb')
+    mass_beta_Lambda_result=np.array(cPickle.load(f_file))
+    f_file.close()
+    mass=mass_beta_Lambda_result[:,0]
+    beta=mass_beta_Lambda_result[:,1]
+    Lambda=mass_beta_Lambda_result[:,2]
 
 
 # =============================================================================
