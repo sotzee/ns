@@ -13,7 +13,10 @@ from time import time
 import cPickle
 
 def Calculation(parameter_list,x):
-    return parameter_list[x]
+    return np.array(parameter_list[x])
+
+def Calculation_i(parameter_i):
+    return np.array(parameter_i)
 
 def processInput(Calculation,parameter_list,i,num_cores,complete_set,preset_start_from):
     timenow=time()
@@ -23,7 +26,7 @@ def processInput(Calculation,parameter_list,i,num_cores,complete_set,preset_star
     for ii in range(complete_set):
         result.append(Calculation(parameter_list,i+num_cores*ii))
         timeprev=remainingTime(timebegin,timeprev,ii,preset_start_from,complete_set)
-    return result
+    return np.array(result)
 
 def remainingTime(timebegin,timeprev,ii,start_from,complete_set):
     timenow=time()
@@ -32,15 +35,15 @@ def remainingTime(timebegin,timeprev,ii,start_from,complete_set):
     print('                         %.2f hours (instant)'%((timenow-timeprev)*(complete_set-ii)/3600))
     return timenow
 
-def main_parallel(Calculation,parameter_list,result_file_name,preset_start_from):
+def main_parallel_largest_batch(Calculation,parameter_list,result_file_name,preset_start_from):
     num_cores = cpu_count()-1
     total_num = len(parameter_list)
     complete_set=np.int(total_num/num_cores)
     leftover_num=total_num-complete_set*num_cores
     timebegin=time()
 
-    Output=Parallel(n_jobs=num_cores)(delayed(processInput)(Calculation,parameter_list,i,num_cores,complete_set,preset_start_from) for i in range(num_cores))
-    Output_leftover=Parallel(n_jobs=num_cores)(delayed(Calculation)(parameter_list,i+complete_set*num_cores) for i in range(leftover_num))
+    Output=Parallel(n_jobs=num_cores,verbose=2)(delayed(processInput)(Calculation,parameter_list,i,num_cores,complete_set,preset_start_from) for i in range(num_cores))
+    Output_leftover=Parallel(n_jobs=num_cores,verbose=2,batch_size=complete_set)(delayed(Calculation)(parameter_list,i) for i in range(total_num))
     result=list()
     for i in range(complete_set):
         for ii in range(num_cores):
@@ -54,25 +57,23 @@ def main_parallel(Calculation,parameter_list,result_file_name,preset_start_from)
     f=open(result_file_name,'wb')
     cPickle.dump(result,f)
     f.close()
-# =============================================================================
-#     print Output
-#     print Output_leftover
-#     print result
-# =============================================================================
 
-# =============================================================================
-#     f1=open('./'+dir_name+'/'+name_dat_main+'_try','wb')
-#     pickle.dump(parameter,f1)
-#     f1.close()
-#     print('Congratulation! %s successfully saved!!!!!!!!!!!!!'%name_dat_main)
-# =============================================================================
+
+def main_parallel(Calculation_i,parameter_list,result_file_name):
+    num_cores = cpu_count()-1
+    try:
+        Output=Parallel(n_jobs=num_cores,verbose=10)(delayed(Calculation_i)(parameter_i) for parameter_i in parameter_list)
+    except:
+        Output=Parallel(n_jobs=num_cores,verbose=10)(delayed(Calculation_i)(parameter_list,i) for i in range(len(parameter_list)))
+    f=open(result_file_name,'wb')
+    cPickle.dump(np.array(Output),f)
+    f.close()
 
 if __name__ == '__main__':
-    import sys
+    #import sys
     #print("Running Program: " + sys.argv[0])
     #print("Configuration file: " + sys.argv[1])
-    preset_start_from=0
-    parameter=np.linspace(0,100,101)
+    parameter=np.reshape(np.linspace(0,100,50001*6),(50001,6))
     result_file_name='parallel_result.dat'
 # =============================================================================
 #     dir_name=
@@ -81,4 +82,4 @@ if __name__ == '__main__':
 #     parameter=pickle.load(f1)
 #     f1.close()
 # ============================================================================
-    main_parallel(Calculation,parameter,result_file_name,preset_start_from)
+    main_parallel(Calculation_i,parameter,result_file_name)

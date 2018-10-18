@@ -126,6 +126,23 @@ def pressure_center_ofmass(ofmass,Preset_pressure_center_low,Preset_pressure_cen
 def Ofmass(pressure_center,ofmass,MassRadius_function,Preset_Pressure_final,Preset_rtol,eos):
     return -ofmass+MassRadius_function(pressure_center,Preset_Pressure_final,Preset_rtol,'M',eos)
 
+def Calculation_maxmass(eos_i):
+    maxmass_result=Maxmass(Preset_Pressure_final,Preset_rtol,eos_i)[1:3]
+    return maxmass_result+[eos_i.eosCs2(maxmass_result[0])]
+
+def Calculation_mass_beta_Lambda(args_i,pc_list=10**np.linspace(0,-1.5,40)):
+    eos_i=args_i[0]
+    maxmass_pc_i=args_i[1]
+    mass=[]
+    beta=[]
+    Lambda=[]
+    for pc_i in pc_list:
+        MR_result=MassRadius(maxmass_pc_i*pc_i,Preset_Pressure_final,Preset_rtol,'MRT',eos_i)
+        mass.append(MR_result[0])
+        beta.append(MR_result[2])
+        Lambda.append(MR_result[4])
+    return [mass,beta,Lambda]
+    
 if __name__ == '__main__':
     N1=40
     N2=40
@@ -174,10 +191,6 @@ if __name__ == '__main__':
     
     eos_flat=np.array(eos).flatten()
     p1p2p3_flat=np.array(p1p2p3).flatten()
-    
-    def Calculation_maxmass(eos,i):
-        maxmass_result=Maxmass(Preset_Pressure_final,Preset_rtol,eos[i])[1:3]
-        return maxmass_result+[eos[i].eosCs2(maxmass_result[0])]
     
     f_maxmass_result='./'+dir_name+'/Lambda_hadronic_calculation_maxmass.dat'
     main_parallel(Calculation_maxmass,eos_flat,f_maxmass_result,0)
@@ -232,19 +245,6 @@ if __name__ == '__main__':
     # f_file.close()
     # =============================================================================
     
-    pc_list=10**np.linspace(0,-1.5,40)
-    def Calculation_mass_beta_Lambda(args_list,i):
-        eos=args_list[:,0]
-        maxmass_result=args_list[:,1]
-        mass=[]
-        beta=[]
-        Lambda=[]
-        for j in range(len(pc_list)):
-            MR_result=MassRadius(maxmass_result[i][0]*pc_list[j],Preset_Pressure_final,Preset_rtol,'MRT',eos[i])
-            mass.append(MR_result[0])
-            beta.append(MR_result[2])
-            Lambda.append(MR_result[4])
-        return [mass,beta,Lambda]
     f_mass_beta_Lambda_result = './'+dir_name+'/Lambda_hadronic_calculation_mass_beta_Lambda.dat'
     main_parallel(Calculation_mass_beta_Lambda,np.array([eos_flat,maxmass_result]).transpose(),f_mass_beta_Lambda_result,0)
     f_file=open(f_mass_beta_Lambda_result,'rb')
