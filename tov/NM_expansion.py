@@ -148,19 +148,20 @@ import cPickle
 import os
 path = "./"
 dir_name='Lambda_PNM_calculation_parallel'
+error_log='./'+dir_name+'/error.log'
 if __name__ == '__main__':
     try:
         os.stat(path+dir_name)
     except:
         os.mkdir(path+dir_name)
+    N1=5
+    N2=7
+    N3=11
 # =============================================================================
-#     N1=41
-#     N2=91
-#     N3=101
+#     N1=11
+#     N2=61
+#     N3=51
 # =============================================================================
-    N1=3
-    N2=4
-    N3=5
     n_s=0.16
     m=939
     E_pnm = 32-16
@@ -189,7 +190,7 @@ if __name__ == '__main__':
     from Parallel_process import main_parallel
     
     f_maxmass_result='./'+dir_name+'/Lambda_hadronic_calculation_maxmass.dat'
-    main_parallel(Calculation_maxmass,eos_flat,f_maxmass_result)
+    main_parallel(Calculation_maxmass,eos_flat,f_maxmass_result,error_log)
     f_file=open(f_maxmass_result,'rb')
     maxmass_result=cPickle.load(f_file)
     f_file.close()
@@ -228,7 +229,7 @@ if __name__ == '__main__':
 #     print(np.shape(np.array([eos_flat[logic],maxmass_result[logic][:,0]]).transpose()))
 # =============================================================================
     f_mass_beta_Lambda_result='./'+dir_name+'/Lambda_PNM_calculation_mass_beta_Lambda.dat'
-    main_parallel(Calculation_mass_beta_Lambda,eos_flat[logic],f_mass_beta_Lambda_result)
+    main_parallel(Calculation_mass_beta_Lambda,eos_flat[logic],f_mass_beta_Lambda_result,error_log)
     f_file=open(f_mass_beta_Lambda_result,'rb')
     mass_beta_Lambda_result=cPickle.load(f_file)
     f_file.close()
@@ -243,8 +244,7 @@ else:
     eos=np.array(cPickle.load(f_file))
     f_file.close()
 
-    f_maxmass_result='./'+dir_name+'/Lambda_hadronic_calculation_maxmass.dat'
-    main_parallel(Calculation_maxmass,eos_flat,f_maxmass_result,)
+    f_maxmass_result='./'+dir_name+'/Lambda_PNM_calculation_maxmass.dat'
     f_file=open(f_maxmass_result,'rb')
     maxmass_result=cPickle.load(f_file)
     f_file.close()
@@ -253,7 +253,6 @@ else:
     logic=np.logical_and(logic_maxmass,logic_causality)
 
     f_mass_beta_Lambda_result='./'+dir_name+'/Lambda_PNM_calculation_mass_beta_Lambda.dat'
-    mass_beta_Lambda_result=main_parallel(Calculation_mass_beta_Lambda,np.array([eos_flat[logic],maxmass_result[logic]]).transpose(),f_mass_beta_Lambda_result)
     f_file=open(f_mass_beta_Lambda_result,'rb')
     mass_beta_Lambda_result=cPickle.load(f_file)
     f_file.close()

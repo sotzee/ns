@@ -59,7 +59,7 @@ def main_parallel_largest_batch(Calculation,parameter_list,result_file_name,pres
     f.close()
 
 
-def main_parallel(Calculation_i,parameter_list,result_file_name):
+def main_parallel(Calculation_i,parameter_list,result_file_name,error_log_file_name):
     num_cores = cpu_count()-1
     try:
         try:
@@ -68,7 +68,9 @@ def main_parallel(Calculation_i,parameter_list,result_file_name):
             Output=Parallel(n_jobs=num_cores,verbose=10)(delayed(Calculation_i)(parameter_list,i) for i in range(len(parameter_list)))
     except RuntimeWarning:
         print('Runtimewarning happens at calculating max mass:')
-        #print(eos_i.args)
+        f = open(error_log_file_name, "a")
+        f.write('Runtimewarning happens at calculating max mass:')
+        f.close()
     f=open(result_file_name,'wb')
     cPickle.dump(np.array(Output),f)
     f.close()
