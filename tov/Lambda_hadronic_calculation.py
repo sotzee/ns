@@ -144,7 +144,10 @@ def Calculation_mass_beta_Lambda(eos_i,pc_list=10**np.linspace(0,-1.5,40)):
     beta=[]
     Lambda=[]
     for pc_i in pc_list:
-        MR_result=MassRadius(eos_i.pc_max*pc_i,Preset_Pressure_final,Preset_rtol,'MRT',eos_i)
+        try:
+            MR_result=MassRadius(eos_i.pc_max*pc_i,Preset_Pressure_final,Preset_rtol,'MRT',eos_i)
+        except RuntimeWarning:
+            print('Runtimewarning happens at calculating max mass:')
         mass.append(MR_result[0])
         beta.append(MR_result[2])
         Lambda.append(MR_result[4])
