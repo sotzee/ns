@@ -127,8 +127,12 @@ def Ofmass(pressure_center,ofmass,MassRadius_function,Preset_Pressure_final,Pres
     return -ofmass+MassRadius_function(pressure_center,Preset_Pressure_final,Preset_rtol,'M',eos)
 
 def Calculation_maxmass(eos_i):
-    maxmass_result=Maxmass(Preset_Pressure_final,Preset_rtol,eos_i)[1:3]
-    maxmass_result+=[eos_i.eosCs2(maxmass_result[0])]
+    try:
+        maxmass_result=Maxmass(Preset_Pressure_final,Preset_rtol,eos_i)[1:3]
+        maxmass_result+=[eos_i.eosCs2(maxmass_result[0])]
+    except RuntimeWarning:
+        print('Runtimewarning happens at calculating max mass:')
+        print(eos_i.args)
     return maxmass_result
 
 def Calculation_onepointfour(eos_i):
