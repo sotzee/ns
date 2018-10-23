@@ -228,7 +228,7 @@ if __name__ == '__main__':
 #     print(np.shape(np.array([eos_flat[logic],maxmass_result[logic][:,0]]).transpose()))
 # =============================================================================
     f_mass_beta_Lambda_result='./'+dir_name+'/Lambda_PNM_calculation_mass_beta_Lambda.dat'
-    main_parallel(Calculation_mass_beta_Lambda,eos_flat,f_mass_beta_Lambda_result)
+    main_parallel(Calculation_mass_beta_Lambda,eos_flat[logic],f_mass_beta_Lambda_result)
     f_file=open(f_mass_beta_Lambda_result,'rb')
     mass_beta_Lambda_result=cPickle.load(f_file)
     f_file.close()
