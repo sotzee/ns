@@ -11,7 +11,7 @@ from scipy.constants import c,G,e
 from scipy.interpolate import interp1d
 from unitconvert import toMev4#,toMevfm
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 dlnx_cs2=1e-6
 
@@ -124,7 +124,8 @@ class EOS_PnmCSS(EOS_EXPANSION_PNM,EOS_CSS):
         args_eosCSS=[self.density_trans,self.pressure_trans\
                      ,self.baryondensity_trans,self.cs2]
         self.eosCSS=EOS_CSS(args_eosCSS)
-    def set_
+    def setMaxmass(self,result_maxmaxmass):
+        self.pc_max,self.mass_max,self.cs2_max=result_maxmaxmass
     def eosDensity(self,pressure):
         return np.where(pressure<self.pressure_trans,self.eosPNM.eosDensity(pressure),self.eosCSS.eosDensity(pressure))
     def eosBaryonDensity(self,pressure):
@@ -152,9 +153,9 @@ if __name__ == '__main__':
         os.stat(path+dir_name)
     except:
         os.mkdir(path+dir_name)
-    N1=3
-    N2=4
-    N3=11
+    N1=41
+    N2=91
+    N3=101
     n_s=0.16
     m=939
     E_pnm = 32-16
@@ -179,7 +180,7 @@ if __name__ == '__main__':
     f_file.close()
     print('%d EoS built with shape (L_n,K_n,Q_n)%s.'%(len(args_flat),np.shape(eos)))
     
-    from Lambda_hadronic_calculation import Calculation_maxmass,Calculation_mass_beta_Lambda
+    from Lambda_hadronic_calculation import Calculation_maxmass,Calculation_mass_beta_Lambda#,Calculation_onepointfour
     from Parallel_process import main_parallel
     
     f_maxmass_result='./'+dir_name+'/Lambda_hadronic_calculation_maxmass.dat'
@@ -194,23 +195,37 @@ if __name__ == '__main__':
     print('Causality constrain of %d EoS calculated, %d EoS satisfied.' %(len(eos_flat),len(eos_flat[logic_causality])))
     logic=np.logical_and(logic_maxmass,logic_causality)
     print('Maximum mass and causality constrain of %d EoS calculated, %d EoS satisfied.' %(len(eos_flat),len(eos_flat[logic])))
+
+    for i in range(len(eos_flat)):
+        eos_flat[i].setMaxmass(maxmass_result[i])
     
-    def Calculation_error(args,i,pc_list=10**np.linspace(0,-1.5,40)):
-        eos_i=args[i][0]
-        maxmass_pc_i=args[i][1]
-        mass=[]
-        beta=[]
-        Lambda=[]
-        for pc_i in pc_list:
-            mass.append(1*pc_i)
-            beta.append(1*pc_i)
-            Lambda.append(1*pc_i)
-        return [mass,beta,Lambda]
-    print(np.shape(np.array([eos_flat[logic],maxmass_result[logic][:,0]]).transpose()))
+# =============================================================================
+#     f_onepointfour_result='./'+dir_name+'/Lambda_hadronic_calculation_onepointfour.dat'
+#     main_parallel(Calculation_onepointfour,eos_flat,f_onepointfour_result)
+#     f_file=open(f_onepointfour_result,'rb')
+#     Properity_onepointfour=np.array(cPickle.load(f_file))
+#     f_file.close()
+# =============================================================================
+    
+    
+# =============================================================================
+#     def Calculation_error(args,i,pc_list=10**np.linspace(0,-1.5,40)):
+#         eos_i=args[i][0]
+#         maxmass_pc_i=args[i][1]
+#         mass=[]
+#         beta=[]
+#         Lambda=[]
+#         for pc_i in pc_list:
+#             mass.append(1*pc_i)
+#             beta.append(1*pc_i)
+#             Lambda.append(1*pc_i)
+#         return [mass,beta,Lambda]
+#     print(np.shape(np.array([eos_flat[logic],maxmass_result[logic][:,0]]).transpose()))
+# =============================================================================
     f_mass_beta_Lambda_result='./'+dir_name+'/Lambda_PNM_calculation_mass_beta_Lambda.dat'
-    mass_beta_Lambda_result=main_parallel(Calculation_error,np.array([eos_flat[logic],eos_flat[logic]]).transpose(),f_mass_beta_Lambda_result)
-    f_file=open(f_mass_beta_Lambda_result,'wb')
-    cPickle.dump(mass_beta_Lambda_result,f_file)
+    main_parallel(Calculation_mass_beta_Lambda,eos_flat,f_mass_beta_Lambda_result)
+    f_file=open(f_mass_beta_Lambda_result,'rb')
+    mass_beta_Lambda_result=cPickle.load(f_file)
     f_file.close()
     print('mass, compactness and tidal Lambda of %d EoS calculated.' %(len(eos)))
 
