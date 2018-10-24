@@ -78,16 +78,37 @@ class EOS_EXPANSION_PNM(object):
         self.abcd_array=get_parameters_pnm(self.T,self.ELKQ_array)
         self.u_max=get_baryon_density_u_max(self.abcd_array,defaut_u_max)
         self.u_min=defaut_u_min
-        eos_array,self.sol_saturation=get_eos_array(self.u_min,self.u_max,self.baryon_density_s,self.m,self.T,self.abcd_array)
+        self.eos_array,self.sol_saturation=get_eos_array(self.u_min,self.u_max,self.baryon_density_s,self.m,self.T,self.abcd_array)
         self.pressure_s=self.sol_saturation[2]
         self.density_s=self.sol_saturation[1]
         self.unit_mass=c**4/(G**3*self.density_s*1e51*e)**0.5
         self.unit_radius=c**2/(G*self.density_s*1e51*e)**0.5
         self.unit_N=self.unit_radius**3*self.baryon_density_s*1e45
-        self.eosPressure_frombaryon = interp1d(eos_array[0],eos_array[2], kind='linear')
-        self.eosPressure = interp1d(eos_array[1],eos_array[2], kind='linear')
-        self.eosDensity  = interp1d(eos_array[2],eos_array[1], kind='linear')
-        self.eosBaryonDensity = interp1d(eos_array[2],eos_array[0], kind='linear')
+        self.eosPressure_frombaryon = interp1d(self.eos_array[0],self.eos_array[2], kind='linear')
+        self.eosPressure = interp1d(self.eos_array[1],self.eos_array[2], kind='linear')
+        self.eosDensity  = interp1d(self.eos_array[2],self.eos_array[1], kind='linear')
+        self.eosBaryonDensity = interp1d(self.eos_array[2],self.eos_array[0], kind='linear')
+# =============================================================================
+#     def __getstate__(self):
+#         # Copy the object's state from self.__dict__ which contains
+#         # all our instance attributes. Always use the dict.copy()
+#         # method to avoid modifying the original state.
+#         state = self.__dict__.copy()
+#         # Remove the unpicklable entries.
+#         print(state)
+#         for dict_intepolation in ['eosPressure_frombaryon','eosPressure','eosDensity','eosBaryonDensity']:
+#             del state[dict_intepolation]
+#         print(state)
+#         return state
+#     def __setstate__(self, state):
+#         # Restore instance attributes (i.e., filename and lineno).
+#         self.__dict__.update(state)
+#         # Restore the previously opened file's state.
+#         self.eosPressure_frombaryon = interp1d(self.eos_array[0],self.eos_array[2], kind='linear')
+#         self.eosPressure = interp1d(self.eos_array[1],self.eos_array[2], kind='linear')
+#         self.eosDensity  = interp1d(self.eos_array[2],self.eos_array[1], kind='linear')
+#         self.eosBaryonDensity = interp1d(self.eos_array[2],self.eos_array[0], kind='linear')
+# =============================================================================
     def eosCs2(self,pressure):
         return 1.0/derivative(self.eosDensity,pressure,dx=pressure*dlnx_cs2)
     def eosChempo(self,pressure):
@@ -154,9 +175,9 @@ if __name__ == '__main__':
         os.stat(path+dir_name)
     except:
         os.mkdir(path+dir_name)
-    N1=5
-    N2=7
-    N3=11
+    N1=26
+    N2=101
+    N3=121
 # =============================================================================
 #     N1=11
 #     N2=61
@@ -165,9 +186,9 @@ if __name__ == '__main__':
     n_s=0.16
     m=939
     E_pnm = 32-16
-    L_pnm = np.linspace(40,60,N1)
-    K_pnm = np.linspace(0,300,N2)
-    Q_pnm = np.linspace(-500,500,N3)
+    L_pnm = np.linspace(30,70,N1)
+    K_pnm = np.linspace(0,500,N2)
+    Q_pnm = np.linspace(-200,1000,N3)
     Preset_Pressure_final=1e-8
     Preset_rtol=1e-4
     args=[]
@@ -181,15 +202,20 @@ if __name__ == '__main__':
     args_flat=np.reshape(np.array(args),(N1*N2*N3,6))
     eos =np.reshape(np.array(eos),(N1,N2,N3))
     eos_flat=np.array(eos).flatten()
-    f_file=open('./'+dir_name+'/Lambda_hadronic_calculation_args.dat','wb')
+    f_file=open('./'+dir_name+'/Lambda_PNM_calculation_args.dat','wb')
     cPickle.dump(args,f_file)
     f_file.close()
+# =============================================================================
+#     f_file=open('./'+dir_name+'/Lambda_PNM_calculation_eos.dat','wb')
+#     cPickle.dump(eos,f_file)
+#     f_file.close()
+# =============================================================================
     print('%d EoS built with shape (L_n,K_n,Q_n)%s.'%(len(args_flat),np.shape(eos)))
     
-    from Lambda_hadronic_calculation import Calculation_maxmass,Calculation_mass_beta_Lambda#,Calculation_onepointfour
+    from Lambda_hadronic_calculation import Calculation_maxmass,Calculation_mass_beta_Lambda,Calculation_onepointfour
     from Parallel_process import main_parallel
     
-    f_maxmass_result='./'+dir_name+'/Lambda_hadronic_calculation_maxmass.dat'
+    f_maxmass_result='./'+dir_name+'/Lambda_PNM_calculation_maxmass.dat'
     main_parallel(Calculation_maxmass,eos_flat,f_maxmass_result,error_log)
     f_file=open(f_maxmass_result,'rb')
     maxmass_result=cPickle.load(f_file)
@@ -205,13 +231,11 @@ if __name__ == '__main__':
     for i in range(len(eos_flat)):
         eos_flat[i].setMaxmass(maxmass_result[i])
     
-# =============================================================================
-#     f_onepointfour_result='./'+dir_name+'/Lambda_hadronic_calculation_onepointfour.dat'
-#     main_parallel(Calculation_onepointfour,eos_flat,f_onepointfour_result)
-#     f_file=open(f_onepointfour_result,'rb')
-#     Properity_onepointfour=np.array(cPickle.load(f_file))
-#     f_file.close()
-# =============================================================================
+    f_onepointfour_result='./'+dir_name+'/Lambda_PNM_calculation_onepointfour.dat'
+    main_parallel(Calculation_onepointfour,eos_flat[logic],f_onepointfour_result,error_log)
+    f_file=open(f_onepointfour_result,'rb')
+    Properity_onepointfour=np.array(cPickle.load(f_file))
+    f_file.close()
     
     
 # =============================================================================
