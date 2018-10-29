@@ -157,17 +157,19 @@ def mass_chirp(mass1,mass2):
     return (mass1*mass2)**0.6/(mass1+mass2)**0.2
 def tidal_binary(q,tidal1,tidal2):
     return 16.*((12*q+1)*tidal1+(12+q)*q**4*tidal2)/(13*(1+q)**5)
-def Calculation_chirpmass_Lambdabeta6(args_list,i,M_min=1.1,M_max=1.6):
-    mass_beta_Lambda=list(args_list[:,0])
-    beta_onepointfour=args_list[:,1]
-    mass=np.array(mass_beta_Lambda)[:,0]
-    Lambda=np.array(mass_beta_Lambda)[:,2]
-    logic_mass=np.logical_and(mass[i]>M_min,mass[i]<M_max)
-    mass1,mass2 = np.meshgrid(mass[i][logic_mass],mass[i][logic_mass])
-    Lambda1,Lambda2 = np.meshgrid(Lambda[i][logic_mass],Lambda[i][logic_mass])
+def Calculation_chirpmass_Lambdabeta6(args_i,M_min=1.1,M_max=1.6):
+    mass_i=args_i[0,:]
+    Lambda_i=args_i[2,:]
+    beta_onepointfour_i=args_i[3,0]
+    logic_mass=np.logical_and(mass_i>M_min,mass_i<M_max)
+    mass1,mass2 = np.meshgrid(mass_i[logic_mass],mass_i[logic_mass])
+    Lambda1,Lambda2 = np.meshgrid(Lambda_i[logic_mass],Lambda_i[logic_mass])
+    q=mass2/mass1
     chirp_mass=mass_chirp(mass1,mass2).flatten()
-    Lambda_binary_beta6=(beta_onepointfour[i]/1.4*chirp_mass)**6*tidal_binary(mass2/mass1,Lambda1,Lambda2).flatten()
-    return [chirp_mass,Lambda_binary_beta6]
+    Lambda_binary_beta6=(beta_onepointfour_i/1.4*chirp_mass)**6*tidal_binary(q,Lambda1,Lambda2).flatten()
+    q=q.flatten()
+    Lambda2Lambda1=(Lambda2/Lambda1).flatten()
+    return [chirp_mass,q,Lambda_binary_beta6,Lambda2Lambda1]
 
 if __name__ == '__main__':
     N1=40
@@ -274,35 +276,35 @@ if __name__ == '__main__':
     Lambda=mass_beta_Lambda_result[:,2]
 
 
-M_min=1.1
-M_max=1.6
-def mass_chirp(mass1,mass2):
-    return (mass1*mass2)**0.6/(mass1+mass2)**0.2
-def tidal_binary(q,tidal1,tidal2):
-    return 16.*((12*q+1)*tidal1+(12+q)*q**4*tidal2)/(13*(1+q)**5)
-def Calculation_chirpmass_Lambdabeta6(args_list,i):
-    mass_beta_Lambda=list(args_list[:,0])
-    beta_onepointfour=args_list[:,1]
-    mass=np.array(mass_beta_Lambda)[:,0]
-    Lambda=np.array(mass_beta_Lambda)[:,2]
-    logic_mass=np.logical_and(mass[i]>M_min,mass[i]<M_max)
-    mass1,mass2 = np.meshgrid(mass[i][logic_mass],mass[i][logic_mass])
-    Lambda1,Lambda2 = np.meshgrid(Lambda[i][logic_mass],Lambda[i][logic_mass])
-    chirp_mass=mass_chirp(mass1,mass2).flatten()
-    Lambda_binary_beta6=(beta_onepointfour[i]/1.4*chirp_mass)**6*tidal_binary(mass2/mass1,Lambda1,Lambda2).flatten()
-    return [chirp_mass,Lambda_binary_beta6]
-
-    f_chirpmass_Lambdabeta6_result='./'+dir_name+'/Lambda_hadronic_calculation_chirpmass_Lambdabeta6.dat'
-    main_parallel(Calculation_chirpmass_Lambdabeta6,np.array([list(mass_beta_Lambda_result),list(Properity_onepointfour[:,3])]).transpose(),f_chirpmass_Lambdabeta6_result,0)
-    f_file=open(f_chirpmass_Lambdabeta6_result,'rb')
-    chirpmass_Lambdabeta6_result=np.array(cPickle.load(f_file))
-    f_file.close()
-    chirp_mass=chirpmass_Lambdabeta6_result[:,0]
-    Lambda_binary_beta6=chirpmass_Lambdabeta6_result[:,1]
-
-
-
 # =============================================================================
+# M_min=1.1
+# M_max=1.6
+# def mass_chirp(mass1,mass2):
+#     return (mass1*mass2)**0.6/(mass1+mass2)**0.2
+# def tidal_binary(q,tidal1,tidal2):
+#     return 16.*((12*q+1)*tidal1+(12+q)*q**4*tidal2)/(13*(1+q)**5)
+# def Calculation_chirpmass_Lambdabeta6(args_list,i):
+#     mass_beta_Lambda=list(args_list[:,0])
+#     beta_onepointfour=args_list[:,1]
+#     mass=np.array(mass_beta_Lambda)[:,0]
+#     Lambda=np.array(mass_beta_Lambda)[:,2]
+#     logic_mass=np.logical_and(mass[i]>M_min,mass[i]<M_max)
+#     mass1,mass2 = np.meshgrid(mass[i][logic_mass],mass[i][logic_mass])
+#     Lambda1,Lambda2 = np.meshgrid(Lambda[i][logic_mass],Lambda[i][logic_mass])
+#     chirp_mass=mass_chirp(mass1,mass2).flatten()
+#     Lambda_binary_beta6=(beta_onepointfour[i]/1.4*chirp_mass)**6*tidal_binary(mass2/mass1,Lambda1,Lambda2).flatten()
+#     return [chirp_mass,Lambda_binary_beta6]
+# 
+#     f_chirpmass_Lambdabeta6_result='./'+dir_name+'/Lambda_hadronic_calculation_chirpmass_Lambdabeta6.dat'
+#     main_parallel(Calculation_chirpmass_Lambdabeta6,np.array([list(mass_beta_Lambda_result),list(Properity_onepointfour[:,3])]).transpose(),f_chirpmass_Lambdabeta6_result,0)
+#     f_file=open(f_chirpmass_Lambdabeta6_result,'rb')
+#     chirpmass_Lambdabeta6_result=np.array(cPickle.load(f_file))
+#     f_file.close()
+#     chirp_mass=chirpmass_Lambdabeta6_result[:,0]
+#     Lambda_binary_beta6=chirpmass_Lambdabeta6_result[:,1]
+# 
+# 
+# 
 # import matplotlib.pyplot as plt
 # for i in range(len(eos_flat)):
 #     plt.plot(chirp_mass[i],Lambda_binary_beta6[i],'o')

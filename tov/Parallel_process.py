@@ -57,15 +57,18 @@ def main_parallel_largest_batch(Calculation,parameter_list,result_file_name,pres
     f=open(result_file_name,'wb')
     cPickle.dump(result,f)
     f.close()
-
-
+    
+import warnings
 def main_parallel(Calculation_i,parameter_list,result_file_name,error_log_file_name):
     num_cores = cpu_count()-1
     try:
-        try:
-            Output=Parallel(n_jobs=num_cores,verbose=10)(delayed(Calculation_i)(parameter_i) for parameter_i in parameter_list)
-        except:
-            Output=Parallel(n_jobs=num_cores,verbose=10)(delayed(Calculation_i)(parameter_list,i) for i in range(len(parameter_list)))
+        Output=Parallel(n_jobs=num_cores,verbose=10)(delayed(Calculation_i)(parameter_i) for parameter_i in parameter_list)
+# =============================================================================
+#         try:
+#             Output=Parallel(n_jobs=num_cores,verbose=10)(delayed(Calculation_i)(parameter_i) for parameter_i in parameter_list)
+#         except:
+#             Output=Parallel(n_jobs=num_cores,verbose=10)(delayed(Calculation_i)(parameter_list,i) for i in range(len(parameter_list)))
+# =============================================================================
     except RuntimeWarning:
         print('Runtimewarning happens at calculating max mass:')
         f = open(error_log_file_name, "a")
@@ -74,6 +77,7 @@ def main_parallel(Calculation_i,parameter_list,result_file_name,error_log_file_n
     f=open(result_file_name,'wb')
     cPickle.dump(np.array(Output),f)
     f.close()
+    return np.array(Output)
 
 if __name__ == '__main__':
     #import sys
