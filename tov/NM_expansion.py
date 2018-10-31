@@ -89,18 +89,12 @@ class EOS_EXPANSION_PNM(object):
         self.eosDensity  = interp1d(self.eos_array[2],self.eos_array[1], kind='linear')
         self.eosBaryonDensity = interp1d(self.eos_array[2],self.eos_array[0], kind='linear')
     def __getstate__(self):
-        # Copy the object's state from self.__dict__ which contains
-        # all our instance attributes. Always use the dict.copy()
-        # method to avoid modifying the original state.
         state = self.__dict__.copy()
-        # Remove the unpicklable entries.
         for dict_intepolation in ['eosPressure_frombaryon','eosPressure','eosDensity','eosBaryonDensity']:
             del state[dict_intepolation]
         return state
     def __setstate__(self, state):
-        # Restore instance attributes (i.e., filename and lineno).
         self.__dict__.update(state)
-        # Restore the previously opened file's state.
         self.eosPressure_frombaryon = interp1d(self.eos_array[0],self.eos_array[2], kind='linear')
         self.eosPressure = interp1d(self.eos_array[1],self.eos_array[2], kind='linear')
         self.eosDensity  = interp1d(self.eos_array[2],self.eos_array[1], kind='linear')
@@ -125,7 +119,7 @@ class EOS_CSS(object):
     def eosChempo(self,pressure):
         return (pressure+self.eosDensity(pressure))/self.eosBaryonDensity(pressure)
     
-class EOS_PnmCSS(EOS_EXPANSION_PNM,EOS_CSS):
+class EOS_PnmCSS(object):
     def __init__(self,args,cs2=1):
         self.eosPNM=EOS_EXPANSION_PNM(args)
         self.baryon_density_s=self.eosPNM.baryon_density_s
@@ -142,9 +136,14 @@ class EOS_PnmCSS(EOS_EXPANSION_PNM,EOS_CSS):
                      ,self.baryondensity_trans,self.cs2]
         self.eosCSS=EOS_CSS(args_eosCSS)
     def __getstate__(self):
-        return (EOS_EXPANSION_PNM.__getstate__(self.eosPNM))
-    def __setstate__(self, superstate):
-        EOS_EXPANSION_PNM.__setstate__(self.eosPNM,superstate)
+        state_PNM=self.eosPNM.__getstate__()
+        state = self.__dict__.copy()
+        return (state,state_PNM)
+    def __setstate__(self, state_):
+        state,state_PNM=state_
+        self.__dict__.update(state)
+        self.eosPNM.__setstate__(state_PNM)
+
     def setMaxmass(self,result_maxmaxmass):
         self.pc_max,self.mass_max,self.cs2_max=result_maxmaxmass
     def eosDensity(self,pressure):
@@ -156,19 +155,10 @@ class EOS_PnmCSS(EOS_EXPANSION_PNM,EOS_CSS):
     def eosChempo(self,pressure):
         return (pressure+self.eosDensity(pressure))/self.eosBaryonDensity(pressure)
 
-
-#a=EOS_EXPANSION_PNM([0.16,939,32-16,50,100,0])
-#import matplotlib.pyplot as plt
-#plt.plot(a.eosDensity(a.eosPressure_frombaryon(np.linspace(0.1,0.6,100))),a.eosPressure_frombaryon(np.linspace(0.1,0.6,100)))
-#plt.plot(np.linspace(0.1,0.16,100),a.eosDensity(a.eosPressure_frombaryon(np.linspace(0.1,0.16,100))))
-#print(energy_per_baryon_pnm(0.16,0.16,939,22.1,get_parameters_pnm(22.1,[939-16+32,50,100,0])))
-#print(get_baryon_density_pnm_max(2.,a.abcd_array))
-
-
 import cPickle
 import os
 path = "./"
-dir_name='Lambda_PNM_calculation_parallel_test'
+dir_name='Lambda_PNM_calculation_parallel'
 error_log=path+dir_name+'/error.log'
 if __name__ == '__main__':
     try:
@@ -243,31 +233,15 @@ if __name__ == '__main__':
     chirp_q_Lambdabeta6_Lambda1Lambda2=main_parallel(Calculation_chirpmass_Lambdabeta6,np.concatenate((mass_beta_Lambda_result,np.tile(Properity_onepointfour[:,3],(40,1,1)).transpose()),axis=1),f_chirpmass_Lambdabeta6_result,error_log)
 
 else:
-    f_file=open(path+dir_name+'/Lambda_PNM_calculation_args.dat','rb')
-    args=np.array(cPickle.load(f_file))
-    f_file.close()
-
-    f_file=open(path+dir_name+'/Lambda_PNM_calculation_eos.dat','rb')
-    eos=np.array(cPickle.load(f_file))
-    f_file.close()
-
-    f_maxmass_result=path+dir_name+'/Lambda_PNM_calculation_maxmass.dat'
-    f_file=open(f_maxmass_result,'rb')
-    maxmass_result=cPickle.load(f_file)
-    f_file.close()
-    
-    f_onepointfour_result=path+dir_name+'/Lambda_PNM_calculation_onepointfour.dat'
-    f_file=open(f_onepointfour_result,'rb')
-    Properity_onepointfour=np.array(cPickle.load(f_file))
-    f_file.close()
-    
-    f_mass_beta_Lambda_result=path+dir_name+'/Lambda_PNM_calculation_mass_beta_Lambda.dat'
-    f_file=open(f_mass_beta_Lambda_result,'rb')
-    mass_beta_Lambda_result=cPickle.load(f_file)
-    f_file.close()
-
-    f_chirpmass_Lambdabeta6_result=path+dir_name+'/Lambda_hadronic_calculation_chirpmass_Lambdabeta6.dat'
-    f_file=open(f_chirpmass_Lambdabeta6_result,'rb')
-    chirp_q_Lambdabeta6_Lambda1Lambda2=np.array(cPickle.load(f_file))
-    f_file.close()
+    def read_file(file_name):
+        f_file=open(file_name,'rb')
+        content=np.array(cPickle.load(f_file))
+        f_file.close()
+        return content
+    args=read_file(path+dir_name+'/Lambda_PNM_calculation_args.dat')
+    eos=read_file(path+dir_name+'/Lambda_PNM_calculation_eos.dat')
+    maxmass_result=read_file(path+dir_name+'/Lambda_PNM_calculation_maxmass.dat')
+    Properity_onepointfour=read_file(path+dir_name+'/Lambda_PNM_calculation_onepointfour.dat')
+    mass_beta_Lambda_result=read_file(path+dir_name+'/Lambda_PNM_calculation_mass_beta_Lambda.dat')
+    chirp_q_Lambdabeta6_Lambda1Lambda2=read_file(path+dir_name+'/Lambda_hadronic_calculation_chirpmass_Lambdabeta6.dat')
 
