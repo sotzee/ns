@@ -439,33 +439,35 @@ print('properities of 1.4 M_sun star of %d EoS calculated.' %(len(eos_flat[logic
 
 
 
-logic_stability=[]
-logic_positive_pressure=[]
-for i in range(len(m_eff)):
-    for j in range(len(self_W)):
-        for k in range(len(L)):
-            logic_stability.append(eos_rmf[i][j][k].stability)
-            logic_positive_pressure.append(eos_rmf[i][j][k].positive_pressure)
-logic_stability=np.reshape(np.array(logic_stability),(len(m_eff),len(self_W),len(L)))
-logic_positive_pressure=np.reshape(np.array(logic_positive_pressure),(len(m_eff),len(self_W),len(L)))
-
-
-
-maximum_mass=np.reshape(np.array(maxmass_result[:,1]),(len(m_eff),len(self_W),len(L)))
-logic_maximum_mass=maximum_mass>2.0
-fig, axes = plt.subplots(2, 4,figsize=(10,6))
-for i in range(2):
-    for j in range(4):
-        if(i==0):
-            axes[i,j].imshow(logic_positive_pressure[:,j,:].transpose(),aspect='auto',origin='lower',extent=(m_eff.min(),m_eff.max(),L.min(),L.max()))
-        elif(i==1):
-            axes[i,j].imshow(logic_maximum_mass[:,j,:].transpose(),aspect='auto',origin='lower',extent=(m_eff.min(),m_eff.max(),L.min(),L.max()))
-
-        axes[i,j].set_title('self_W=%.2f MeV'%(self_W[j]))
-        if(j==0):
-            axes[i,j].set_ylabel('$L$ MeV')
-        if(i==1):
-            axes[i,j].set_xlabel('$m_eff$ MeV')
+# =============================================================================
+# logic_stability=[]
+# logic_positive_pressure=[]
+# for i in range(len(m_eff)):
+#     for j in range(len(self_W)):
+#         for k in range(len(L)):
+#             logic_stability.append(eos_rmf[i][j][k].stability)
+#             logic_positive_pressure.append(eos_rmf[i][j][k].positive_pressure)
+# logic_stability=np.reshape(np.array(logic_stability),(len(m_eff),len(self_W),len(L)))
+# logic_positive_pressure=np.reshape(np.array(logic_positive_pressure),(len(m_eff),len(self_W),len(L)))
+# 
+# 
+# 
+# maximum_mass=np.reshape(np.array(maxmass_result[:,1]),(len(m_eff),len(self_W),len(L)))
+# logic_maximum_mass=maximum_mass>2.0
+# fig, axes = plt.subplots(2, 4,figsize=(10,6))
+# for i in range(2):
+#     for j in range(4):
+#         if(i==0):
+#             axes[i,j].imshow(logic_positive_pressure[:,j,:].transpose(),aspect='auto',origin='lower',extent=(m_eff.min(),m_eff.max(),L.min(),L.max()))
+#         elif(i==1):
+#             axes[i,j].imshow(logic_maximum_mass[:,j,:].transpose(),aspect='auto',origin='lower',extent=(m_eff.min(),m_eff.max(),L.min(),L.max()))
+# 
+#         axes[i,j].set_title('self_W=%.2f MeV'%(self_W[j]))
+#         if(j==0):
+#             axes[i,j].set_ylabel('$L$ MeV')
+#         if(i==1):
+#             axes[i,j].set_xlabel('$m_eff$ MeV')
+# =============================================================================
 
 
 
