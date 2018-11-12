@@ -175,7 +175,7 @@ def MassRadius(pressure_center,Preset_Pressure_final,Preset_rtol,MRorMRBIT,eos):
         k2=8.0/5.0*beta**5*(1-2*beta)**2*(2-yR+2*beta*(yR-1))/tidal_R
         tidal=2.0/3.0*(k2/beta**5)
         beta=beta/Radius_correction_ratio(pressure_center,Preset_Pressure_final,beta,eos)
-        return [M,R,beta,M_binding,momentofinertia,yR,tidal]
+        return [M,R,beta,M_binding,momentofinertia,k2,tidal]
 
 def Radius_correction_ratio(pc,Preset_Pressure_final,beta,eos):
     X=(eos.eosChempo(pc*Preset_Pressure_final)/(931.171))**2-1
