@@ -266,7 +266,7 @@ def get_eos_array(init0,Preset_tol,baryon_density_sat,mass_args,eos_args):
     #print eos_array
     positive_pressure=eos_array[2][eos_array[0]>0.5*baryon_density_sat].min()>0
     #if(positive_pressure and not stability):
-    plt.plot(toMevfm(eos_array[0],'mev4'),toMevfm(eos_array[1],'mev4'))
+    #plt.plot(toMevfm(eos_array[0],'mev4'),toMevfm(eos_array[1],'mev4'))
     #plt.xlim(0.0,0.3)
     #plt.ylim(-2,40)
     return init_sat,eos_array,sol_saturation,stability,positive_pressure
@@ -319,22 +319,6 @@ class EOS_RMF(object):
     def eosChempo(self,pressure):
         return (pressure+self.eosDensity(pressure))/self.eosBaryonDensity(pressure)
 
-print('main calculation starts here:')
-import matplotlib.pyplot as plt
-J=30
-p=10**np.linspace(-1,2,500)
-baryon_density_rmf=[[],[],[]]
-energy_density_rmf=[[],[],[]]
-eos_rmf=[]
-# =============================================================================
-# m_eff=[0.5*939,0.65*939,0.8*939]
-# self_W=[0.,0.01]
-# L=[80,90,100]
-# =============================================================================
-m_eff=939*np.linspace(0.5,0.8,7)
-self_W=np.linspace(0,0.05,6)
-L=np.linspace(30,80,6)
-baryon_density_s=0.15
 # =============================================================================
 # m_eff=[0.55*939]
 # J=[30]
@@ -368,62 +352,89 @@ def Calculation_onepointfour(eos_i):
         print(eos_i.args)
     return Properity_onepointfour
 
-for i in range(len(m_eff)):
-    for j in range(len(self_W)):
-        for k in range(len(L)):
-            try:
-                eos_rmf.append(EOS_RMF(eos_rmf[i][j][k-1].init_args,eos_rmf[i][j][k-1].init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i],J,L[k],self_W[j],(0.5109989461,939,550,783,763)]))
-            except:
-                try:
-                    eos_rmf.append(EOS_RMF(eos_rmf[i][j-1][k].init_args,eos_rmf[i][j-1][k].init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i],J,L[k],self_W[j],(0.5109989461,939,550,783,763)]))
-                except:
-                    try:
-                        eos_rmf.append(EOS_RMF(eos_rmf[i-1][j][k].init_args,eos_rmf[i-1][j][k].init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i],J,L[k],self_W[j],(0.5109989461,939,550,783,763)]))
-                    except:
-                        eos_rmf.append(EOS_RMF(init_args,init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i],J,L[k],self_W[j],(0.5109989461,939,550,783,763)]))
-# =============================================================================
-#             if(eos_rmf[-1].positive_pressure):
-#                 maxmass_result=Maxmass(1e-8,1e-4,eos_rmf[-1])[1:3]
-#                 eos_rmf[-1].setMaxmass(maxmass_result+[eos_rmf[-1].eosCs2(maxmass_result[0])])
-#             else:
-#                 eos_rmf[-1].setMaxmass([0,0,0])
-# =============================================================================
-eos_flat=np.array(eos_rmf)                   
-eos_rmf=np.reshape(np.array(eos_rmf),(len(m_eff),len(self_W),len(L)))
 
-import os,cPickle
+
 path = "./"
 dir_name='Lambda_RMF_calculation_parallel'
-error_log=path+dir_name+'/error.log'
+import cPickle
 if __name__ == '__main__':
-    try:
-        os.stat(path+dir_name)
-    except:
-        os.mkdir(path+dir_name)
+    print('main calculation starts here:')
+    J=30
+    eos_rmf=[]
+    args=[]
+    # =============================================================================
+    # m_eff=[0.5*939,0.65*939,0.8*939]
+    # self_W=[0.,0.01]
+    # L=[80,90,100]
+    # =============================================================================
+    m_eff=939*np.linspace(0.5,0.8,12)
+    self_W=np.linspace(0,0.05,6)
+    L=np.linspace(30,80,13)
+    baryon_density_s=0.15
+    f_file=open(path+dir_name+'/Lambda_RMF_calculation_args.dat','wb')
+    cPickle.dump(args,f_file)
+    f_file.close()
 
-f_file=open(path+dir_name+'/Lambda_PNM_calculation_eos.dat','wb')
-cPickle.dump(eos_rmf,f_file)
-f_file.close()
+    for i in range(len(m_eff)):
+        for j in range(len(self_W)):
+            for k in range(len(L)):
+                args.append([m_eff,self_W,L])
+                try:
+                    eos_rmf.append(EOS_RMF(eos_rmf[i][j][k-1].init_args,eos_rmf[i][j][k-1].init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i],J,L[k],self_W[j],(0.5109989461,939,550,783,763)]))
+                except:
+                    try:
+                        eos_rmf.append(EOS_RMF(eos_rmf[i][j-1][k].init_args,eos_rmf[i][j-1][k].init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i],J,L[k],self_W[j],(0.5109989461,939,550,783,763)]))
+                    except:
+                        try:
+                            eos_rmf.append(EOS_RMF(eos_rmf[i-1][j][k].init_args,eos_rmf[i-1][j][k].init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i],J,L[k],self_W[j],(0.5109989461,939,550,783,763)]))
+                        except:
+                            eos_rmf.append(EOS_RMF(init_args,init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i],J,L[k],self_W[j],(0.5109989461,939,550,783,763)]))
+    # =============================================================================
+    #             if(eos_rmf[-1].positive_pressure):
+    #                 maxmass_result=Maxmass(1e-8,1e-4,eos_rmf[-1])[1:3]
+    #                 eos_rmf[-1].setMaxmass(maxmass_result+[eos_rmf[-1].eosCs2(maxmass_result[0])])
+    #             else:
+    #                 eos_rmf[-1].setMaxmass([0,0,0])
+    # =============================================================================
+    
+    f_file=open(path+dir_name+'/Lambda_RMF_calculation_args.dat','wb')
+    cPickle.dump(np.array(args),f_file)
+    f_file.close()
+    eos_flat=np.array(eos_rmf)                   
+    eos_rmf=np.reshape(np.array(eos_rmf),(len(m_eff),len(self_W),len(L)))
+    print('%d EoS built with shape (L_n,K_n,Q_n)%s.'%(np.size(eos_rmf),np.shape(eos_rmf)))
+    
+    import os
+    error_log=path+dir_name+'/error.log'
+    if __name__ == '__main__':
+        try:
+            os.stat(path+dir_name)
+        except:
+            os.mkdir(path+dir_name)
+    
+    f_file=open(path+dir_name+'/Lambda_RMF_calculation_eos.dat','wb')
+    cPickle.dump(eos_rmf,f_file)
+    f_file.close()
+    
+    from Parallel_process import main_parallel
+    f_maxmass_result='./'+dir_name+'/Lambda_RMF_calculation_maxmass.dat'
+    maxmass_result=main_parallel(Calculation_maxmass,eos_flat,f_maxmass_result,error_log)
+    print('Maximum mass configuration of %d EoS calculated.' %(len(eos_flat)))
+    
+    logic_maxmass=maxmass_result[:,1]>=2
+    for i in range(len(eos_flat)):
+        eos_flat[i].setMaxmass(maxmass_result[i])
+    
+    f_onepointfour_result=path+dir_name+'/Lambda_RMF_calculation_onepointfour.dat'
+    Properity_onepointfour=main_parallel(Calculation_onepointfour,eos_flat[logic_maxmass],f_onepointfour_result,error_log)
+    print('properities of 1.4 M_sun star of %d EoS calculated.' %(len(eos_flat[logic_maxmass])))
 
-from Parallel_process import main_parallel
-f_maxmass_result='./'+dir_name+'/Lambda_hadronic_calculation_maxmass.dat'
-maxmass_result=main_parallel(Calculation_maxmass,eos_flat,f_maxmass_result,error_log)
-# =============================================================================
-# f_file=open(f_maxmass_result,'rb')
-# maxmass_result=cPickle.load(f_file)
-# f_file.close()
-# =============================================================================
-print('Maximum mass configuration of %d EoS calculated.' %(len(eos_flat)))
-
-logic_maxmass=maxmass_result[:,1]>=2
-for i in range(len(eos_flat)):
-    eos_flat[i].setMaxmass(maxmass_result[i])
-
-f_onepointfour_result=path+dir_name+'/Lambda_PNM_calculation_onepointfour.dat'
-Properity_onepointfour=main_parallel(Calculation_onepointfour,eos_flat[logic_maxmass],f_onepointfour_result,error_log)
-print('properities of 1.4 M_sun star of %d EoS calculated.' %(len(eos_flat[logic_maxmass])))
+    f_file=open(path+dir_name+'/Lambda_PNM_calculation_eos.dat','wb')
+    cPickle.dump(eos_rmf,f_file)
+    f_file.close()
     
 # =============================================================================
+# p=10**np.linspace(-1,2,500)
 # baryon_density_rmf=[[],[],[]]
 # energy_density_rmf=[[],[],[]]
 # for i in range(len(m_eff)):
@@ -435,40 +446,6 @@ print('properities of 1.4 M_sun star of %d EoS calculated.' %(len(eos_flat[logic
 # baryon_density_rmf=np.reshape(np.array(baryon_density_rmf),(len(m_eff),len(self_W),len(L),len(p)))
 # energy_density_rmf=np.reshape(np.array(energy_density_rmf),(len(m_eff),len(self_W),len(L),len(p)))
 # =============================================================================
-
-
-
-
-# =============================================================================
-# logic_stability=[]
-# logic_positive_pressure=[]
-# for i in range(len(m_eff)):
-#     for j in range(len(self_W)):
-#         for k in range(len(L)):
-#             logic_stability.append(eos_rmf[i][j][k].stability)
-#             logic_positive_pressure.append(eos_rmf[i][j][k].positive_pressure)
-# logic_stability=np.reshape(np.array(logic_stability),(len(m_eff),len(self_W),len(L)))
-# logic_positive_pressure=np.reshape(np.array(logic_positive_pressure),(len(m_eff),len(self_W),len(L)))
-# 
-# 
-# 
-# maximum_mass=np.reshape(np.array(maxmass_result[:,1]),(len(m_eff),len(self_W),len(L)))
-# logic_maximum_mass=maximum_mass>2.0
-# fig, axes = plt.subplots(2, 4,figsize=(10,6))
-# for i in range(2):
-#     for j in range(4):
-#         if(i==0):
-#             axes[i,j].imshow(logic_positive_pressure[:,j,:].transpose(),aspect='auto',origin='lower',extent=(m_eff.min(),m_eff.max(),L.min(),L.max()))
-#         elif(i==1):
-#             axes[i,j].imshow(logic_maximum_mass[:,j,:].transpose(),aspect='auto',origin='lower',extent=(m_eff.min(),m_eff.max(),L.min(),L.max()))
-# 
-#         axes[i,j].set_title('self_W=%.2f MeV'%(self_W[j]))
-#         if(j==0):
-#             axes[i,j].set_ylabel('$L$ MeV')
-#         if(i==1):
-#             axes[i,j].set_xlabel('$m_eff$ MeV')
-# =============================================================================
-
 
 
 

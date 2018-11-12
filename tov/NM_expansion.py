@@ -143,7 +143,7 @@ class EOS_PnmCSS(object):
         state,state_PNM=state_
         self.__dict__.update(state)
         self.eosPNM.__setstate__(state_PNM)
-
+    import
     def setMaxmass(self,result_maxmaxmass):
         self.pc_max,self.mass_max,self.cs2_max=result_maxmaxmass
     def eosDensity(self,pressure):
