@@ -356,7 +356,7 @@ def Calculation_onepointfour(eos_i):
 
 path = "./"
 dir_name='Lambda_RMF_calculation_parallel'
-import cPickle
+import cPickle,os
 if __name__ == '__main__':
     try:
         os.stat(path+dir_name)
@@ -408,18 +408,7 @@ if __name__ == '__main__':
     eos_rmf=np.reshape(np.array(eos_rmf),(len(m_eff),len(self_W),len(L)))
     print('%d EoS built with shape (L_n,K_n,Q_n)%s.'%(np.size(eos_rmf),np.shape(eos_rmf)))
     
-    import os
     error_log=path+dir_name+'/error.log'
-    if __name__ == '__main__':
-        try:
-            os.stat(path+dir_name)
-        except:
-            os.mkdir(path+dir_name)
-    
-    f_file=open(path+dir_name+'/Lambda_RMF_calculation_eos.dat','wb')
-    cPickle.dump(eos_rmf,f_file)
-    f_file.close()
-    
     from Parallel_process import main_parallel
     f_maxmass_result='./'+dir_name+'/Lambda_RMF_calculation_maxmass.dat'
     maxmass_result=main_parallel(Calculation_maxmass,eos_flat,f_maxmass_result,error_log)
