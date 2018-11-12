@@ -358,6 +358,10 @@ path = "./"
 dir_name='Lambda_RMF_calculation_parallel'
 import cPickle
 if __name__ == '__main__':
+    try:
+        os.stat(path+dir_name)
+    except:
+        os.mkdir(path+dir_name)
     print('main calculation starts here:')
     J=30
     eos_rmf=[]
