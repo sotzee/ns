@@ -404,40 +404,42 @@ if __name__ == '__main__':
         eos_flat[i].setMaxmass(maxmass_result[i])
     
     
-    import matplotlib.pyplot as plt
-    def show_eos(eos,x_index,y_index,baryon_density_range,N):#index baryon_density(0), pressure(1), energy density(2), energy per baryon(3), chempo(4)
-        pressure_density_energyPerBaryon_chempo=[]
-        for eos_i in eos:
-            baryon_density_i=np.linspace(baryon_density_range[0],baryon_density_range[1],N)
-            pressure_density_energyPerBaryon_chempo_i=[]
-            pressure_density_energyPerBaryon_chempo_i.append(baryon_density_i)
-            pressure_density_energyPerBaryon_chempo_i.append(eos_i.eosPressure_frombaryon(baryon_density_i))
-            pressure_density_energyPerBaryon_chempo_i.append(eos_i.eosDensity(pressure_density_energyPerBaryon_chempo_i[1]))
-            pressure_density_energyPerBaryon_chempo_i.append(pressure_density_energyPerBaryon_chempo_i[2]/baryon_density_i)
-            pressure_density_energyPerBaryon_chempo_i.append((pressure_density_energyPerBaryon_chempo_i[1]+pressure_density_energyPerBaryon_chempo_i[2])/baryon_density_i)
-            pressure_density_energyPerBaryon_chempo.append(pressure_density_energyPerBaryon_chempo_i)
-            plt.plot(pressure_density_energyPerBaryon_chempo_i[x_index],pressure_density_energyPerBaryon_chempo_i[y_index])
-        pressure_density_energyPerBaryon_chempo=np.array(pressure_density_energyPerBaryon_chempo)
-        label_text=['Baryon density(fm$^{-3}$)','Pressure(MeV fm$^{-3}$)','Energy density(MeV fm$^{-3}$)','Energy per baryon(MeV)','Chemical potential(MeV)']
-        plt.xlabel(label_text[x_index])
-        plt.ylabel(label_text[y_index])
-        #plt.xlim(pressure_density_energyPerBaryon_chempo[:,x_index,:].min(),pressure_density_energyPerBaryon_chempo[:,x_index,:].max())
-        #plt.ylim(pressure_density_energyPerBaryon_chempo[:,y_index,:].min(),pressure_density_energyPerBaryon_chempo[:,y_index,:].max())
-
-    logic_stability=[]
-    logic_positive_pressure=[]
-    radius_onepointfour=[]
-    ii=0
-    for i in range(len(m_eff)):
-        for j in range(len(self_W)):
-            for k in range(len(L)):
-                logic_stability.append(eos_rmf[i][j][k].stability)
-                logic_positive_pressure.append(eos_rmf[i][j][k].positive_pressure)
-    logic_stability=np.reshape(np.array(logic_stability),(len(m_eff),len(self_W),len(L)))
-    logic_positive_pressure=np.reshape(np.array(logic_positive_pressure),(len(m_eff),len(self_W),len(L)))
-    maximum_mass=np.reshape(np.array(maxmass_result[:,1]),(len(m_eff),len(self_W),len(L)))
-    logic_maximum_mass=maximum_mass>2.0
-    show_eos(eos_rmf[np.logical_and(logic_stability,np.logical_and(logic_positive_pressure,logic_maximum_mass))].flatten(),2,1,[0.00016,1.*0.16],100)
+# =============================================================================
+#     import matplotlib.pyplot as plt
+#     def show_eos(eos,x_index,y_index,baryon_density_range,N):#index baryon_density(0), pressure(1), energy density(2), energy per baryon(3), chempo(4)
+#         pressure_density_energyPerBaryon_chempo=[]
+#         for eos_i in eos:
+#             baryon_density_i=np.linspace(baryon_density_range[0],baryon_density_range[1],N)
+#             pressure_density_energyPerBaryon_chempo_i=[]
+#             pressure_density_energyPerBaryon_chempo_i.append(baryon_density_i)
+#             pressure_density_energyPerBaryon_chempo_i.append(eos_i.eosPressure_frombaryon(baryon_density_i))
+#             pressure_density_energyPerBaryon_chempo_i.append(eos_i.eosDensity(pressure_density_energyPerBaryon_chempo_i[1]))
+#             pressure_density_energyPerBaryon_chempo_i.append(pressure_density_energyPerBaryon_chempo_i[2]/baryon_density_i)
+#             pressure_density_energyPerBaryon_chempo_i.append((pressure_density_energyPerBaryon_chempo_i[1]+pressure_density_energyPerBaryon_chempo_i[2])/baryon_density_i)
+#             pressure_density_energyPerBaryon_chempo.append(pressure_density_energyPerBaryon_chempo_i)
+#             plt.plot(pressure_density_energyPerBaryon_chempo_i[x_index],pressure_density_energyPerBaryon_chempo_i[y_index])
+#         pressure_density_energyPerBaryon_chempo=np.array(pressure_density_energyPerBaryon_chempo)
+#         label_text=['Baryon density(fm$^{-3}$)','Pressure(MeV fm$^{-3}$)','Energy density(MeV fm$^{-3}$)','Energy per baryon(MeV)','Chemical potential(MeV)']
+#         plt.xlabel(label_text[x_index])
+#         plt.ylabel(label_text[y_index])
+#         #plt.xlim(pressure_density_energyPerBaryon_chempo[:,x_index,:].min(),pressure_density_energyPerBaryon_chempo[:,x_index,:].max())
+#         #plt.ylim(pressure_density_energyPerBaryon_chempo[:,y_index,:].min(),pressure_density_energyPerBaryon_chempo[:,y_index,:].max())
+# 
+#     logic_stability=[]
+#     logic_positive_pressure=[]
+#     radius_onepointfour=[]
+#     ii=0
+#     for i in range(len(m_eff)):
+#         for j in range(len(self_W)):
+#             for k in range(len(L)):
+#                 logic_stability.append(eos_rmf[i][j][k].stability)
+#                 logic_positive_pressure.append(eos_rmf[i][j][k].positive_pressure)
+#     logic_stability=np.reshape(np.array(logic_stability),(len(m_eff),len(self_W),len(L)))
+#     logic_positive_pressure=np.reshape(np.array(logic_positive_pressure),(len(m_eff),len(self_W),len(L)))
+#     maximum_mass=np.reshape(np.array(maxmass_result[:,1]),(len(m_eff),len(self_W),len(L)))
+#     logic_maximum_mass=maximum_mass>2.0
+#     show_eos(eos_rmf[np.logical_and(logic_stability,np.logical_and(logic_positive_pressure,logic_maximum_mass))].flatten(),2,1,[0.00016,1.*0.16],100)
+# =============================================================================
 
     f_onepointfour_result=path+dir_name+'/Lambda_RMF_calculation_onepointfour.dat'
     Properity_onepointfour=main_parallel(Calculation_onepointfour,eos_flat[logic_maxmass],f_onepointfour_result,error_log)
