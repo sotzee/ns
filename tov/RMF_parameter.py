@@ -25,7 +25,7 @@ Preset_rtol=1e-4
 #     n_scalar_sym=(m_eff/np.pi**2)*(E_F*k_F-m_eff**2*np.log((k_F+E_F)/m_eff))
 #     eq1=m*((m_Phi/g_Phi)**2*Phi_0 + (m*b)*Phi_0**2 + c*Phi_0**3 - n_scalar_sym)
 #     eq2=m*((m_W/g_W)**2*W_0 + (self_W/6)*W_0**3 - baryon_density_sat)
-#     tmp_2=(g_W**2/(m_W**2+self_W/2*g_W**2*W_0**2))
+#     tmp_2=(g_W**2/(m_W**2+self_W/2*g_W**2*baryon_density_iW_0**2))
 #     tmp_1=(incompressibility/(9*baryon_density_sat)-np.pi**2/(2*k_F*E_F)-tmp_2)
 #     eq3=m**2*(E_F**2*tmp_1*((m_Phi/g_Phi)**2+2*b*m*Phi_0+3*c*Phi_0**2+(1/np.pi**2)*(k_F/E_F*(E_F**2+2*m_eff**2)-3*m_eff**2*np.log((k_F+E_F)/m_eff)))+m_eff**2)
 #     eq4=(1./(4*np.pi**2))*(k_F*E_F*(E_F**2+k_F**2)-m_eff**4*np.log((k_F+E_F)/m_eff))+ (Phi_0*m_Phi/g_Phi)**2/2 + (m*b)*Phi_0**3/3 + c*Phi_0**4/4 -(W_0*m_W/g_W)**2/2 - (self_W/6)*W_0**4/4 - baryon_density_sat*E_F
@@ -43,7 +43,7 @@ Preset_rtol=1e-4
 #         Phi = m-m_eff
 #         eq1=m*((m_Phi/g_Phi)**2*Phi + (m*b)*Phi**2 + c*Phi**3 - n_scalar_sym)
 #         eq2=m*((m_W/g_W)**2*W + (self_W/6)*W**3 - n)
-#         return eq1,eq2
+#         return eq1,eq2baryon_density_i
 #     init=[0.7*m,200,]
 #     sol = opt.root(equations_sym,init,tol=1e-10)
 #     m_eff,W=sol
@@ -90,7 +90,7 @@ def equations(x,args):
     eq3=m**2*(E_F**2*tmp_1*((m_Phi/g_Phi)**2+2*b*m*Phi_0+3*c*Phi_0**2+(1/np.pi**2)*(k_F/E_F*(E_F**2+2*m_eff**2)-3*m_eff**2*np.log((k_F+E_F)/m_eff)))+m_eff**2)
     eq4=(1./(4*np.pi**2))*(k_F*E_F*(E_F**2+k_F**2)-m_eff**4*np.log((k_F+E_F)/m_eff))+ (Phi_0*m_Phi/g_Phi)**2/2 + (m*b)*Phi_0**3/3 + c*Phi_0**4/4 -(W_0*m_W/g_W)**2/2 - (self_W/6)*W_0**4/4 - baryon_density_sat*E_F
     tmp_J_0=k_F**2/(6*E_F)
-    tmp_J_1=baryon_density_sat/(8*(m_rho/g_rho)**2+16*Lambda*W_0**2)
+    tmp_J_1=baryon_density_sat*g_rho**2/(8*(m_rho)**2+16*Lambda*(W_0*g_rho)**2) #origin fomula was baryon_density_sat/(8*(m_rho/g_rho)**2+16*Lambda*(W_0)**2)
     eq5=m**3*(tmp_J_0+tmp_J_1-J)
     eq6=m**3*(tmp_J_0*(1+(m_eff**2-3*baryon_density_sat*E_F*tmp_1)/E_F**2)+3*tmp_J_1*(1-32*tmp_2*W_0*Lambda*tmp_J_1)-L)
     return eq1,eq2,eq3,eq4,eq5,eq6
@@ -243,12 +243,10 @@ def get_eos_array(init0,Preset_tol,baryon_density_sat,mass_args,eos_args):
     eos_array=[]
     init_sat=eos_pressure_density(baryon_density_sat,init0,Preset_tol,[mass_args,eos_args])[0]
     init=init_sat
-    stability=True
     for i in range(len(baryon_density)):
         tmp=eos_pressure_density(baryon_density[i],init,Preset_tol,[mass_args,eos_args])
         eos_array.append([baryon_density[i]]+tmp[1:])
         init=tmp[0]
-        stability=stability and ((eos_array[i][2]<=eos_array[i-1][2] and baryon_density[i]>0.5*baryon_density_sat) or baryon_density[i]<=0.5*baryon_density_sat)
         #print eos_array[i][2],eos_array[i-1][2]
     eos_array.append([0.,0.,0.])
     eos_array.append(list(2*np.array(eos_array[-1])-np.array(eos_array[-2])))
@@ -257,15 +255,17 @@ def get_eos_array(init0,Preset_tol,baryon_density_sat,mass_args,eos_args):
     sol_saturation=eos_array[-1]
     init = init_sat
     baryon_density=baryon_density_sat*1.05**np.linspace(0,50,101)
+    stability=True
     for i in range(1,len(baryon_density)):
         tmp=eos_pressure_density(baryon_density[i],init,Preset_tol,[mass_args,eos_args])
         eos_array.append([baryon_density[i]]+tmp[1:])
         init=tmp[0]
+        stability=stability and eos_array[-2][2]<eos_array[-1][2]<2*eos_array[-2][2]
         #print init
     
     eos_array=np.array(eos_array).transpose()
     #print eos_array
-    positive_pressure=eos_array[2][eos_array[0]>0.5*baryon_density_sat].min()>0
+    positive_pressure=eos_array[2][102:].min()>0
     #if(positive_pressure and not stability):
     #plt.plot(toMevfm(eos_array[0],'mev4'),toMevfm(eos_array[1],'mev4'))
     #plt.xlim(0.0,0.3)
@@ -320,6 +320,53 @@ class EOS_RMF(object):
     def eosChempo(self,pressure):
         return (pressure+self.eosDensity(pressure))/self.eosBaryonDensity(pressure)
 
+from eos_class import EOS_BPS,EOS_BPSwithPoly
+class EOS_SLY4withRMF(object):
+    def __init__(self,init_args,init_sat,args):
+        self.baryon_density_sat,self.bd_energy,self.incompressibility,\
+        self.m_eff,self.J,self.L,self.self_W,self.mass_args=args
+        self.args=args
+        self.eos_RMF=EOS_RMF(init_args,init_sat,args)
+        self.eos_args=self.eos_RMF.eos_args
+        self.init_sat=self.eos_RMF.init_sat
+        self.eos_array=self.eos_RMF.eos_array
+        self.sol_saturation=toMevfm(np.array(self.eos_RMF.sol_saturation),'mev4')
+        fix_crust_baryon_density=np.linspace(0.6,0.3,4)*self.sol_saturation[0]
+        self.fix_crust_logic=False
+        for fix_crust_baryon_density_i in fix_crust_baryon_density:
+            if(self.sol_saturation[2]>1.1*EOS_BPS.eosPressure_frombaryon(fix_crust_baryon_density_i)):
+                self.eos_SLY4withPoly=EOS_BPSwithPoly([fix_crust_baryon_density_i,self.sol_saturation[2],self.sol_saturation[0],4*self.sol_saturation[2],2*self.sol_saturation[0],8*self.sol_saturation[2],3*self.sol_saturation[0]])
+                self.fix_crust_logic=True
+                break
+            
+        self.stability=self.eos_RMF.stability
+        self.positive_pressure=self.eos_RMF.positive_pressure
+        self.baryon_density_s=self.eos_RMF.baryon_density_s
+        self.pressure_s=self.eos_RMF.pressure_s
+        self.density_s=self.eos_RMF.density_s
+        self.unit_mass=self.eos_RMF.unit_mass
+        self.unit_radius=self.eos_RMF.unit_radius
+        self.unit_N=self.eos_RMF.unit_N
+    def __getstate__(self):
+        state_RMF=self.eos_RMF.__getstate__()
+        state = self.__dict__.copy()
+        return (state,state_RMF)
+    def __setstate__(self, state_):
+        state,state_RMF=state_
+        self.__dict__.update(state)
+        self.eos_RMF.__setstate__(state_RMF)
+    def eosDensity(self,pressure):
+        return np.where(pressure<self.sol_saturation[2],self.eos_SLY4withPoly.eosDensity(pressure),self.eos_RMF.eosDensity(pressure))
+    def eosBaryonDensity(self,pressure):
+        return np.where(pressure<self.sol_saturation[2],self.eos_SLY4withPoly.eosBaryonDensity(pressure),self.eos_RMF.eosBaryonDensity(pressure))
+    def setMaxmass(self,result_maxmaxmass):
+        self.pc_max,self.mass_max,self.cs2_max=result_maxmaxmass
+    def eosCs2(self,pressure):
+        return 1.0/derivative(self.eosDensity,pressure,dx=pressure*dlnx_cs2)
+    def eosChempo(self,pressure):
+        return (pressure+self.eosDensity(pressure))/self.eosBaryonDensity(pressure)
+
+
 # =============================================================================
 # m_eff=[0.55*939]
 # J=[30]
@@ -366,32 +413,36 @@ if __name__ == '__main__':
     print('main calculation starts here:')
     J=30
     eos_rmf=[]
-    m_eff=939*np.linspace(0.5,0.8,4)
+    m_eff=939*np.linspace(0.5,0.8,16)
     self_W=np.linspace(0,0.05,6)
-    L=np.linspace(30,80,6)
+    L=np.linspace(30,80,21)
     baryon_density_s=0.15
-    args=np.meshgrid(m_eff,self_W,L)
+    args=np.mgrid[0.5*939:0.8*939:4j,0:0.05:6j,30:80:6j]
+    m_eff,self_W,L=args
+    args_shape=np.shape(m_eff)
     f_file=open(path+dir_name+'/Lambda_RMF_calculation_args.dat','wb')
     cPickle.dump(args,f_file)
     f_file.close()
 
-    for i in range(len(m_eff)):
-        for j in range(len(self_W)):
-            for k in range(len(L)):
+    for i in range(args_shape[0]):
+        for j in range(args_shape[1]):
+            for k in range(args_shape[2]):
+                #print m_eff[i],L[k],self_W[j]
+                #print m_eff_[i,j,k],L_[i,j,k],self_W_[i,j,k]
                 try:
-                    eos_rmf.append(EOS_RMF(eos_rmf[i][j][k-1].init_args,eos_rmf[i][j][k-1].init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i],J,L[k],self_W[j],(0.5109989461,939,550,783,763)]))
+                    eos_rmf.append(EOS_SLY4withRMF(eos_rmf[i][j][k-1].init_args,eos_rmf[i][j][k-1].init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i][j][k],J,L[i][j][k],self_W[i][j][k],(0.5109989461,939,550,783,763)]))
                 except:
                     try:
-                        eos_rmf.append(EOS_RMF(eos_rmf[i][j-1][k].init_args,eos_rmf[i][j-1][k].init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i],J,L[k],self_W[j],(0.5109989461,939,550,783,763)]))
+                        eos_rmf.append(EOS_SLY4withRMF(eos_rmf[i][j-1][k].init_args,eos_rmf[i][j-1][k].init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i][j][k],J,L[i][j][k],self_W[i][j][k],(0.5109989461,939,550,783,763)]))
                     except:
                         try:
-                            eos_rmf.append(EOS_RMF(eos_rmf[i-1][j][k].init_args,eos_rmf[i-1][j][k].init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i],J,L[k],self_W[j],(0.5109989461,939,550,783,763)]))
+                            eos_rmf.append(EOS_SLY4withRMF(eos_rmf[i-1][j][k].init_args,eos_rmf[i-1][j][k].init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i][j][k],J,L[i][j][k],self_W[i][j][k],(0.5109989461,939,550,783,763)]))
                         except:
-                            eos_rmf.append(EOS_RMF(init_args,init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i],J,L[k],self_W[j],(0.5109989461,939,550,783,763)]))
+                            eos_rmf.append(EOS_SLY4withRMF(init_args,init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i][j][k],J,L[i][j][k],self_W[i][j][k],(0.5109989461,939,550,783,763)]))
 
     eos_flat=np.array(eos_rmf)                   
-    eos_rmf=np.reshape(np.array(eos_rmf),(len(m_eff),len(self_W),len(L)))
-    print('%d EoS built with shape (L_n,K_n,Q_n)%s.'%(np.size(eos_rmf),np.shape(eos_rmf)))
+    eos_rmf=np.reshape(np.array(eos_rmf),args_shape)
+    print('%d EoS built with shape (m_eff,self_W,L)%s.'%(np.size(eos_rmf),np.shape(eos_rmf)))
     
     error_log=path+dir_name+'/error.log'
     from Parallel_process import main_parallel
@@ -445,7 +496,7 @@ if __name__ == '__main__':
     Properity_onepointfour=main_parallel(Calculation_onepointfour,eos_flat[logic_maxmass],f_onepointfour_result,error_log)
     print('properities of 1.4 M_sun star of %d EoS calculated.' %(len(eos_flat[logic_maxmass])))
 
-    f_file=open(path+dir_name+'/Lambda_PNM_calculation_eos.dat','wb')
+    f_file=open(path+dir_name+'/Lambda_RMF_calculation_eos.dat','wb')
     cPickle.dump(eos_rmf,f_file)
     f_file.close()
     
