@@ -413,9 +413,6 @@ if __name__ == '__main__':
     print('main calculation starts here:')
     J=30
     eos_rmf=[]
-    m_eff=939*np.linspace(0.5,0.8,16)
-    self_W=np.linspace(0,0.05,6)
-    L=np.linspace(30,80,21)
     baryon_density_s=0.15
     args=np.mgrid[0.5*939:0.8*939:4j,0:0.05:6j,30:80:6j]
     m_eff,self_W,L=args
