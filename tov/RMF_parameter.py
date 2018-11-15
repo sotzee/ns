@@ -373,9 +373,7 @@ class EOS_SLY4withRMF(object):
 # L=[40]
 # EOS_RMF([toMev4(0.15,'mevfm'),939-16,240,m_eff[0],J[0],L[0],(0.5109989461,939,550,783,763)])
 # =============================================================================
-init_args= [12.,14.,12.,0.002,-0.003,0.000]
-init_sat = [6.2e+02,2.6e+02,3.2e+02]
-init_sat = [753.29362749, 134.09525771, 319.39600576]
+
 from Lambda_hadronic_calculation import Maxmass,MassRadius,Properity_ofmass
 def Calculation_maxmass(eos_i):
     try:
@@ -414,7 +412,9 @@ if __name__ == '__main__':
     J=30
     eos_rmf=[]
     baryon_density_s=0.15
-    args=np.mgrid[0.5*939:0.8*939:4j,0:0.05:6j,30:80:6j]
+    args=np.mgrid[0.5*939:0.8*939:4j,0:0.05:6j,80:30:6j]
+    init_args= [12.124200434658492, 14.358205178844612, 9.2022483593647681, 0.0018220954984504475, -0.0027122507224894791, 0.028295688189677305, 0]
+    init_sat = [484.27504990105365, 378.79614094279168, 319.23744720471598]
     m_eff,self_W,L=args
     args_shape=np.shape(m_eff)
     f_file=open(path+dir_name+'/Lambda_RMF_calculation_args.dat','wb')
@@ -422,22 +422,24 @@ if __name__ == '__main__':
     f_file.close()
 
     for i in range(args_shape[0]):
+        eos_rmf.append([])
         for j in range(args_shape[1]):
+            eos_rmf[i].append([])
             for k in range(args_shape[2]):
                 #print m_eff[i],L[k],self_W[j]
                 #print m_eff_[i,j,k],L_[i,j,k],self_W_[i,j,k]
                 try:
-                    eos_rmf.append(EOS_SLY4withRMF(eos_rmf[i][j][k-1].init_args,eos_rmf[i][j][k-1].init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i][j][k],J,L[i][j][k],self_W[i][j][k],(0.5109989461,939,550,783,763)]))
+                    eos_rmf[i][j].append(EOS_SLY4withRMF(eos_rmf[i][j][k-1].eos_args,eos_rmf[i][j][k-1].init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i][j][k],J,L[i][j][k],self_W[i][j][k],(0.5109989461,939,550,783,763)]))
                 except:
                     try:
-                        eos_rmf.append(EOS_SLY4withRMF(eos_rmf[i][j-1][k].init_args,eos_rmf[i][j-1][k].init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i][j][k],J,L[i][j][k],self_W[i][j][k],(0.5109989461,939,550,783,763)]))
+                        eos_rmf[i][j].append(EOS_SLY4withRMF(eos_rmf[i][j-1][k].eos_args,eos_rmf[i][j-1][k].init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i][j][k],J,L[i][j][k],self_W[i][j][k],(0.5109989461,939,550,783,763)]))
                     except:
                         try:
-                            eos_rmf.append(EOS_SLY4withRMF(eos_rmf[i-1][j][k].init_args,eos_rmf[i-1][j][k].init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i][j][k],J,L[i][j][k],self_W[i][j][k],(0.5109989461,939,550,783,763)]))
+                            eos_rmf[i][j].append(EOS_SLY4withRMF(eos_rmf[i-1][j][k].eos_args,eos_rmf[i-1][j][k].init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i][j][k],J,L[i][j][k],self_W[i][j][k],(0.5109989461,939,550,783,763)]))
                         except:
-                            eos_rmf.append(EOS_SLY4withRMF(init_args,init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i][j][k],J,L[i][j][k],self_W[i][j][k],(0.5109989461,939,550,783,763)]))
+                            eos_rmf[i][j].append(EOS_SLY4withRMF(init_args,init_sat,[toMev4(baryon_density_s,'mevfm'),939-16,240,m_eff[i][j][k],J,L[i][j][k],self_W[i][j][k],(0.5109989461,939,550,783,763)]))
 
-    eos_flat=np.array(eos_rmf)                   
+    eos_flat=np.array(eos_rmf).flatten  ()        
     eos_rmf=np.reshape(np.array(eos_rmf),args_shape)
     print('%d EoS built with shape (m_eff,self_W,L)%s.'%(np.size(eos_rmf),np.shape(eos_rmf)))
     
