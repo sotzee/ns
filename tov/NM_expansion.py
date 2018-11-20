@@ -11,6 +11,7 @@ from scipy.constants import c,G,e
 from scipy.interpolate import interp1d
 from unitconvert import toMev4#,toMevfm
 import numpy as np
+import scipy.optimize as opt
 #import matplotlib.pyplot as plt
 
 dlnx_cs2=1e-6
@@ -58,7 +59,7 @@ def get_baryon_density_u_max(abcd,defaut_u_max):
         return np.min([roots_real[roots_real>0].min()**3,defaut_u_max])
 
 def get_eos_array(u_min,u_max,baryon_density_sat,m,T,abcd):
-    baryon_density=baryon_density_sat*10**np.linspace(np.log10(u_min),np.log10(u_max),201)
+    baryon_density=baryon_density_sat*10**np.linspace(np.log10(u_min),np.log10(u_max),501)
     energy_dnnsity=np.concatenate(([0],baryon_density*energy_per_baryon_pnm(baryon_density,baryon_density_sat,m,T,abcd),[10000]))
     pressure=np.concatenate(([0],baryon_density**2/baryon_density_sat*energy_per_baryon_pnm_jac(baryon_density,baryon_density_sat,T,abcd),[10000]))
     baryon_density=np.concatenate(([0],baryon_density,[1000*baryon_density_sat]))
@@ -67,6 +68,13 @@ def get_eos_array(u_min,u_max,baryon_density_sat,m,T,abcd):
     #plt.plot(result[0],result[1])
     #plt.plot(result[0][:-1],result[2][:-1])
     return result,result[:,int(len(baryon_density)/2)]
+
+def matching_eos(trial_pressure,eos_density1,eos_density2):
+    return eos_density1(trial_pressure)-eos_density2(trial_pressure)
+
+def calculate_matching_pressure(trial_pressure,Preset_tol,eos_density1,eos_density2):
+    p_matching=opt.newton(matching_eos,trial_pressure,tol=Preset_tol,args=(eos_density1,eos_density2))
+    return p_matching
 
 class EOS_EXPANSION_PNM(object):
     def __init__(self,args,defaut_u_min=1e-8,defaut_u_max=12):
@@ -155,6 +163,51 @@ class EOS_PnmCSS(object):
     def eosChempo(self,pressure):
         return (pressure+self.eosDensity(pressure))/self.eosBaryonDensity(pressure)
 
+Preset_tol_matching=1e-4
+class EOS_Sly4_match_PnmCSS(object):
+    def __init__(self,eos_low,eos_high):
+        self.eos_low=eos_low
+        self.eos_high=eos_high
+        flag=True
+        for trial_pressure in [0.5,0.6,0.4,0.7,0.3,0.8,0.2,0.9,0.1]:
+            if(flag==True):
+                flag=False
+                try:
+                    self.p_match=calculate_matching_pressure(trial_pressure,Preset_tol_matching,eos_low.eosDensity,eos_high.eosDensity)
+                except:
+                    self.p_match=False
+                    flag=True
+            else:
+                break
+        if(not self.p_match and eos_high.eosPNM.u_max<1):
+            self.p_match=0
+        else:
+            print('Matching of low density EoS %s and hight density %s failed'%(self.eos_low,self.eos_high))
+        self.baryon_density_s=self.eos_high.baryon_density_s
+        self.pressure_s=self.eos_high.pressure_s
+        self.density_s=self.eos_high.density_s
+        self.unit_mass=self.eos_high.unit_mass
+        self.unit_radius=self.eos_high.unit_radius
+        self.unit_N=self.eos_high.unit_N
+    def __getstate__(self):
+        state_high=self.eos_high.__getstate__()
+        state = self.__dict__.copy()
+        return (state,state_high)
+    def __setstate__(self, state_):
+        state,state_high=state_
+        self.__dict__.update(state)
+        self.eos_high.__setstate__(state_high)
+    def setMaxmass(self,result_maxmaxmass):
+        self.pc_max,self.mass_max,self.cs2_max=result_maxmaxmass
+    def eosDensity(self,pressure):
+        return np.where(pressure<self.p_match,self.eos_low.eosDensity(pressure),self.eos_high.eosDensity(pressure))
+    def eosBaryonDensity(self,pressure):
+        return np.where(pressure<self.p_match,self.eos_low.eosBaryonDensity(pressure),self.eos_high.eosBaryonDensity(pressure))
+    def eosCs2(self,pressure):
+        return np.where(pressure<self.p_match,self.eos_low.eosCs2(pressure),self.eos_high.eosCs2(pressure))
+    def eosChempo(self,pressure):
+        return (pressure+self.eosDensity(pressure))/self.eosBaryonDensity(pressure)
+    
 import cPickle
 import os
 path = "./"
@@ -165,34 +218,30 @@ if __name__ == '__main__':
         os.stat(path+dir_name)
     except:
         os.mkdir(path+dir_name)
-    N1=5
-    N2=6
-    N3=7
-# =============================================================================
-#     N1=26
-#     N2=101
-#     N3=121
-# =============================================================================
-# =============================================================================
-#     N1=11
-#     N2=61
-#     N3=51
-# =============================================================================
+    N1=6
+    N2=15
+    N3=21
     n_s=0.16
     m=939
     E_pnm = 32-16
     L_pnm = np.linspace(30,70,N1)
-    K_pnm = np.linspace(0,500,N2)
-    Q_pnm = np.linspace(-200,1000,N3)
+    K_pnm = np.linspace(50,400,N2)
+    Q_pnm = np.linspace(-400,600,N3)
     Preset_Pressure_final=1e-8
     Preset_rtol=1e-4
     args=[]
+    
+    from eos_class import EOS_BPS
+    eos_low=EOS_BPS()
+    eos_high=[]
     eos =[]
     for i in range(len(L_pnm)):
         for j in range(len(K_pnm)):
             for k in range(len(Q_pnm)):
                 args.append([n_s,m,E_pnm,L_pnm[i],K_pnm[j],Q_pnm[k]])
-                eos.append(EOS_PnmCSS(args[-1]))
+                eos_high.append(EOS_PnmCSS(args[-1]))
+                #print args[-1]
+                eos.append(EOS_Sly4_match_PnmCSS(eos_low,eos_high[-1]))
     args=np.reshape(np.array(args),(N1,N2,N3,6))
     args_flat=np.reshape(np.array(args),(N1*N2*N3,6))
     eos =np.reshape(np.array(eos),(N1,N2,N3))
@@ -232,16 +281,15 @@ if __name__ == '__main__':
     f_chirpmass_Lambdabeta6_result=path+dir_name+'/Lambda_hadronic_calculation_chirpmass_Lambdabeta6.dat'
     chirp_q_Lambdabeta6_Lambda1Lambda2=main_parallel(Calculation_chirpmass_Lambdabeta6,np.concatenate((mass_beta_Lambda_result,np.tile(Properity_onepointfour[:,3],(40,1,1)).transpose()),axis=1),f_chirpmass_Lambdabeta6_result,error_log)
 
-else:
-    def read_file(file_name):
-        f_file=open(file_name,'rb')
-        content=np.array(cPickle.load(f_file))
-        f_file.close()
-        return content
-    args=read_file(path+dir_name+'/Lambda_PNM_calculation_args.dat')
-    eos=read_file(path+dir_name+'/Lambda_PNM_calculation_eos.dat')
-    maxmass_result=read_file(path+dir_name+'/Lambda_PNM_calculation_maxmass.dat')
-    Properity_onepointfour=read_file(path+dir_name+'/Lambda_PNM_calculation_onepointfour.dat')
-    mass_beta_Lambda_result=read_file(path+dir_name+'/Lambda_PNM_calculation_mass_beta_Lambda.dat')
-    chirp_q_Lambdabeta6_Lambda1Lambda2=read_file(path+dir_name+'/Lambda_hadronic_calculation_chirpmass_Lambdabeta6.dat')
-
+#else:
+def read_file(file_name):
+    f_file=open(file_name,'rb')
+    content=np.array(cPickle.load(f_file))
+    f_file.close()
+    return content
+args=read_file(path+dir_name+'/Lambda_PNM_calculation_args.dat')
+eos=read_file(path+dir_name+'/Lambda_PNM_calculation_eos.dat')
+maxmass_result=read_file(path+dir_name+'/Lambda_PNM_calculation_maxmass.dat')
+Properity_onepointfour=read_file(path+dir_name+'/Lambda_PNM_calculation_onepointfour.dat')
+mass_beta_Lambda_result=read_file(path+dir_name+'/Lambda_PNM_calculation_mass_beta_Lambda.dat')
+chirp_q_Lambdabeta6_Lambda1Lambda2=read_file(path+dir_name+'/Lambda_hadronic_calculation_chirpmass_Lambdabeta6.dat')

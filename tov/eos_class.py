@@ -54,6 +54,9 @@ class EOS_BPS(object):
     eosBaryonDensity = interp1d(list(pressureBPS[:66])+[0.22201]+list(pressureBPS[66:])+[pressureBPS[-1]*100],list(baryondensityBPS[:66])+[0.16/2.7]+list(baryondensityBPS[66:])+[baryondensityBPS[-1]*100], kind='quadratic')
     def eosChempo(self,pressure):
         return (pressure+self.eosDensity(pressure))/self.eosBaryonDensity(pressure)
+    def eosCs2(self,pressure):
+        return 1.0/derivative(self.eosDensity,pressure,dx=pressure*dlnx_cs2)
+        
 
 class EOS_PiecewisePoly(object):
     def __init__(self,args):

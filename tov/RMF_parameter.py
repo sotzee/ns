@@ -77,20 +77,23 @@ Preset_rtol=1e-4
 def equations(x,args):
     baryon_density_sat,bd_energy,incompressibility,m_eff,J,L,self_W,mass_args=args
     m_e,m,m_Phi,m_W,m_rho=mass_args
-    g_Phi,g_W,g_rho,b,c,Lambda=x
+    g2_Phi,g2_W,g2_rho,b,c,Lambda=x
+    g2_Phi=np.max([0,g2_Phi])
+    g2_W=np.max([0,g2_W])
+    g2_rho=np.max([0,g2_rho])
     k_F=(3*np.pi**2*baryon_density_sat/2)**(1./3.)
     E_F=(k_F**2+m_eff**2)**0.5
     Phi_0=m-m_eff
     W_0=bd_energy-E_F
     n_scalar_sym=(m_eff/np.pi**2)*(E_F*k_F-m_eff**2*np.log((k_F+E_F)/m_eff))
-    eq1=m*((m_Phi/g_Phi)**2*Phi_0 + (m*b)*Phi_0**2 + c*Phi_0**3 - n_scalar_sym)
-    eq2=m*((m_W/g_W)**2*W_0 + (self_W/6)*W_0**3 - baryon_density_sat)
-    tmp_2=(g_W**2/(m_W**2+self_W/2*g_W**2*W_0**2))
+    eq1=m*((m_Phi)**2*Phi_0/g2_Phi + (m*b)*Phi_0**2 + c*Phi_0**3 - n_scalar_sym)
+    eq2=m*((m_W)**2*W_0/g2_W + (self_W/6)*W_0**3 - baryon_density_sat)
+    tmp_2=g2_W/(m_W**2+self_W/2*g2_W*W_0**2)
     tmp_1=(incompressibility/(9*baryon_density_sat)-np.pi**2/(2*k_F*E_F)-tmp_2)
-    eq3=m**2*(E_F**2*tmp_1*((m_Phi/g_Phi)**2+2*b*m*Phi_0+3*c*Phi_0**2+(1/np.pi**2)*(k_F/E_F*(E_F**2+2*m_eff**2)-3*m_eff**2*np.log((k_F+E_F)/m_eff)))+m_eff**2)
-    eq4=(1./(4*np.pi**2))*(k_F*E_F*(E_F**2+k_F**2)-m_eff**4*np.log((k_F+E_F)/m_eff))+ (Phi_0*m_Phi/g_Phi)**2/2 + (m*b)*Phi_0**3/3 + c*Phi_0**4/4 -(W_0*m_W/g_W)**2/2 - (self_W/6)*W_0**4/4 - baryon_density_sat*E_F
+    eq3=m**2*(E_F**2*tmp_1*((m_Phi)**2/g2_Phi+2*b*m*Phi_0+3*c*Phi_0**2+(1/np.pi**2)*(k_F/E_F*(E_F**2+2*m_eff**2)-3*m_eff**2*np.log((k_F+E_F)/m_eff)))+m_eff**2)
+    eq4=(1./(4*np.pi**2))*(k_F*E_F*(E_F**2+k_F**2)-m_eff**4*np.log((k_F+E_F)/m_eff))+ (Phi_0*m_Phi)**2/(2*g2_Phi) + (m*b)*Phi_0**3/3 + c*Phi_0**4/4 -(W_0*m_W)**2/(2*g2_W) - (self_W/6)*W_0**4/4 - baryon_density_sat*E_F
     tmp_J_0=k_F**2/(6*E_F)
-    tmp_J_1=baryon_density_sat*g_rho**2/(8*(m_rho)**2+16*Lambda*(W_0*g_rho)**2) #origin fomula was baryon_density_sat/(8*(m_rho/g_rho)**2+16*Lambda*(W_0)**2)
+    tmp_J_1=baryon_density_sat*g2_rho/(8*(m_rho)**2+16*Lambda*(W_0)**2*g2_rho) #origin fomula was baryon_density_sat/(8*(m_rho/g_rho)**2+16*Lambda*(W_0)**2)
     eq5=m**3*(tmp_J_0+tmp_J_1-J)
     eq6=m**3*(tmp_J_0*(1+(m_eff**2-3*baryon_density_sat*E_F*tmp_1)/E_F**2)+3*tmp_J_1*(1-32*tmp_2*W_0*Lambda*tmp_J_1)-L)
     return eq1,eq2,eq3,eq4,eq5,eq6
@@ -129,23 +132,25 @@ def equations(x,args):
 #     return eq1,eq2,eq3,eq4,eq5,eq6,eq7
 # =============================================================================
 
+
+init_args=np.array([10.,12.,9.,0.002,-0.002,0])**2
 #check with W.C. Chen and J. Piekarewicz 2014   NL3 sets
-sol = opt.root(equations,[10.,12.,9.,0.002,-0.002,0],tol=1e-30,args=[toMev4(0.1481,'mevfm'),939-16.24,271.5,0.595*939,37.28,118.2,0.,(0.5109989461,939,508.194,782.501,763)])
+sol = opt.root(equations,init_args,tol=1e-30,args=[toMev4(0.1481,'mevfm'),939-16.24,271.5,0.595*939,37.28,118.2,0.,(0.5109989461,939,508.194,782.501,763)])
 print(sol.x)
 print(equations(sol.x,[toMev4(0.1481,'mevfm'),939-16.24,271.5,0.595*939,37.28,118.2,0.,(0.5109989461,939,508.194,782.501,763)]))
 
 #check with W.C. Chen and J. Piekarewicz 2014   FSU sets
-sol = opt.root(equations,[10.5,14.,12.,0.002,-0.002,0],tol=1e-30,args=[toMev4(0.1484,'mevfm'),939-16.3,230.0,0.61*939,32.59,60.5,0.06,(0.5109989461,939,491.5,782.500,763)])
+sol = opt.root(equations,init_args,tol=1e-30,args=[toMev4(0.1484,'mevfm'),939-16.3,230.0,0.61*939,32.59,60.5,0.06,(0.5109989461,939,491.5,782.500,763)])
 print(sol.x)
 print(equations(sol.x,[toMev4(0.1484,'mevfm'),939-16.3,230.0,0.61*939,32.59,60.5,0.06,(0.5109989461,939,491.5,782.500,763)]))
 
 #check with Nadine Hornick et. al. 2018
-sol = opt.root(equations,[10.,12.,9.,0.002,-0.002,0],tol=1e-30,args=[toMev4(0.15,'mevfm'),939-16,240,0.65*939,30,50,0.,(0.5109989461,939,550,783,763)])
+sol = opt.root(equations,init_args,tol=1e-30,args=[toMev4(0.15,'mevfm'),939-16,240,0.65*939,30,50,0.,(0.5109989461,939,550,783,763)])
 print(sol.x)
 print(equations(sol.x,[toMev4(0.15,'mevfm'),939-16,240,0.65*939,30,50,0.,(0.5109989461,939,550,783,763)]))
 eos_args=sol.x
 
-sol = opt.root(equations,[10.,12.,9.,0.002,-0.002,0],tol=1e-30,args=[toMev4(0.15,'mevfm'),939-16,240,0.60*939,30,50,0.,(0.5109989461,939,550,783,763)])
+sol = opt.root(equations,init_args,tol=1e-30,args=[toMev4(0.15,'mevfm'),939-16,240,0.60*939,30,50,0.,(0.5109989461,939,550,783,763)])
 print(sol.x)
 print(equations(sol.x,[toMev4(0.15,'mevfm'),939-16,240,0.60*939,30,50,0.,(0.5109989461,939,550,783,763)]))
 eos_args=sol.x
@@ -184,7 +189,7 @@ eos_args=sol.x
 def eos_equations(y,args):
     n,mass_args,eos_args=args
     m_e,m,m_Phi,m_W,m_rho=mass_args
-    g_Phi,g_W,g_rho,b,c,Lambda,self_W=eos_args
+    g2_Phi,g2_W,g2_rho,b,c,Lambda,self_W=eos_args
     m_eff,W_0,k_F_n=y
     
     n_n=k_F_n**3/(3*np.pi**2)
@@ -202,9 +207,9 @@ def eos_equations(y,args):
     else:
         n_scalar=(m_eff/(2*np.pi**2))*((E_F_p*k_F_p-m_eff**2*np.log((k_F_p+E_F_p)/m_eff))+(E_F_n*k_F_n-m_eff**2*np.log((k_F_n+E_F_n)/m_eff)))
     Phi_0=m-m_eff
-    eq2=m*((m_Phi/g_Phi)**2*Phi_0 + (m*b)*Phi_0**2 + c*Phi_0**3 - n_scalar)
-    rho_0=0.5*n3/((m_rho/g_rho)**2 + 2*Lambda*W_0**2)
-    eq3=m*((m_W/g_W)**2*W_0 + (self_W/6)*W_0**3 + 2*Lambda*W_0*rho_0**2 - n)
+    eq2=m*((m_Phi)**2*Phi_0/g2_Phi + (m*b)*Phi_0**2 + c*Phi_0**3 - n_scalar)
+    rho_0=0.5*n3/((m_rho)**2/g2_rho + 2*Lambda*W_0**2)
+    eq3=m*((m_W)**2*W_0/g2_W + (self_W/6)*W_0**3 + 2*Lambda*W_0*rho_0**2 - n)
     #eq5=((E_F_e*k_F_e**3+E_F_e**3*k_F_e-m_e**4*np.log((k_F_e+E_F_e)/m_e))+(E_F_p*k_F_p**3+E_F_p**3*k_F_p-m_eff**4*np.log((k_F_p+E_F_p)/m_eff))+(E_F_n*k_F_n**3+E_F_n**3*k_F_n-m_eff**4*np.log((k_F_n+E_F_n)/m_eff)))/(8*np.pi**2)+(m_Phi*Phi_0/g_Phi)**2/2+(m_W*W_0/g_W)**2/2+(m_rho*rho_0/g_rho)**2/2+b*m*Phi_0**3/3+c*Phi_0**4/4+self_W*W_0**4/8+3*Lambda*(W_0*rho_0)**2-energy_density
     chempo_e=E_F_e
     chempo_p=E_F_p+W_0-rho_0/2
@@ -216,7 +221,7 @@ def eos_equations(y,args):
 def eos_pressure_density(n,init,Preset_tol,args):
     mass_args,eos_args=args
     m_e,m,m_Phi,m_W,m_rho=mass_args
-    g_Phi,g_W,g_rho,b,c,Lambda,self_W=eos_args
+    g2_Phi,g2_W,g2_rho,b,c,Lambda,self_W=eos_args
     sol = opt.root(eos_equations,init,tol=Preset_tol,args=[n,mass_args,eos_args])
     m_eff,W_0,k_F_n=sol.x
     n_n=k_F_n**3/(3*np.pi**2)
@@ -230,11 +235,11 @@ def eos_pressure_density(n,init,Preset_tol,args):
     E_F_p=(k_F_p**2+m_eff**2)**0.5
     E_F_n=(k_F_n**2+m_eff**2)**0.5
     Phi_0=m-m_eff
-    rho_0=0.5*n3/((m_rho/g_rho)**2 + 2*Lambda*W_0**2)
+    rho_0=0.5*n3/((m_rho)**2/g2_rho + 2*Lambda*W_0**2)
     chempo_e=E_F_e
     chempo_p=E_F_p+W_0-rho_0/2
     chempo_n=E_F_n+W_0+rho_0/2
-    energy_density=((E_F_e*k_F_e**3+E_F_e**3*k_F_e-m_e**4*np.log((k_F_e+E_F_e)/m_e))+(E_F_p*k_F_p**3+E_F_p**3*k_F_p-m_eff**4*np.log((k_F_p+E_F_p)/m_eff))+(E_F_n*k_F_n**3+E_F_n**3*k_F_n-m_eff**4*np.log((k_F_n+E_F_n)/m_eff)))/(8*np.pi**2)+(m_Phi*Phi_0/g_Phi)**2/2+(m_W*W_0/g_W)**2/2+(m_rho*rho_0/g_rho)**2/2+b*m*Phi_0**3/3+c*Phi_0**4/4+self_W*W_0**4/8+3*Lambda*(W_0*rho_0)**2
+    energy_density=((E_F_e*k_F_e**3+E_F_e**3*k_F_e-m_e**4*np.log((k_F_e+E_F_e)/m_e))+(E_F_p*k_F_p**3+E_F_p**3*k_F_p-m_eff**4*np.log((k_F_p+E_F_p)/m_eff))+(E_F_n*k_F_n**3+E_F_n**3*k_F_n-m_eff**4*np.log((k_F_n+E_F_n)/m_eff)))/(8*np.pi**2)+(m_Phi*Phi_0)**2/(2*g2_Phi)+(m_W*W_0)**2/(2*g2_W)+(m_rho*rho_0)**2/(2*g2_rho)+b*m*Phi_0**3/3+c*Phi_0**4/4+self_W*W_0**4/8+3*Lambda*(W_0*rho_0)**2
     pressure=chempo_e*n_e+chempo_p*n_p+chempo_n*n_n-energy_density
     return [sol.x,energy_density,pressure]
 
@@ -412,8 +417,8 @@ if __name__ == '__main__':
     J=30
     eos_rmf=[]
     baryon_density_s=0.15
-    args=np.mgrid[0.5*939:0.8*939:4j,0:0.05:6j,80:30:6j]
-    init_args= [12.124200434658492, 14.358205178844612, 9.2022483593647681, 0.0018220954984504475, -0.0027122507224894791, 0.028295688189677305, 0]
+    args=np.mgrid[0.5*939:0.8*939:4j,0:0.04:5j,80:30:6j]
+    init_args= [12.124200434658492**2, 14.358205178844612**2, 9.2022483593647681**2, 0.0018220954984504475, -0.0027122507224894791, 0.028295688189677305, 0]
     init_sat = [484.27504990105365, 378.79614094279168, 319.23744720471598]
     m_eff,self_W,L=args
     args_shape=np.shape(m_eff)
@@ -498,7 +503,14 @@ if __name__ == '__main__':
     f_file=open(path+dir_name+'/Lambda_RMF_calculation_eos.dat','wb')
     cPickle.dump(eos_rmf,f_file)
     f_file.close()
-    
+
+    f_mass_beta_Lambda_result=path+dir_name+'/Lambda_RMF_calculation_mass_beta_Lambda.dat'
+    mass_beta_Lambda_result=main_parallel(Calculation_mass_beta_Lambda,eos_flat[logic],f_mass_beta_Lambda_result,error_log)
+    print('mass, compactness and tidal Lambda of %d EoS calculated.' %(len(eos_flat[logic])))
+
+f_chirpmass_Lambdabeta6_result=path+dir_name+'/Lambda_RMF_calculation_chirpmass_Lambdabeta6.dat'
+chirp_q_Lambdabeta6_Lambda1Lambda2=main_parallel(Calculation_chirpmass_Lambdabeta6,np.concatenate((mass_beta_Lambda_result,np.tile((Properity_onepointfour[Properity_onepointfour[:,2]<13500])[:,3],(40,1,1)).transpose()),axis=1),f_chirpmass_Lambdabeta6_result,error_log)
+
 # =============================================================================
 # p=10**np.linspace(-1,2,500)
 # baryon_density_rmf=[[],[],[]]
