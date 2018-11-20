@@ -169,20 +169,21 @@ class EOS_Sly4_match_PnmCSS(object):
         self.eos_low=eos_low
         self.eos_high=eos_high
         flag=True
-        for trial_pressure in [0.5,0.6,0.4,0.7,0.3,0.8,0.2,0.9,0.1]:
+        for trial_pressure in [0.5,0.6,0.4,0.7,0.3,0.8,0.2,0.9,0.1,0.01,0.001]:
             if(flag==True):
                 flag=False
                 try:
                     self.p_match=calculate_matching_pressure(trial_pressure,Preset_tol_matching,eos_low.eosDensity,eos_high.eosDensity)
                 except:
-                    self.p_match=False
                     flag=True
             else:
                 break
-        if(not self.p_match and eos_high.eosPNM.u_max<1):
-            self.p_match=0
-        else:
-            print('Matching of low density EoS %s and hight density %s failed'%(self.eos_low,self.eos_high))
+        if(flag):
+            if(eos_high.eosPNM.u_max<1):
+                self.p_match=0
+            else:
+                #print('Matching of low density EoS %s and hight density %s failed'%(self.eos_low,self.eos_high))
+                print self.eos_high.eosPNM.args
         self.baryon_density_s=self.eos_high.baryon_density_s
         self.pressure_s=self.eos_high.pressure_s
         self.density_s=self.eos_high.density_s
