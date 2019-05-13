@@ -136,7 +136,10 @@ def Calculation_maxmass(eos_i):
     return maxmass_result
 
 def Calculation_onepointfour(eos_i):
-    Properity_onepointfour=Properity_ofmass(1.4,10,eos_i.pc_max,MassRadius,Preset_Pressure_final,Preset_rtol,1,eos_i)
+    try:
+        Properity_onepointfour=Properity_ofmass(1.4,10.,eos_i.pc_max,MassRadius,Preset_Pressure_final,Preset_rtol,1,eos_i)
+    except:
+        Properity_onepointfour=Properity_ofmass(1.4,1.,eos_i.pc_max,MassRadius,Preset_Pressure_final,Preset_rtol,1,eos_i)
     return Properity_onepointfour
 
 def Calculation_mass_beta_Lambda(eos_i,pc_list=10**np.linspace(0,-1.5,40)):
@@ -157,7 +160,7 @@ def mass_chirp(mass1,mass2):
     return (mass1*mass2)**0.6/(mass1+mass2)**0.2
 def tidal_binary(q,tidal1,tidal2):
     return 16.*((12*q+1)*tidal1+(12+q)*q**4*tidal2)/(13*(1+q)**5)
-def Calculation_chirpmass_Lambdabeta6(args_i,M_min=1.1,M_max=1.6):
+def Calculation_chirpmass_Lambdabeta6(args_i,M_min=1.1,M_max=3.0):
     mass_i=args_i[0,:]
     Lambda_i=args_i[2,:]
     beta_onepointfour_i=args_i[3,0]
@@ -243,7 +246,7 @@ if __name__ == '__main__':
     cPickle.dump([logic1,logic2,logic_eos],f_file)
     f_file.close()
     f_file=open('./'+dir_name+'/Lambda_hadronic_calculation_logic.dat','rb')
-    p1p2p3=np.array(cPickle.load(f_file))
+    logic1,logic2,logic_eos=np.array(cPickle.load(f_file))
     f_file.close()
     
     # =============================================================================

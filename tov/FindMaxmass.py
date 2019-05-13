@@ -7,46 +7,50 @@ Created on Mon Jul 11 12:13:47 2016
 
 import scipy.optimize as opt
 import numpy as np
-from tov_f import Mass_transition_formax,Mass_formax
+from MassRadius_hadronic import Mass_formax
 
-# transition tpye:
-# 0 ~ no transition
-# 1 ~ continuous one peak
-# 2 ~ absent one peak at transition
-# 3 ~ absent two peaks
-# 4 ~ continuous two peaks
-
-def Maxmass_transition(Preset_Pressure_final,Preset_rtol,eos):
-    Preset_rtol=Preset_rtol*0.01
-    rtol_opt=Preset_rtol*10
-    if(2*eos.det_density>eos.density_trans+3*eos.pressure_trans):
-        Mass_trans=Mass_transition_formax([eos.pressure_trans],Preset_Pressure_final,Preset_rtol,eos)
-        result1=opt.minimize(Mass_transition_formax,800.0,tol=rtol_opt,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
-        if(np.abs(result1.x[0]-eos.pressure_trans)<0.01*(eos.pressure_trans+result1.x[0])):
-            return [2,eos.pressure_trans,-Mass_trans,eos.pressure_trans,-Mass_trans,eos.pressure_trans,-Mass_trans]
-        else:
-            if(result1.fun<Mass_trans):
-                return [3,result1.x[0],-result1.fun,result1.x[0],-result1.fun,eos.pressure_trans,-Mass_trans]
-            else:
-                return [3,eos.pressure_trans,-Mass_trans,result1.x[0],-result1.fun,eos.pressure_trans,-Mass_trans]
-    else:
-        result1=opt.minimize(Mass_transition_formax,800.0,tol=rtol_opt,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
-        result2=opt.minimize(Mass_transition_formax,eos.pressure_trans+1.,tol=0.001,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
-        #print result1.x[0],-result1.fun
-        #print result2.x[0],-result2.fun
-        if(np.abs(result1.x[0]-result2.x[0])<0.05*(result2.x[0]+result1.x[0])):
-            if(result1.fun<result2.fun):
-                return [1,result1.x[0],-result1.fun,result1.x[0],-result1.fun,result1.x[0],-result1.fun]
-            else:
-                return [1,result2.x[0],-result2.fun,result2.x[0],-result2.fun,result2.x[0],-result2.fun]
-        else:
-            if(result1.fun<result2.fun):
-                return [4,result1.x[0],-result1.fun,result1.x[0],-result1.fun,result2.x[0],-result2.fun]
-            else:
-                return [4,result2.x[0],-result2.fun,result1.x[0],-result1.fun,result2.x[0],-result2.fun]
+# =============================================================================
+# from MassRadius_hybrid import Mass_transition_formax
+# 
+# # transition tpye:
+# # 0 ~ no transition
+# # 1 ~ continuous one peak
+# # 2 ~ absent one peak at transition
+# # 3 ~ absent two peaks
+# # 4 ~ continuous two peaks
+# 
+# def Maxmass_transition(Preset_Pressure_final,Preset_rtol,eos):
+#     Preset_rtol=Preset_rtol*0.01
+#     rtol_opt=Preset_rtol*10
+#     if(2*eos.det_density>eos.density_trans+3*eos.pressure_trans):
+#         Mass_trans=Mass_transition_formax([eos.pressure_trans],Preset_Pressure_final,Preset_rtol,eos)
+#         result1=opt.minimize(Mass_transition_formax,800.0,tol=rtol_opt,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
+#         if(np.abs(result1.x[0]-eos.pressure_trans)<0.01*(eos.pressure_trans+result1.x[0])):
+#             return [2,eos.pressure_trans,-Mass_trans,eos.pressure_trans,-Mass_trans,eos.pressure_trans,-Mass_trans]
+#         else:
+#             if(result1.fun<Mass_trans):
+#                 return [3,result1.x[0],-result1.fun,result1.x[0],-result1.fun,eos.pressure_trans,-Mass_trans]
+#             else:
+#                 return [3,eos.pressure_trans,-Mass_trans,result1.x[0],-result1.fun,eos.pressure_trans,-Mass_trans]
+#     else:
+#         result1=opt.minimize(Mass_transition_formax,800.0,tol=rtol_opt,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
+#         result2=opt.minimize(Mass_transition_formax,eos.pressure_trans+1.,tol=0.001,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
+#         #print result1.x[0],-result1.fun
+#         #print result2.x[0],-result2.fun
+#         if(np.abs(result1.x[0]-result2.x[0])<0.05*(result2.x[0]+result1.x[0])):
+#             if(result1.fun<result2.fun):
+#                 return [1,result1.x[0],-result1.fun,result1.x[0],-result1.fun,result1.x[0],-result1.fun]
+#             else:
+#                 return [1,result2.x[0],-result2.fun,result2.x[0],-result2.fun,result2.x[0],-result2.fun]
+#         else:
+#             if(result1.fun<result2.fun):
+#                 return [4,result1.x[0],-result1.fun,result1.x[0],-result1.fun,result2.x[0],-result2.fun]
+#             else:
+#                 return [4,result2.x[0],-result2.fun,result1.x[0],-result1.fun,result2.x[0],-result2.fun]
+# =============================================================================
 
 def Maxmass(Preset_Pressure_final,Preset_rtol,eos):
-    result=opt.minimize(Mass_formax,100.0,tol=0.001,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
+    result=opt.minimize(Mass_formax,200.0,tol=0.001,args=(Preset_Pressure_final,Preset_rtol,eos),method='Nelder-Mead')
     return [0,result.x[0],-result.fun,result.x[0],-result.fun,result.x[0],-result.fun]
 
 # =============================================================================

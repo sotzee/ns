@@ -79,6 +79,11 @@ def main_parallel(Calculation_i,parameter_list,result_file_name,error_log_file_n
     f.close()
     return np.array(Output)
 
+def main_parallel_unsave(Calculation_i,parameter_list,other_args=[]):
+    num_cores = cpu_count()-1
+    Output=Parallel(n_jobs=num_cores,verbose=1)(delayed(Calculation_i)(parameter_i,other_args) for parameter_i in parameter_list)
+    return np.array(Output)
+
 if __name__ == '__main__':
     #import sys
     #print("Running Program: " + sys.argv[0])

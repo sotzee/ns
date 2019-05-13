@@ -20,7 +20,23 @@ class EOS_item_with_binary(object):
         self.properity=prop
         self.stars=single_stars
         self.binaries=binary_stars
-        
+    
+class EOS_interpolation(object):
+    def __init__(self,n_array,energy_array,pressure_array):
+        self.eosPressure_frombaryon = interp1d(n_array,pressure_array, kind='quadratic')
+        self.eosPressure = interp1d(energy_array,pressure_array, kind='quadratic')
+        self.eosDensity  = interp1d(pressure_array,energy_array, kind='quadratic')
+        self.eosBaryonDensity = interp1d(pressure_array,n_array, kind='quadratic')
+        self.baryon_density_s=0.16
+        self.pressure_s=self.eosPressure_frombaryon(self.baryon_density_s)
+        self.density_s=self.eosDensity(self.pressure_s)
+        self.unit_mass=c**4/(G**3*self.density_s*1e51*e)**0.5
+        self.unit_radius=c**2/(G*self.density_s*1e51*e)**0.5
+        self.unit_N=self.unit_radius**3*self.baryon_density_s*1e45
+    def eosChempo(self,pressure):
+        return (pressure+self.eosDensity(pressure))/self.eosBaryonDensity(pressure)
+    def eosCs2(self,pressure):
+        return 1.0/derivative(self.eosDensity,pressure,dx=pressure*dlnx_cs2)
     
 class EOS_BPS(object):
 # =============================================================================
@@ -52,6 +68,13 @@ class EOS_BPS(object):
     eosPressure = interp1d(list(densityBPS[:66])+[56.2006]+list(densityBPS[66:])+[densityBPS[-1]*100],list(pressureBPS[:66])+[0.22201]+list(pressureBPS[66:])+[pressureBPS[-1]*100], kind='quadratic')
     eosDensity  = interp1d(list(pressureBPS[:66])+[0.22201]+list(pressureBPS[66:])+[pressureBPS[-1]*100],list(densityBPS[:66])+[56.2006]+list(densityBPS[66:])+[densityBPS[-1]*100], kind='quadratic')
     eosBaryonDensity = interp1d(list(pressureBPS[:66])+[0.22201]+list(pressureBPS[66:])+[pressureBPS[-1]*100],list(baryondensityBPS[:66])+[0.16/2.7]+list(baryondensityBPS[66:])+[baryondensityBPS[-1]*100], kind='quadratic')
+    baryon_density_s=0.16
+    chempo_surface=(pressureBPS[0]+densityBPS[0])/baryondensityBPS[0]
+    pressure_s=eosPressure_frombaryon(baryon_density_s)
+    density_s=eosDensity(pressure_s)
+    unit_mass=c**4/(G**3*density_s*1e51*e)**0.5
+    unit_radius=c**2/(G*density_s*1e51*e)**0.5
+    unit_N=unit_radius**3*baryon_density_s*1e45
     def eosChempo(self,pressure):
         return (pressure+self.eosDensity(pressure))/self.eosBaryonDensity(pressure)
     def eosCs2(self,pressure):
@@ -231,10 +254,10 @@ class EOS_BPSwithPoly_4(EOS_BPS):
 
 class EOS_CSS(object):
     def __init__(self,args):
-        self.density0,self.pressure0,self.baryondensity_trans,self.cs2 = args
+        self.density0,self.pressure0,self.baryondensity0,self.cs2 = args
         self.B=(self.density0-self.pressure0/self.cs2)/(1.0+1.0/self.cs2)
         if(self.B>0):
-            self.baryon_density_s=self.baryondensity_trans/(self.pressure0/self.B+1)**(1/(self.cs2+1))
+            self.baryon_density_s=self.baryondensity0/(self.pressure0/self.B+1)**(1/(self.cs2+1))
             self.pressure_s=self.B
             self.density_s=self.B
         else:
@@ -251,10 +274,46 @@ class EOS_CSS(object):
         density = (pressure-self.pressure0)/self.cs2+self.density0
         return np.where(density>0,density,0)
     def eosBaryonDensity(self,pressure):
-        baryondensity_trans = self.baryondensity_trans*((pressure+self.B)/(self.pressure0+self.B))**(1.0/(1.0+self.cs2))
-        return np.where(baryondensity_trans>0,baryondensity_trans,0)
+        baryondensity = self.baryondensity0*((pressure+self.B)/(self.pressure0+self.B))**(1.0/(1.0+self.cs2))
+        return np.where(baryondensity>0,baryondensity,0)
     def eosCs2(self,pressure):
         return self.cs2
+    def eosChempo(self,pressure):
+        return (pressure+self.eosDensity(pressure))/self.eosBaryonDensity(pressure)
+
+class EOS_CSS_2piece(object):
+    def __init__(self,args):
+        self.density0,self.pressure0,self.baryondensity0,self.cs2_1, self.pressure1,self.cs2_2 = args
+        self.density1=(self.pressure1-self.pressure0)/self.cs2_1+self.density0
+        self.B0=(self.density0-self.pressure0/self.cs2_1)/(1.0+1.0/self.cs2_1)
+        self.B1=(self.density1-self.pressure1/self.cs2_2)/(1.0+1.0/self.cs2_2)
+        self.baryondensity1=self.baryondensity0*((self.pressure1+self.B0)/(self.pressure0+self.B0))**(1.0/(1.0+self.cs2_1))
+        if(self.B0>0):
+            self.baryon_density_s=self.baryondensity0/(self.pressure0/self.B0+1)**(1/(self.cs2_1+1))
+            self.pressure_s=self.B0
+            self.density_s=self.B0
+        else:
+            self.baryon_density_s=0.16
+            self.pressure_s=-self.B0
+            self.density_s=-self.B0
+            print('Warning!!! ESS equation get negative Bag constant!!!')
+            print('args=%s'%(args))
+            print('B=%f MeVfm-3'%(self.B0))
+        self.unit_mass=c**4/(G**3*self.density_s*1e51*e)**0.5
+        self.unit_radius=c**2/(G*self.density_s*1e51*e)**0.5
+        self.unit_N=self.unit_radius**3*self.baryon_density_s*1e45
+    def eosDensity(self,pressure):
+        density_1 = (pressure-self.pressure0)/self.cs2_1+self.density0
+        density_2 = (pressure-self.pressure1)/self.cs2_2+self.density1
+        density=np.where(pressure>self.pressure1,density_2,density_1)
+        return np.where(density>0,density,0)
+    def eosBaryonDensity(self,pressure):
+        baryondensity_1 = self.baryondensity0*((pressure+self.B0)/(self.pressure0+self.B0))**(1.0/(1.0+self.cs2_1))
+        baryondensity_2 = self.baryondensity1*((pressure+self.B1)/(self.pressure1+self.B1))**(1.0/(1.0+self.cs2_2))
+        baryondensity=np.where(pressure>self.pressure1,baryondensity_2,baryondensity_1)
+        return np.where(baryondensity>0,baryondensity,0)
+    def eosCs2(self,pressure):
+        return np.where(pressure>self.pressure1,self.cs2_2,self.cs2_1)
     def eosChempo(self,pressure):
         return (pressure+self.eosDensity(pressure))/self.eosBaryonDensity(pressure)
 
@@ -273,11 +332,11 @@ class EOS_BPSwithPolyCSS(EOS_BPSwithPoly,EOS_CSS):
         self.unit_radius=self.eosBPSwithPoly.unit_radius
         self.unit_N=self.eosBPSwithPoly.unit_N
         self.density_trans=self.eosBPSwithPoly.eosDensity(self.pressure_trans)
-        self.baryondensity_trans=self.eosBPSwithPoly.eosBaryonDensity\
+        self.baryondensity0=self.eosBPSwithPoly.eosBaryonDensity\
         (self.pressure_trans)/(self.density_trans+self.pressure_trans)\
         *(self.density_trans+self.pressure_trans+self.det_density)
         args_eosCSS=[self.density_trans+self.det_density,self.pressure_trans\
-                     ,self.baryondensity_trans,self.cs2]
+                     ,self.baryondensity0,self.cs2]
         self.eosCSS=EOS_CSS(args_eosCSS)
     def eosDensity(self,pressure):
         return np.where(pressure<self.pressure_trans,self.eosBPSwithPoly.eosDensity(pressure),self.eosCSS.eosDensity(pressure))
@@ -383,6 +442,29 @@ class EOS_FermiGas_eff(EOS_BPS): #reference: THE PHYSICS OF COMPACT OBJECTS BY S
     def eosChempo(self,pressure):
         n=self.eos_n_from_pressure(pressure)
         return (self.x(n)**2+1)**0.5*self.m(n)
+
+
+def match_eos(args):
+    n_s,n1,p1,e1,dpdn1,n2,p2,e2,dpdn2,match_init=args
+    u1=n1/n_s
+    u2=n2/n_s
+    d=dpdn1
+    b=p1/n_s-d*u1
+    a=e1/n1+b/u1
+    #c*(u2-u1)**gamma=e2/n2+b/u2-a-d*np.log(u2/u1)
+    #c*gamma*(u2-u1)**(gamma)*u2**2=(p2/n_s-d*u2-b)*(u2-u1)
+    gamma=(p2/n_s-d*u2-b)*(u2-u1)/((e2/n2+b/u2-a-d*np.log(u2/u1))*u2**2)
+    c=(e2/n2+b/u2-a-d*np.log(u2/u1))/((u2/u1-1)**gamma)
+    dpdn_match=(c*gamma*u2*(u2/u1-1)**(gamma-2))*(2*(u2-u1)+(gamma-1)*u2)/u1**2+d
+    nep2_match=match_get_eos_array(u2,[a,b,c,gamma,d,u1,n_s])
+    dedn2_match=(nep2_match[1]+nep2_match[2])/nep2_match[0]
+    cs2_match=dpdn_match/dedn2_match
+    return [a,b,c,gamma,d,u1,n_s], gamma>2 and cs2_match<1
+def match_get_eos_array(u_array,args):
+    a,b,c,gamma,d,u1,n_s=args
+    e_array=(a-b/u_array+c*(u_array/u1-1)**gamma+d*np.log(u_array/u1))*n_s*u_array
+    p_array=(b+c*gamma*(u_array/u1-1)**(gamma-1)*u_array**2/u1+d*u_array)*n_s
+    return n_s*u_array,e_array,p_array
 
 
 def show_eos(eos,pressure,add_togetherwith):

@@ -58,6 +58,15 @@ def get_baryon_density_u_max(abcd,defaut_u_max):
     else:
         return np.min([roots_real[roots_real>0].min()**3,defaut_u_max])
 
+def get_baryon_density_u_max_margueron(abcd,defaut_u_max):
+    coeff=[54*abcd[3],40*abcd[2],28*abcd[1],18*abcd[0],10*2**(2./3)]
+    roots=np.roots(coeff)
+    roots_real=roots.real[np.isreal(roots)]
+    if(len(roots_real[roots_real>0])==0):
+        return defaut_u_max
+    else:
+        return np.min([roots_real[roots_real>0].min()**3,defaut_u_max])
+
 def get_eos_array(u_min,u_max,baryon_density_sat,m,T,abcd):
     baryon_density=baryon_density_sat*10**np.linspace(np.log10(u_min),np.log10(u_max),501)
     energy_dnnsity=np.concatenate(([0],baryon_density*energy_per_baryon_pnm(baryon_density,baryon_density_sat,m,T,abcd),[10000]))
@@ -184,6 +193,8 @@ class EOS_Sly4_match_PnmCSS(object):
             else:
                 #print('Matching of low density EoS %s and hight density %s failed'%(self.eos_low,self.eos_high))
                 print self.eos_high.eosPNM.args
+        if(self.p_match>100):
+            print('matching at exceptional high pressure, p_match=%f'%(self.p_match))
         self.baryon_density_s=self.eos_high.baryon_density_s
         self.pressure_s=self.eos_high.pressure_s
         self.density_s=self.eos_high.density_s
@@ -281,16 +292,3 @@ if __name__ == '__main__':
 
     f_chirpmass_Lambdabeta6_result=path+dir_name+'/Lambda_hadronic_calculation_chirpmass_Lambdabeta6.dat'
     chirp_q_Lambdabeta6_Lambda1Lambda2=main_parallel(Calculation_chirpmass_Lambdabeta6,np.concatenate((mass_beta_Lambda_result,np.tile(Properity_onepointfour[:,3],(40,1,1)).transpose()),axis=1),f_chirpmass_Lambdabeta6_result,error_log)
-
-#else:
-def read_file(file_name):
-    f_file=open(file_name,'rb')
-    content=np.array(cPickle.load(f_file))
-    f_file.close()
-    return content
-args=read_file(path+dir_name+'/Lambda_PNM_calculation_args.dat')
-eos=read_file(path+dir_name+'/Lambda_PNM_calculation_eos.dat')
-maxmass_result=read_file(path+dir_name+'/Lambda_PNM_calculation_maxmass.dat')
-Properity_onepointfour=read_file(path+dir_name+'/Lambda_PNM_calculation_onepointfour.dat')
-mass_beta_Lambda_result=read_file(path+dir_name+'/Lambda_PNM_calculation_mass_beta_Lambda.dat')
-chirp_q_Lambdabeta6_Lambda1Lambda2=read_file(path+dir_name+'/Lambda_hadronic_calculation_chirpmass_Lambdabeta6.dat')
