@@ -63,7 +63,8 @@ class EOS_BPS(object):
     densityBPS = toMevfm(densityBPS,'density')
     #pressure in units: Mevfm3
     pressureBPS = toMevfm(pressureBPS,'pressure')
-
+    eos_array=np.array([baryondensityBPS,densityBPS,pressureBPS])
+    
     eosPressure_frombaryon = interp1d(list(baryondensityBPS[:66])+[0.16/2.7]+list(baryondensityBPS[66:])+[baryondensityBPS[-1]*100],list(pressureBPS[:66])+[0.22201]+list(pressureBPS[66:])+[pressureBPS[-1]*100], kind='quadratic')
     eosPressure = interp1d(list(densityBPS[:66])+[56.2006]+list(densityBPS[66:])+[densityBPS[-1]*100],list(pressureBPS[:66])+[0.22201]+list(pressureBPS[66:])+[pressureBPS[-1]*100], kind='quadratic')
     eosDensity  = interp1d(list(pressureBPS[:66])+[0.22201]+list(pressureBPS[66:])+[pressureBPS[-1]*100],list(densityBPS[:66])+[56.2006]+list(densityBPS[66:])+[densityBPS[-1]*100], kind='quadratic')

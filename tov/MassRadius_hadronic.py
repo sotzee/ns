@@ -64,25 +64,27 @@ def MassRadius(pressure_center,Preset_Pressure_final,Preset_rtol,MRorMRBIT,eos,R
         beta=beta/Radius_correction_ratio(pressure_center,Preset_Pressure_final,beta,eos)
         return [M,R,beta,M_binding,momentofinertia,k2,tidal]
 
-def Tidal_corrected(pc,Preset_Pressure_final,beta,yR,eos):
-    radius_correction=Radius_correction_ratio(pc,Preset_Pressure_final,beta,eos)
-    a=(5-8*beta)/(1-2*beta)
-    b=(beta/(0.5-beta))**2-4*beta/(0.5-beta)
-    print '+++++++++++',a,b,radius_correction
-    zb=yR-2
-    check_solution_type=a**2-4*b
-    check_solution_type_sqrt=np.abs(check_solution_type)**0.5
-    print zb
-    zR=np.where(check_solution_type>0,
-                ((2*check_solution_type_sqrt/(1-radius_correction**(1/check_solution_type**0.5)*(2*zb-check_solution_type_sqrt+a)/(2*zb+check_solution_type_sqrt+a)))-check_solution_type_sqrt-a)/2.,
-                (check_solution_type_sqrt*np.tan(np.log(radius_correction)*(check_solution_type_sqrt)+np.arctan((2*zb+a)/check_solution_type_sqrt))-a)/2.)
-    yR=zR+2
-    print zR
-    beta=beta/Radius_correction_ratio(pc,Preset_Pressure_final,beta,eos)
-    tidal_R=6*beta*(2-yR+beta*(5*yR-8))+4*beta**3*(13-11*yR+beta*(3*yR-2)+2*beta**2*(1+yR))+3*(1-2*beta)**2*(2-yR+2*beta*(yR-1))*np.log(1-2*beta)
-    k2=8.0/5.0*beta**5*(1-2*beta)**2*(2-yR+2*beta*(yR-1))/tidal_R
-    tidal=2.0/3.0*(k2/beta**5)
-    return tidal
+# =============================================================================
+# def Tidal_corrected(pc,Preset_Pressure_final,beta,yR,eos):
+#     radius_correction=Radius_correction_ratio(pc,Preset_Pressure_final,beta,eos)
+#     a=(5-8*beta)/(1-2*beta)
+#     b=(beta/(0.5-beta))**2-4*beta/(0.5-beta)
+#     print '+++++++++++',a,b,radius_correction
+#     zb=yR-2
+#     check_solution_type=a**2-4*b
+#     check_solution_type_sqrt=np.abs(check_solution_type)**0.5
+#     print zb
+#     zR=np.where(check_solution_type>0,
+#                 ((2*check_solution_type_sqrt/(1-radius_correction**(1/check_solution_type**0.5)*(2*zb-check_solution_type_sqrt+a)/(2*zb+check_solution_type_sqrt+a)))-check_solution_type_sqrt-a)/2.,
+#                 (check_solution_type_sqrt*np.tan(np.log(radius_correction)*(check_solution_type_sqrt)+np.arctan((2*zb+a)/check_solution_type_sqrt))-a)/2.)
+#     yR=zR+2
+#     print zR
+#     beta=beta/Radius_correction_ratio(pc,Preset_Pressure_final,beta,eos)
+#     tidal_R=6*beta*(2-yR+beta*(5*yR-8))+4*beta**3*(13-11*yR+beta*(3*yR-2)+2*beta**2*(1+yR))+3*(1-2*beta)**2*(2-yR+2*beta*(yR-1))*np.log(1-2*beta)
+#     k2=8.0/5.0*beta**5*(1-2*beta)**2*(2-yR+2*beta*(yR-1))/tidal_R
+#     tidal=2.0/3.0*(k2/beta**5)
+#     return tidal
+# =============================================================================
 
 def get_radius_corr(zR,zb,a,b):
     return ((2*zR-(a**2-4*b)**0.5+a)/(2*zR+(a**2-4*b)**0.5+a)*(2*zb+(a**2-4*b)**0.5+a)/(2*zb-(a**2-4*b)**0.5+a))**((a**2-4*b)**0.5)
